@@ -3,17 +3,22 @@
 namespace App\Entity;
 
 use App\Enum\Role;
+use App\Enum\Departement;
 use App\Repository\UserRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use App\Enum;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
 #[ORM\InheritanceType('JOINED')]
 #[ORM\DiscriminatorColumn(name: 'user_type', type: 'string')]
 #[ORM\DiscriminatorMap(['user' => User::class, 'manager' => Manager::class])]
-class User
+
+
+class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -38,8 +43,8 @@ class User
     #[ORM\Column]
     private ?float $solde_conge = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $departement = null;
+    #[ORM\Column(enumType: departement::class)]
+    private ?departement $departement = null;
 
     public function getId(): ?int
     {
@@ -128,15 +133,36 @@ class User
         return $this;
     }
 
-    public function getDepartement(): ?string
+    public function getDepartement(): ?Departement
     {
         return $this->departement;
     }
 
-    public function setDepartement(string $departement): static
+    public function setDepartement(Departement $departement): static
     {
         $this->departement = $departement;
-
         return $this;
     }
+
+    public function getUserIdentifier(): string
+    {
+        return $this->email;
+    }
+
+    public function getPassword(): string
+    {
+        return $this->mot_de_passe;
+    }
+
+    public function getRoles(): array
+    {
+        // Convertir les objets Role en string, si tu utilises un Enum
+        return array_map(fn($role) => $role->value, $this->Role);
+    }
+
+    public function eraseCredentials(): void
+    {
+        // S'il y a des données sensibles temporaires, les nettoyer ici (ex: mot de passe en clair)
+    }
+
 }
