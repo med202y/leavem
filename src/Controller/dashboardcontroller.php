@@ -34,7 +34,7 @@ class dashboardcontroller extends AbstractController
         // Pass role and departement enums to Twig
         return $this->render('dashboard/dashboard.html.twig', [
             'user' => $user,
-            'role' => $user->getRole()[0],        // Adjust if Role is an array, otherwise just getRole()
+            'role' => $user->getRole()[0],
             'departement' => $user->getDepartement(),
         ]);
     }

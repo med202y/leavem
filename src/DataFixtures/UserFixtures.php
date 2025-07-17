@@ -29,6 +29,7 @@ class UserFixtures extends Fixture
         $user1->setRole([Role::EMPLOYEE]); // Role is an array of Role enums
         $user1->setDepartement(Departement::integrateur);
         $user1->setSoldeConge(15.5); // 15.5 days of leave left
+        $user1->setCIN('A123456');
 
         $hashedPassword1 = $this->hasher->hashPassword($user1, 'password123');
         $user1->setMotDePasse($hashedPassword1);
@@ -43,6 +44,7 @@ class UserFixtures extends Fixture
         $user2->setRole([Role::MANAGER]);
         $user2->setDepartement(Departement::symfony);
         $user2->setSoldeConge(20);
+        $user2->setCIN('B789012');
 
         $hashedPassword2 = $this->hasher->hashPassword($user2, 'securepass');
         $user2->setMotDePasse($hashedPassword2);
