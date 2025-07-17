@@ -43,8 +43,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?float $solde_conge = null;
 
-    #[ORM\Column(enumType: departement::class)]
-    private ?departement $departement = null;
+    #[ORM\Column(enumType: Departement::class)]
+    private ?Departement $departement = null;
 
     public function getId(): ?int
     {
@@ -133,12 +133,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getDepartement(): ?Departement
+    public function getDepartement(): ?departement
     {
         return $this->departement;
     }
 
-    public function setDepartement(Departement $departement): static
+    public function setDepartement(departement $departement): static
     {
         $this->departement = $departement;
         return $this;

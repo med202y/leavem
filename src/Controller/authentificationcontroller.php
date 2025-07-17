@@ -6,7 +6,7 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Enum\Role;
-use App\Enum\departement;
+use App\Enum\Departement;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -39,27 +39,12 @@ class authentificationcontroller extends AbstractController
             // Connexion manuelle
             $session->set('user_id', $user->getId());
 
-            // Redirection selon rôle et département
-            $role = $user->getRole()[0]; // enum Role
-            $departement = $user->getDepartement(); // enum Departement
-
-            if ($role === Role::EMPLOYEE && $departement === Departement::symfony) {
-                return $this->redirectToRoute('employee_symfony');
-            }
-            if ($role === Role::MANAGER && $departement === Departement::symfony) {
-                return $this->redirectToRoute('mananger_symfony');
-            }
-
-            if ($role === Role::EMPLOYE && $departement === Departement::integrateur) {
-                return $this->redirectToRoute('employee_integrateur');
-            }
-            if ($role === Role::MANAGER && $departement === Departement::integrateur) {
-                return $this->redirectToRoute('employee_integrateur');
-            }
+            // Redirect to dashboard (single route for all roles)
+            return $this->redirectToRoute('dashboard');
 
 
         }
 
-        return $this->render('home/authentification.html.twig');
+        return $this->render('security/authentification.html.twig');
     }
 }

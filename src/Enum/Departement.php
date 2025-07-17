@@ -2,7 +2,7 @@
 
 namespace App\Enum;
 
-enum departement: string
+enum Departement : string
 {
     case symfony = 'Symfony';
     case integrateur = 'integrateur';
