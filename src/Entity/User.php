@@ -5,6 +5,8 @@ namespace App\Entity;
 use App\Enum\Role;
 use App\Enum\Departement;
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use App\Enum;
@@ -69,6 +71,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $Observations = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $chemin = null;
+
+    /**
+     * @var Collection<int, Notification>
+     */
+    #[ORM\OneToMany(targetEntity: Notification::class, mappedBy: 'recipient')]
+    private Collection $notifications;
+
+    #[ORM\Column(type: Types::DATE_MUTABLE,nullable: true)]
+    private ?\DateTime $Date_dembauche = null;
+
+    public function __construct()
+    {
+        $this->notifications = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -281,6 +300,60 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setObservations(?string $Observations): static
     {
         $this->Observations = $Observations;
+
+        return $this;
+    }
+
+    public function getChemin(): ?string
+    {
+        return $this->chemin;
+    }
+
+    public function setChemin(?string $chemin): static
+    {
+        $this->chemin = $chemin;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Notification>
+     */
+    public function getNotifications(): Collection
+    {
+        return $this->notifications;
+    }
+
+    public function addNotification(Notification $notification): static
+    {
+        if (!$this->notifications->contains($notification)) {
+            $this->notifications->add($notification);
+            $notification->setRecipient($this);
+        }
+
+        return $this;
+    }
+
+    public function removeNotification(Notification $notification): static
+    {
+        if ($this->notifications->removeElement($notification)) {
+            // set the owning side to null (unless already changed)
+            if ($notification->getRecipient() === $this) {
+                $notification->setRecipient(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getDateDembauche(): ?\DateTime
+    {
+        return $this->Date_dembauche;
+    }
+
+    public function setDateDembauche(\DateTime $Date_dembauche): static
+    {
+        $this->Date_dembauche = $Date_dembauche;
 
         return $this;
     }

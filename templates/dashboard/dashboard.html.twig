@@ -1,122 +1,196 @@
-<!-- Formulaire -->
-<form method="post" class="space-y-6">
-    <!-- Informations du salarié -->
-    <div class="bg-white rounded-2xl shadow p-6 mb-6">
-        <h2 class="text-xl font-semibold text-gray-800 mb-4 border-b pb-2 flex items-center gap-2">
-            <i class="fas fa-user"></i> Informations du Salarié
-        </h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {% set fields = {
-                'nom': user.nom,
-                'prenom': user.prenom,
-                'cin': user.cin,
-                'cnss': user.cnss,
-                'salaire': user.salaireM,
-                'qualifications': user.qualificationsprofessionnelles,
-                'jours_travailles': user.nbrDeJoursTravaille,
-                'jours_droit_conge': user.jourdecongeTravail,
-                'date_ouverture_droit': user.dateDouvertureDroitAuConge,
-                'solde_conge': user.soldeConge,
-                'observations': user.observations
-            } %}
+{% extends 'base.html.twig' %}
 
-            <!-- Column 1 -->
-            <div class="space-y-4">
-                {% for key, val in {'nom': 'Nom', 'prenom': 'Prénom', 'cin': 'CIN', 'cnss': 'Numéro CNSS'} %}
+{% block title %}Tableau de bord - {{ user.prenom }} {{ user.nom }}{% endblock %}
+
+{% block stylesheets %}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+{% endblock %}
+
+{% block body %}
+    <!-- Bouton menu mobile -->
+    <button id="mobile-menu-btn" class="md:hidden fixed top-4 left-4 z-50 bg-indigo-600 text-white p-3 rounded-lg shadow-md">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Barre latérale -->
+    <aside id="sidebar" class="sidebar fixed top-0 left-0 h-full w-72 z-50 bg-gradient-to-br from-indigo-600 to-purple-700 text-white transform transition-transform duration-300 md:translate-x-0 -translate-x-full md:block">
+        <div class="flex flex-col h-full">
+            <!-- Logo -->
+            <div class="p-6 border-b border-white/10">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-building text-xl"></i>
+                    </div>
                     <div>
-                        <label class="form-label" for="{{ key }}">{{ val }}</label>
-                        <input type="text" name="{{ key }}" id="{{ key }}" class="form-input bg-gray-100" value="{{ fields[key] }}" readonly>
+                        <h1 class="text-xl font-bold">Portail RH</h1>
+                        <p class="text-sm opacity-70">Système de gestion</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Infos utilisateur -->
+            <div class="p-6 border-b border-white/10">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center font-bold text-lg">
+                        {{ user.prenom|slice(0,1)|upper }}{{ user.nom|slice(0,1)|upper }}
+                    </div>
+                    <div>
+                        <h3 class="font-semibold">{{ user.prenom }} {{ user.nom }}</h3>
+                        <p class="text-sm opacity-70">{{ role.name ?? 'Employé' }}</p>
+                        <p class="text-xs opacity-60">{{ departement.name ?? 'N/A' }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="flex-1 p-4">
+                <ul class="space-y-1">
+                    {% set current_route = app.request.attributes.get('_route') %}
+                    {% set navItems = [
+                        {'label': 'Tableau de bord', 'icon': 'home', 'path': 'dashboard'},
+                        {'label': 'Demander un congé', 'icon': 'plus', 'url': '/leave/request'},
+                        {'label': 'Historique des congés', 'icon': 'history', 'url': '/leave/history'},
+                        {'label': 'Équipe', 'icon': 'users', 'url': '/team'}
+                    ] %}
+                    {% set menu = [
+                        {'label': 'Tableau de bord', 'icon': '🏠', 'url': '#'},
+                        {'label': 'Demandes', 'icon': '📄', 'url': '#'},
+                        {'label': 'Équipe', 'icon': '👥', 'url': '#'}
+                    ] %}
+
+                    {% for item in menu %}
+                        <li>
+                            <a href="{{ item.url }}" class="flex items-center gap-2 px-4 py-2 rounded hover:bg-white/10 transition-colors">
+                                <span class="text-lg">{{ item.icon }}</span>
+                                <span class="text-sm font-medium">{{ item.label }}</span>
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+                {% if role.name in ['ADMIN', 'MANAGER'] %}
+                    <div class="pt-4">
+                        <p class="text-xs uppercase tracking-wide px-4 mb-2 opacity-60">Gestion</p>
+                        <a href="#" class="flex items-center gap-2 px-4 py-3 rounded-lg hover:bg-white/5 text-white/80">
+                            <i class="fas fa-users-cog w-5"></i>
+                            <span>Gérer les utilisateurs</span>
+                        </a>
+                        <a href="#" class="flex items-center gap-2 px-4 py-3 rounded-lg hover:bg-white/5 text-white/80">
+                            <i class="fas fa-calendar-check w-5"></i>
+                            <span>Gérer les congés</span>
+                        </a>
+                    </div>
+                {% endif %}
+
+                <div class="pt-4">
+                    <p class="text-xs uppercase tracking-wide px-4 mb-2 opacity-60">Compte</p>
+                    <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 text-white/80">
+                        <i class="fas fa-user-cog w-5"></i>
+                        <span>Paramètres du profil</span>
+                    </a>
+                    <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 text-white/80">
+                        <i class="fas fa-sign-out-alt w-5"></i>
+                        <span>Déconnexion</span>
+                    </a>
+                </div>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- Contenu principal -->
+    <main class="min-h-screen bg-gray-100 md:ml-72 transition-all">
+        <div class="p-6 max-w-7xl mx-auto">
+            <!-- Carte de bienvenue -->
+            <div class="bg-white rounded-2xl p-6 shadow mb-6">
+                <div class="flex justify-between items-center flex-wrap gap-4">
+                    <div>
+                        <h1 class="text-3xl font-bold text-indigo-700">Bon retour, {{ user.prenom }} !</h1>
+                        <p class="text-gray-600">Voici ce qui se passe aujourd'hui dans la gestion de vos congés.</p>
+                    </div>
+                    <div class="text-right hidden md:block">
+                        <p class="text-sm text-gray-500">{{ "now"|date("l, F j, Y")|trans }}</p>
+                        <p class="text-lg font-semibold text-gray-800">{{ user.email }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistiques -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                {% set stats = [
+                    {'label': 'Solde de congés', 'value': user.soldeConge ?? 0, 'icon': 'calendar-check', 'color': 'indigo', 'unit': 'Jours disponibles'},
+                    {'label': 'Demandes en attente', 'value': 2, 'icon': 'clock', 'color': 'yellow', 'unit': 'En attente de validation'},
+                    {'label': 'Congés approuvés', 'value': 5, 'icon': 'check-circle', 'color': 'green', 'unit': 'Cette année'},
+                    {'label': 'Membres de l\'équipe', 'value': 12, 'icon': 'users', 'color': 'blue', 'unit': 'Dans le département'}
+                ] %}
+
+                {% for stat in stats %}
+                    <div class="bg-white rounded-2xl p-5 shadow hover:shadow-lg transition-all">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <p class="text-sm text-gray-600">{{ stat.label }}</p>
+                                <p class="text-3xl font-bold text-{{ stat.color }}-600">{{ stat.value }}</p>
+                                <p class="text-xs text-gray-400">{{ stat.unit }}</p>
+                            </div>
+                            <div class="w-12 h-12 rounded-xl flex items-center justify-center bg-{{ stat.color }}-500">
+                                <i class="fas fa-{{ stat.icon }} text-white text-xl"></i>
+                            </div>
+                        </div>
                     </div>
                 {% endfor %}
             </div>
 
-            <!-- Column 2 -->
-            <div class="space-y-4">
-                <div>
-                    <label class="form-label" for="date_embauche">Date d'embauche</label>
-                    <input type="date" name="date_embauche" id="date_embauche" class="form-input" required>
+            <!-- Actions rapides -->
+            <div class="bg-white rounded-2xl p-6 shadow mb-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                    <i class="fas fa-bolt"></i> Actions rapides
+                </h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {% set actions = [
+                        {'label': 'Demander un congé', 'icon': 'plus', 'url': path('demande')},
+                        {'label': 'Voir l\'historique', 'icon': 'history', 'url': '#'},
+                        {'label': 'Mettre à jour le profil', 'icon': 'user-cog', 'url': '#'},
+                        {'label': 'Voir l\'équipe', 'icon': 'users', 'url': '#'}
+                    ] %}
+
+                    {% for action in actions %}
+                        <a href="{{ action.url }}" class="bg-gradient-to-br from-indigo-500 to-purple-600 text-white px-4 py-4 rounded-xl font-medium flex items-center gap-3 hover:shadow-lg hover:translate-y-[-2px] transition-all">
+                            <i class="fas fa-{{ action.icon }}"></i> <span>{{ action.label }}</span>
+                        </a>
+                    {% endfor %}
                 </div>
-                <div>
-                    <label class="form-label" for="salaire">Salaire mensuel</label>
-                    <input type="number" name="salaire" id="salaire" class="form-input bg-gray-100" value="{{ user.salaireM }}" readonly>
-                </div>
-                <div>
-                    <label class="form-label" for="poste">Poste / Fonction</label>
-                    <input type="text" name="poste" id="poste" class="form-input" required>
-                </div>
-                <div>
-                    <label class="form-label" for="qualifications">Qualifications professionnelles</label>
-                    <input type="text" name="qualifications" id="qualifications" class="form-input bg-gray-100" value="{{ user.qualificationsprofessionnelles }}" readonly>
+            </div>
+
+            <!-- Activité récente -->
+            <div class="bg-white rounded-2xl p-6 shadow">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                    <i class="fas fa-bell"></i> Activité récente
+                </h2>
+                <div class="space-y-4">
+                    {% for notification in notifications %}
+                        <div class="flex items-start gap-4 p-4 rounded-xl border-l-4 bg-blue-50 border-blue-500">
+                            <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                                <i class="fas fa-paper-plane text-white"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-semibold text-gray-800">{{ notification.title }}</p>
+                                <p class="text-sm text-gray-600">{{ notification.message }}</p>
+                                {# If you add a createdAt field, show time here #}
+                            </div>
+                        </div>
+                    {% else %}
+                        <p class="text-gray-500">Aucune activité récente.</p>
+                    {% endfor %}
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 
-    <!-- Gestion des congés -->
-    <div class="bg-white rounded-2xl shadow p-6">
-        <h2 class="text-xl font-semibold text-gray-800 mb-4 border-b pb-2 flex items-center gap-2">
-            <i class="fas fa-calendar-alt"></i> Gestion des Congés
-        </h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Column 1 -->
-            <div class="space-y-4">
-                {% for key, label in {
-                    'jours_travailles': 'Jours effectivement travaillés',
-                    'jours_droit_conge': 'Jours ouvrant droit à congé'
-                } %}
-                    <div>
-                        <label class="form-label" for="{{ key }}">{{ label }}</label>
-                        <input type="number" name="{{ key }}" id="{{ key }}" class="form-input bg-gray-100" value="{{ fields[key] }}" readonly>
-                    </div>
-                {% endfor %}
-                <div>
-                    <label class="form-label" for="date_ouverture_droit">Date d'ouverture du droit</label>
-                    <input type="date" name="date_ouverture_droit" id="date_ouverture_droit" class="form-input bg-gray-100" value="{{ user.dateDouvertureDroitAuConge|date('Y-m-d') }}" readonly>
-                </div>
-            </div>
+{% endblock %}
 
-            <!-- Column 2 -->
-            <div class="space-y-4">
-                <div>
-                    <label class="form-label" for="solde_conge">Solde de congés</label>
-                    <input type="number" step="0.5" name="solde_conge" id="solde_conge" class="form-input bg-gray-100" value="{{ user.soldeConge }}" readonly>
-                </div>
-                <div>
-                    <label class="form-label" for="date_debut_conge">Date de début du congé</label>
-                    <input type="date" name="date_debut_conge" id="date_debut_conge" class="form-input">
-                </div>
-                <div>
-                    <label class="form-label" for="date_fin_conge">Date de fin du congé</label>
-                    <input type="date" name="date_fin_conge" id="date_fin_conge" class="form-input">
-                </div>
-            </div>
-        </div>
-
-        <!-- Additional Info -->
-        <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-                <label class="form-label" for="duree_conge">Durée du congé (jours)</label>
-                <input type="number" name="duree_conge" id="duree_conge" class="form-input">
-            </div>
-            <div>
-                <label class="form-label" for="date_retour">Date de retour</label>
-                <input type="date" name="date_retour" id="date_retour" class="form-input">
-            </div>
-        </div>
-
-        <div class="mt-6">
-            <label class="form-label" for="observations">Observations</label>
-            <textarea name="observations" id="observations" rows="3" class="form-input bg-gray-100" readonly>{{ user.observations }}</textarea>
-        </div>
-    </div>
-
-    <!-- Buttons -->
-    <div class="flex justify-end gap-4 mt-6">
-        <button type="reset" class="px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-sm font-medium shadow">
-            Annuler
-        </button>
-        <button type="submit" class="px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm font-semibold hover:shadow-lg transition-all">
-            Enregistrer
-        </button>
-    </div>
-</form>
+{% block javascripts %}
+    <script>
+        const menuBtn = document.getElementById('mobile-menu-btn');
+        const sidebar = document.getElementById('sidebar');
+        menuBtn?.addEventListener('click', () => sidebar?.classList.toggle('-translate-x-full'));
+    </script>
+{% endblock %}

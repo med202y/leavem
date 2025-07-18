@@ -2,10 +2,16 @@
 
 namespace App\Enum;
 
-enum Departement : string
+enum Departement: string
 {
-    case symfony = 'Symfony';
-    case integrateur = 'integrateur';
+    case SYMFONY = 'Symfony development';
+    case INTEGRATEUR = 'Intégrateur';
 
-
+    public function label(): string
+    {
+        return match($this) {
+            self::SYMFONY => 'Symfony development',
+            self::INTEGRATEUR => 'Intégrateur',
+        };
+    }
 }

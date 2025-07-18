@@ -1,0 +1,129 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.1/css/all.min.css" integrity="sha256-2XFplPlrFClt0bIdPgpz8H7ojnk10H69xRqd9+uTShA=" crossorigin="anonymous" />
+{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="my-5">
+                    <h3>Mon Profil</h3>
+                    <hr>
+                </div>
+
+                {{ form_start(form) }}
+                <div class="row mb-5 gx-5">
+                    <!-- Personal Information -->
+                    <div class="col-12">
+                        <div class="bg-secondary-soft px-4 py-5 rounded">
+                            <div class="row g-3">
+                                <h4 class="mb-4 mt-0">Informations Personnelles</h4>
+
+                                <!-- First Name -->
+                                <div class="col-md-6">
+                                    {{ form_label(form.prenom, 'Prénom *', {'label_attr': {'class': 'form-label'}}) }}
+                                    {{ form_widget(form.prenom, {'attr': {'class': 'form-control'}}) }}
+                                </div>
+
+                                <!-- Last Name -->
+                                <div class="col-md-6">
+                                    {{ form_label(form.nom, 'Nom *', {'label_attr': {'class': 'form-label'}}) }}
+                                    {{ form_widget(form.nom, {'attr': {'class': 'form-control'}}) }}
+                                </div>
+
+                                <!-- Email -->
+                                <div class="col-md-6">
+                                    {{ form_label(form.email, 'Email *', {'label_attr': {'class': 'form-label'}}) }}
+                                    {{ form_widget(form.email, {'attr': {'class': 'form-control'}}) }}
+                                </div>
+
+                                <!-- CIN -->
+                                <div class="col-md-6">
+                                    {{ form_label(form.CIN, 'CIN *', {'label_attr': {'class': 'form-label'}}) }}
+                                    {{ form_widget(form.CIN, {'attr': {'class': 'form-control'}}) }}
+                                </div>
+
+                                <!-- CNSS -->
+                                <div class="col-md-6">
+                                    {{ form_label(form.CNSS, 'Numéro CNSS *', {'label_attr': {'class': 'form-label'}}) }}
+                                    {{ form_widget(form.CNSS, {'attr': {'class': 'form-control'}}) }}
+                                </div>
+
+                                <!-- Department -->
+                                <div class="col-md-6">
+                                    {{ form_label(form.departement, 'Département *', {'label_attr': {'class': 'form-label'}}) }}
+                                    {{ form_widget(form.departement, {'attr': {'class': 'form-control'}}) }}
+                                </div>
+
+                                <!-- Salary -->
+                                <div class="col-md-6">
+                                    {{ form_label(form.SalaireM, 'Salaire Mensuel *', {'label_attr': {'class': 'form-label'}}) }}
+                                    {{ form_widget(form.SalaireM, {'attr': {'class': 'form-control'}}) }}
+                                </div>
+
+                                <!-- Hire Date -->
+                                <div class="col-md-6">
+                                    {{ form_label(form.Date_dembauche, 'Date d\'embauche *', {'label_attr': {'class': 'form-label'}}) }}
+                                    {{ form_widget(form.Date_dembauche, {'attr': {'class': 'form-control'}}) }}
+                                </div>
+
+                                <!-- Qualifications -->
+                                <div class="col-md-12">
+                                    {{ form_label(form.Qualificationsprofessionnelles, 'Qualifications Professionnelles', {'label_attr': {'class': 'form-label'}}) }}
+                                    {{ form_widget(form.Qualificationsprofessionnelles, {'attr': {'class': 'form-control'}}) }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Leave Information -->
+                    <div class="col-12 mt-4">
+                        <div class="bg-secondary-soft px-4 py-5 rounded">
+                            <div class="row g-3">
+                                <h4 class="mb-4 mt-0">Informations Congés</h4>
+
+                                <!-- Leave Balance -->
+                                <div class="col-md-6">
+                                    {{ form_label(form.solde_conge, 'Solde de Congé *', {'label_attr': {'class': 'form-label'}}) }}
+                                    {{ form_widget(form.solde_conge, {'attr': {'class': 'form-control'}}) }}
+                                </div>
+
+                                <!-- Leave Opening Date -->
+                                <div class="col-md-6">
+                                    {{ form_label(form.Date_douverture_droit_au_conge, 'Date d\'ouverture des droits *', {'label_attr': {'class': 'form-label'}}) }}
+                                    {{ form_widget(form.Date_douverture_droit_au_conge, {'attr': {'class': 'form-control'}}) }}
+                                </div>
+
+                                <!-- Worked Days -->
+                                <div class="col-md-6">
+                                    {{ form_label(form.Nbr_de_jours_travaille, 'Jours travaillés *', {'label_attr': {'class': 'form-label'}}) }}
+                                    {{ form_widget(form.Nbr_de_jours_travaille, {'attr': {'class': 'form-control'}}) }}
+                                </div>
+
+                                <!-- Leave Earned -->
+                                <div class="col-md-6">
+                                    {{ form_label(form.jourdeconge_travail, 'Jours de congé acquis *', {'label_attr': {'class': 'form-label'}}) }}
+                                    {{ form_widget(form.jourdeconge_travail, {'attr': {'class': 'form-control'}}) }}
+                                </div>
+
+                                <!-- Observations -->
+                                <div class="col-md-12">
+                                    {{ form_label(form.Observations, 'Observations', {'label_attr': {'class': 'form-label'}}) }}
+                                    {{ form_widget(form.Observations, {'attr': {'class': 'form-control'}}) }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gap-3 d-md-flex justify-content-md-end text-center">
+                    <button type="submit" class="btn btn-primary btn-lg">Mettre à jour</button>
+                </div>
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+{% endblock %}

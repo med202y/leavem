@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Entity\Notification;
 use App\Enum\Role;
 use App\Enum\Departement;
 use Doctrine\ORM\EntityManagerInterface;
@@ -31,9 +32,13 @@ class dashboardcontroller extends AbstractController
             return $this->redirectToRoute('custom_login');
         }
 
+        $notifications = $em->getRepository(Notification::class)
+            ->findBy(['recipient' => $user], ['id' => 'DESC']); // latest first
+
         // Pass role and departement enums to Twig
         return $this->render('dashboard/dashboard.html.twig', [
             'user' => $user,
+            'notifications' => $notifications,
             'role' => $user->getRole()[0],
             'departement' => $user->getDepartement(),
         ]);

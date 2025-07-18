@@ -44,122 +44,144 @@
             </div>
 
             <!-- Formulaire -->
-            <form method="post" class="space-y-6">
-                <!-- Section Informations de base -->
-                <div class="form-section">
-                    <h2 class="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">
-                        <i class="fas fa-user mr-2"></i>Informations du Salarié
-                    </h2>
+            <form method="POST" enctype="multipart/form-data">
+            <!-- Section Informations de base -->
+            <div class="form-section">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">
+                    <i class="fas fa-user mr-2"></i>Informations du Salarié
+                </h2>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Colonne 1 -->
-                        <div class="space-y-4">
-                            <div>
-                                <label for="nom" class="form-label">Nom</label>
-                                <input type="text" id="nom" name="nom" value="{{ user.nom }}" class="form-input" required>
-                            </div>
-
-                            <div>
-                                <label for="prenom" class="form-label">Prénom</label>
-                                <input type="text" id="prenom" name="prenom" value="{{ user.prenom }}" class="form-input" required>
-                            </div>
-
-                            <div>
-                                <label for="cin" class="form-label">CIN</label>
-                                <input type="text" id="cin" name="cin" value="{{ user.cin }}" class="form-input" required>
-                            </div>
-
-                            <div>
-                                <label for="cnss" class="form-label">Numéro CNSS</label>
-                                <input type="text" id="cnss" name="cnss" value="{{ user.cnss }}" class="form-input" required>
-                            </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Colonne 1 -->
+                    <div class="space-y-4">
+                        <div>
+                            <label class="form-label">Nom</label>
+                            <p class="mt-1 text-sm text-gray-900 bg-gray-50 p-2 rounded">{{ user.nom }}</p>
                         </div>
 
-                        <!-- Colonne 2 -->
-                        <div class="space-y-4">
-                            <div>
-                                <label for="date_embauche" class="form-label">Date d'embauche</label>
-                                <input type="date" id="date_embauche" name="date_embauche" class="form-input" required>
-                            </div>
+                        <div>
+                            <label class="form-label">Prénom</label>
+                            <p class="mt-1 text-sm text-gray-900 bg-gray-50 p-2 rounded">{{ user.prenom }}</p>
+                        </div>
 
-                            <div>
-                                <label for="salaire" class="form-label">Salaire mensuel</label>
-                                <input type="number" id="salaire" name="salaire" value="{{ user.salaireM }}" class="form-input" required>
-                            </div>
+                        <div>
+                            <label class="form-label">CIN</label>
+                            <p class="mt-1 text-sm text-gray-900 bg-gray-50 p-2 rounded">{{ user.cin }}</p>
+                        </div>
 
-                            <div>
-                                <label for="poste" class="form-label">Poste / Fonction</label>
-                                <input type="text" id="poste" name="poste" class="form-input" required>
-                            </div>
+                        <div>
+                            <label class="form-label">Numéro CNSS</label>
+                            <p class="mt-1 text-sm text-gray-900 bg-gray-50 p-2 rounded">{{ user.cnss }}</p>
+                        </div>
+                    </div>
 
-                            <div>
-                                <label for="qualifications" class="form-label">Qualifications professionnelles</label>
-                                <input type="text" id="qualifications" name="qualifications" value="{{ user.qualificationsprofessionnelles }}" class="form-input">
-                            </div>
+                    <!-- Colonne 2 -->
+                    <div class="space-y-4">
+                        <div>
+                            <label for="date_embauche" class="form-label">Date d'embauche</label>
+                            <p class="mt-1 text-sm text-gray-900 bg-gray-50 p-2 rounded">{{ user.dateDembauche|date('Y-m-d') }}</p>
+                        </div>
+
+                        <div>
+                            <label class="form-label">Salaire mensuel</label>
+                            <p class="mt-1 text-sm text-gray-900 bg-gray-50 p-2 rounded">{{ user.salaireM }}</p>
+                        </div>
+
+                        <div>
+                            <label for="poste" class="form-label">Poste / Fonction</label>
+                            <p class="mt-1 text-sm text-gray-900 bg-gray-50 p-2 rounded">{{ user.departement.value }}</p>
+                        </div>
+
+                        <div>
+                            <label class="form-label">Qualifications professionnelles</label>
+                            <p class="mt-1 text-sm text-gray-900 bg-gray-50 p-2 rounded">{{ user.qualificationsprofessionnelles }}</p>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Section Gestion des congés -->
-                <div class="form-section">
-                    <h2 class="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">
-                        <i class="fas fa-calendar-alt mr-2"></i>Gestion des Congés
-                    </h2>
+            <!-- Section Gestion des congés -->
+            <div class="form-section">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">
+                    <i class="fas fa-calendar-alt mr-2"></i>Gestion des Congés
+                </h2>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Colonne 1 -->
-                        <div class="space-y-4">
-                            <div>
-                                <label for="jours_travailles" class="form-label">Nombre de jours effectivement travaillés</label>
-                                <input type="number" id="jours_travailles" name="jours_travailles" value="{{ user.nbrDeJoursTravaille }}" class="form-input" required>
-                            </div>
-
-                            <div>
-                                <label for="jours_droit_conge" class="form-label">Jours travaillés ouvrant droit à congé</label>
-                                <input type="number" id="jours_droit_conge" name="jours_droit_conge" value="{{ user.jourdecongeTravail }}" class="form-input" required>
-                            </div>
-
-                            <div>
-                                <label for="date_ouverture_droit" class="form-label">Date d'ouverture du droit au congé</label>
-                                <input type="date" id="date_ouverture_droit" name="date_ouverture_droit" value="{{ user.dateDouvertureDroitAuConge|date('Y-m-d') }}" class="form-input" required>
-                            </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Colonne 1 -->
+                    <div class="space-y-4">
+                        <div>
+                            <label class="form-label">Nombre de jours effectivement travaillés</label>
+                            <p class="mt-1 text-sm text-gray-900 bg-gray-50 p-2 rounded">{{ user.nbrDeJoursTravaille }}</p>
                         </div>
 
-                        <!-- Colonne 2 -->
-                        <div class="space-y-4">
-                            <div>
-                                <label for="solde_conge" class="form-label">Solde de congés (jours disponibles)</label>
-                                <input type="number" step="0.5" id="solde_conge" name="solde_conge" value="{{ user.soldeConge }}" class="form-input" required>
-                            </div>
+                        <div>
+                            <label class="form-label">Jours travaillés ouvrant droit à congé</label>
+                            <p class="mt-1 text-sm text-gray-900 bg-gray-50 p-2 rounded">{{ user.jourdecongeTravail }}</p>
+                        </div>
 
-                            <div>
-                                <label for="date_debut_conge" class="form-label">Date de début du congé</label>
-                                <input type="date" id="date_debut_conge" name="date_debut_conge" class="form-input">
-                            </div>
-
-                            <div>
-                                <label for="date_fin_conge" class="form-label">Date de fin du congé</label>
-                                <input type="date" id="date_fin_conge" name="date_fin_conge" class="form-input">
-                            </div>
+                        <div>
+                            <label class="form-label">Date d'ouverture du droit au congé</label>
+                            <p class="mt-1 text-sm text-gray-900 bg-gray-50 p-2 rounded">{{ user.dateDouvertureDroitAuConge|date('Y-m-d') }}</p>
                         </div>
                     </div>
 
-                    <!-- Durée et observations -->
-                    <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Colonne 2 -->
+                    <div class="space-y-4">
                         <div>
-                            <label for="duree_conge" class="form-label">Durée du congé (jours)</label>
-                            <input type="number" id="duree_conge" name="duree_conge" class="form-input">
+                            <label class="form-label">Solde de congés (jours disponibles)</label>
+                            <p class="mt-1 text-sm text-gray-900 bg-gray-50 p-2 rounded">{{ user.soldeConge }}</p>
+                        </div>
+                         <div>
+                              <label for="type_conge" class="form-label">Type de congé</label>
+                              <select id="type_conge" name="type_conge" class="form-input" required>
+                                <option value="">-- Sélectionnez --</option>
+                                <option value="congé annuel">Congé annuel</option>
+                                <option value="congé exceptionnel">Congé exceptionnel</option>
+                                <option value="permission d'absence">Permission d'absence</option>
+                                <option value="maladie courte durée">Maladie courte durée</option>
+                                <option value="maladie moyenne/longue durée">Maladie moyenne/longue durée</option>
+                                <option value="accident du travail">Accident du travail</option>
+                                <option value="congé maternité">Congé maternité</option>
+                                <option value="congé sans solde">Congé sans solde</option>
+                            </select>
+                         </div>
+
+                        <div>
+                            <label for="date_debut_conge" class="form-label">Date de début du congé</label>
+                            <input type="date" id="date_debut_conge" name="date_debut_conge" class="form-input">
                         </div>
 
+                        <div>
+                            <label for="date_fin_conge" class="form-label">Date de fin du congé</label>
+                            <input type="date" id="date_fin_conge" name="date_fin_conge" class="form-input">
+                        </div>
+                                            <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label for="date_retour" class="form-label">Date de retour de congé</label>
                             <input type="date" id="date_retour" name="date_retour" class="form-input">
                         </div>
                     </div>
+                    </div>
+                </div>
+
+
+                    <!-- Durée et observations -->
+
 
                     <div class="mt-6">
                         <label for="observations" class="form-label">Observations</label>
-                        <textarea id="observations" name="observations" rows="3" class="form-input">{{ user.observations }}</textarea>
+                        <textarea id="observations" name="observations" rows="2" class="form-input resize-none rounded-md p-2 text-sm border border-black" style="max-width: 400px; min-width: 100px; height: 30px;"></textarea>
+                    </div>
+
+                    <!-- Justificatif -->
+                    <div class="mt-6">
+                        <label for="justificatif" class="form-label">Justificatif (optionnel)</label>
+                        <div class="flex items-center gap-4">
+                            <input type="file" id="justificatif" name="justificatif" accept="image/*" class="form-input">
+                            <button type="button" onclick="document.getElementById('justificatif').click()" class="px-4 py-2 border border-indigo-600 rounded-md shadow-sm text-sm font-medium text-indigo-600 bg-white hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                Télécharger
+                            </button>
+                        </div>
                     </div>
                 </div>
 

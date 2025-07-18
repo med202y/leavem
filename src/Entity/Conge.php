@@ -24,7 +24,7 @@ class Conge
     #[ORM\Column(enumType: typeconge::class)]
     private ?typeconge $type_conge = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $motif = null;
 
     #[ORM\Column(enumType: statutdedemande::class)]
@@ -33,11 +33,14 @@ class Conge
     #[ORM\Column]
     private ?\DateTime $date_demande = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     private ?\DateTime $date_traitement = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $traite_par = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $justificatif = null;
 
     public function getId(): ?int
     {
@@ -121,7 +124,7 @@ class Conge
         return $this->date_traitement;
     }
 
-    public function setDateTraitement(\DateTime $date_traitement): static
+    public function setDateTraitement(?\DateTime $date_traitement): self
     {
         $this->date_traitement = $date_traitement;
 
@@ -136,6 +139,18 @@ class Conge
     public function setTraitePar(string $traite_par): static
     {
         $this->traite_par = $traite_par;
+
+        return $this;
+    }
+
+    public function getJustificatif(): ?string
+    {
+        return $this->Justificatif;
+    }
+
+    public function setJustificatif(string $Justificatif): static
+    {
+        $this->Justificatif = $Justificatif;
 
         return $this;
     }
