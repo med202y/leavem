@@ -41,7 +41,21 @@ class Conge
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $justificatif = null;
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'conges')]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?User $user = null;
 
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(User $user): self
+    {
+        $this->user = $user;
+
+        return $this;
+    }
     public function getId(): ?int
     {
         return $this->id;

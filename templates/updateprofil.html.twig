@@ -1,129 +1,133 @@
 {% extends 'base.html.twig' %}
 
+{% block title %}Profil - {{ user.prenom }} {{ user.nom }}{% endblock %}
+
 {% block stylesheets %}
-    {{ parent() }}
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.1/css/all.min.css" integrity="sha256-2XFplPlrFClt0bIdPgpz8H7ojnk10H69xRqd9+uTShA=" crossorigin="anonymous" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
 {% endblock %}
 
 {% block body %}
-    <div class="container">
-        <div class="row">
-            <div class="col-12">
-                <div class="my-5">
-                    <h3>Mon Profil</h3>
-                    <hr>
-                </div>
-
-                {{ form_start(form) }}
-                <div class="row mb-5 gx-5">
-                    <!-- Personal Information -->
-                    <div class="col-12">
-                        <div class="bg-secondary-soft px-4 py-5 rounded">
-                            <div class="row g-3">
-                                <h4 class="mb-4 mt-0">Informations Personnelles</h4>
-
-                                <!-- First Name -->
-                                <div class="col-md-6">
-                                    {{ form_label(form.prenom, 'Prénom *', {'label_attr': {'class': 'form-label'}}) }}
-                                    {{ form_widget(form.prenom, {'attr': {'class': 'form-control'}}) }}
-                                </div>
-
-                                <!-- Last Name -->
-                                <div class="col-md-6">
-                                    {{ form_label(form.nom, 'Nom *', {'label_attr': {'class': 'form-label'}}) }}
-                                    {{ form_widget(form.nom, {'attr': {'class': 'form-control'}}) }}
-                                </div>
-
-                                <!-- Email -->
-                                <div class="col-md-6">
-                                    {{ form_label(form.email, 'Email *', {'label_attr': {'class': 'form-label'}}) }}
-                                    {{ form_widget(form.email, {'attr': {'class': 'form-control'}}) }}
-                                </div>
-
-                                <!-- CIN -->
-                                <div class="col-md-6">
-                                    {{ form_label(form.CIN, 'CIN *', {'label_attr': {'class': 'form-label'}}) }}
-                                    {{ form_widget(form.CIN, {'attr': {'class': 'form-control'}}) }}
-                                </div>
-
-                                <!-- CNSS -->
-                                <div class="col-md-6">
-                                    {{ form_label(form.CNSS, 'Numéro CNSS *', {'label_attr': {'class': 'form-label'}}) }}
-                                    {{ form_widget(form.CNSS, {'attr': {'class': 'form-control'}}) }}
-                                </div>
-
-                                <!-- Department -->
-                                <div class="col-md-6">
-                                    {{ form_label(form.departement, 'Département *', {'label_attr': {'class': 'form-label'}}) }}
-                                    {{ form_widget(form.departement, {'attr': {'class': 'form-control'}}) }}
-                                </div>
-
-                                <!-- Salary -->
-                                <div class="col-md-6">
-                                    {{ form_label(form.SalaireM, 'Salaire Mensuel *', {'label_attr': {'class': 'form-label'}}) }}
-                                    {{ form_widget(form.SalaireM, {'attr': {'class': 'form-control'}}) }}
-                                </div>
-
-                                <!-- Hire Date -->
-                                <div class="col-md-6">
-                                    {{ form_label(form.Date_dembauche, 'Date d\'embauche *', {'label_attr': {'class': 'form-label'}}) }}
-                                    {{ form_widget(form.Date_dembauche, {'attr': {'class': 'form-control'}}) }}
-                                </div>
-
-                                <!-- Qualifications -->
-                                <div class="col-md-12">
-                                    {{ form_label(form.Qualificationsprofessionnelles, 'Qualifications Professionnelles', {'label_attr': {'class': 'form-label'}}) }}
-                                    {{ form_widget(form.Qualificationsprofessionnelles, {'attr': {'class': 'form-control'}}) }}
-                                </div>
-                            </div>
-                        </div>
+    <div class="flex min-h-screen bg-gray-100">
+        <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-72 bg-indigo-800 text-white shadow-md hidden md:block">
+            <div class="h-full flex flex-col justify-between">
+                <div>
+                    <div class="p-6 text-2xl font-bold">
+                        <i class="fas fa-user-circle mr-2"></i> Espace Utilisateur
                     </div>
+                    <nav class="flex-1 p-4">
+                        <ul class="space-y-1">
+                            {% set menu = [
+                                {'label': 'Tableau de bord', 'icon': '🏠', 'url': path('dashboard')},
+                                {'label': 'Demander un congé', 'icon': '📄', 'url': '/leave/request'},
+                                {'label': 'Historique des congés', 'icon': '📜', 'url': '/leave/history'},
+                                {'label': 'Équipe', 'icon': '👥', 'url': '/team'}
+                            ] %}
 
-                    <!-- Leave Information -->
-                    <div class="col-12 mt-4">
-                        <div class="bg-secondary-soft px-4 py-5 rounded">
-                            <div class="row g-3">
-                                <h4 class="mb-4 mt-0">Informations Congés</h4>
-
-                                <!-- Leave Balance -->
-                                <div class="col-md-6">
-                                    {{ form_label(form.solde_conge, 'Solde de Congé *', {'label_attr': {'class': 'form-label'}}) }}
-                                    {{ form_widget(form.solde_conge, {'attr': {'class': 'form-control'}}) }}
-                                </div>
-
-                                <!-- Leave Opening Date -->
-                                <div class="col-md-6">
-                                    {{ form_label(form.Date_douverture_droit_au_conge, 'Date d\'ouverture des droits *', {'label_attr': {'class': 'form-label'}}) }}
-                                    {{ form_widget(form.Date_douverture_droit_au_conge, {'attr': {'class': 'form-control'}}) }}
-                                </div>
-
-                                <!-- Worked Days -->
-                                <div class="col-md-6">
-                                    {{ form_label(form.Nbr_de_jours_travaille, 'Jours travaillés *', {'label_attr': {'class': 'form-label'}}) }}
-                                    {{ form_widget(form.Nbr_de_jours_travaille, {'attr': {'class': 'form-control'}}) }}
-                                </div>
-
-                                <!-- Leave Earned -->
-                                <div class="col-md-6">
-                                    {{ form_label(form.jourdeconge_travail, 'Jours de congé acquis *', {'label_attr': {'class': 'form-label'}}) }}
-                                    {{ form_widget(form.jourdeconge_travail, {'attr': {'class': 'form-control'}}) }}
-                                </div>
-
-                                <!-- Observations -->
-                                <div class="col-md-12">
-                                    {{ form_label(form.Observations, 'Observations', {'label_attr': {'class': 'form-label'}}) }}
-                                    {{ form_widget(form.Observations, {'attr': {'class': 'form-control'}}) }}
-                                </div>
-                            </div>
+                            {% for item in menu %}
+                                <li>
+                                    <a href="{{ item.url }}" class="flex items-center gap-2 px-4 py-2 rounded hover:bg-white/10 transition-colors">
+                                        <span class="text-lg">{{ item.icon }}</span>
+                                        <span class="text-sm font-medium">{{ item.label }}</span>
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                        <div class="pt-4">
+                            <p class="text-xs uppercase tracking-wide px-4 mb-2 opacity-60">Compte</p>
+                            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 text-white/80">
+                                <i class="fas fa-user-cog w-5"></i>
+                                <span>Paramètres du profil</span>
+                            </a>
+                            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 text-white/80">
+                                <i class="fas fa-sign-out-alt w-5"></i>
+                                <span>Déconnexion</span>
+                            </a>
                         </div>
-                    </div>
+                    </nav>
                 </div>
-
-                <div class="gap-3 d-md-flex justify-content-md-end text-center">
-                    <button type="submit" class="btn btn-primary btn-lg">Mettre à jour</button>
-                </div>
-                {{ form_end(form) }}
             </div>
-        </div>
+        </aside>
+
+        <main class="flex-1 p-6 md:ml-72">
+            <div class="max-w-7xl mx-auto">
+                <!-- Flash Messages -->
+                {% for flash_error in app.flashes('error') %}
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                        {{ flash_error }}
+                    </div>
+                {% endfor %}
+
+                {% for flash_success in app.flashes('success') %}
+                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+                        {{ flash_success }}
+                    </div>
+                {% endfor %}
+
+                <div class="bg-white rounded-2xl p-6 shadow mb-6">
+                    <h2 class="text-2xl font-bold text-indigo-700 mb-4">Mon profil</h2>
+
+                    {{ form_start(form, {'attr': {'class': 'space-y-10'}}) }}
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Informations de contact -->
+                        <div class="bg-gray-50 p-6 rounded-xl">
+                            <h3 class="text-lg font-semibold mb-4">Détails de contact</h3>
+                            <div class="grid grid-cols-1 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-1">Prénom</label>
+                                    <p class="font-semibold text-gray-700">{{ user.prenom}} </p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-1">Nom</label>
+                                    <p class="font-semibold text-gray-700">{{ user.nom}} </p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-1">Departement</label>
+                                    <p class="font-semibold text-gray-700">{{ user.Departement.value}} </p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-1">Email</label>
+                                    <p class="font-semibold text-gray-700">{{ user.email}} </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Changement de mot de passe -->
+                        <div class="bg-gray-50 p-6 rounded-xl">
+                            <h3 class="text-lg font-semibold mb-4">Changer le mot de passe</h3>
+                            <div class="grid grid-cols-1 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-1">Ancien mot de passe</label>
+                                    <input type="password" name="old_password" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-1">Nouveau mot de passe</label>
+                                    <input type="password" name="new_password" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-1">Confirmer mot de passe</label>
+                                    <input type="password" name="confirm_password" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                </div>
+                                <div class="text-xs text-gray-500">
+                                    <p>• Le mot de passe doit contenir au moins 6 caractères</p>
+                                    <p>• Laissez vide si vous ne souhaitez pas changer le mot de passe</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# Hidden form fields that we don't want to display manually #}
+                    <div style="display: none;">
+                        {{ form_rest(form) }}
+                    </div>
+
+                    <div class="flex justify-end gap-4">
+                        <button type="button" class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700">Supprimer le profil</button>
+                        <button type="submit" class="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Mettre à jour</button>
+                    </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </main>
     </div>
 {% endblock %}

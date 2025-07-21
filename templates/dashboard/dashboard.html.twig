@@ -84,7 +84,7 @@
 
                 <div class="pt-4">
                     <p class="text-xs uppercase tracking-wide px-4 mb-2 opacity-60">Compte</p>
-                    <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 text-white/80">
+                    <a href="{{ path('user_profile') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 text-white/80">
                         <i class="fas fa-user-cog w-5"></i>
                         <span>Paramètres du profil</span>
                     </a>
@@ -147,9 +147,9 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     {% set actions = [
                         {'label': 'Demander un congé', 'icon': 'plus', 'url': path('demande')},
-                        {'label': 'Voir l\'historique', 'icon': 'history', 'url': '#'},
-                        {'label': 'Mettre à jour le profil', 'icon': 'user-cog', 'url': '#'},
-                        {'label': 'Voir l\'équipe', 'icon': 'users', 'url': '#'}
+                        {'label': 'Voir l\'historique', 'icon': 'history', 'url': path('notifications_history')},
+                        {'label': 'Mettre à jour le profil', 'icon': 'user-cog', 'url': path('user_profile')},
+                        {'label': 'Voir l\'équipe', 'icon': 'users', 'url': path('team')}
                     ] %}
 
                     {% for action in actions %}
