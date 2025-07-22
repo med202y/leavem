@@ -4,76 +4,102 @@
 namespace App\Controller;
 
 use App\Entity\Conge;
-use App\Entity\Notification;
+use App\Entity\User;
 use App\Enum\statutdedemande;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Bundle\SecurityBundle\Security; // Updated namespace
 
-class congecontroller extends AbstractController // Fixed class name casing
+class congecontroller extends AbstractController
 {
-    private $security;
-    private $entityManager;
-
-    public function __construct(
-        Security $security, // Updated type hint
-        EntityManagerInterface $entityManager
-    ) {
-        $this->security = $security;
-        $this->entityManager = $entityManager;
-    }
-
     #[Route('/my-leaves', name: 'my_leaves')]
-    public function myLeaves(): Response
-    {
-        $user = $this->security->getUser();
-        $conges = $this->entityManager->getRepository(Conge::class)->findBy(['user' => $user]);
+    public function myLeaves(
+        SessionInterface $session,
+        EntityManagerInterface $entityManager
+    ): Response {
+        $userId = $session->get('user_id');
 
+        // Handle unauthenticated users - for testing, use a default user
+        if (!$userId) {
+            $testUser = $entityManager->getRepository(User::class)
+                ->findOneBy(['email' => 'jean.dupont@example.com'])
+                ?: $entityManager->getRepository(User::class)
+                    ->findOneBy(['email' => 'claire.dubois@example.com']);
 
-        return $this->render('demandes.html.twig', [
-            'conges' => $conges,
-        ]);
-    }
+            if (!$testUser) {
+                throw new AccessDeniedException('No test user found. Please run: php bin/console doctrine:fixtures:load');
+            }
 
-    #[Route('/update-leave/{id}', name: 'update_leave', methods: ['POST'])]
-    public function updateLeave(Request $request, Conge $conge): JsonResponse
-    {
-        $user = $this->security->getUser();
-
-        // Verify ownership and status
-        if ($conge->getUser()->getId() !== $user->getId() ||
-            $conge->getStatut() !== statutdedemande::EN_ATTENTE) {
-            return new JsonResponse(['status' => 'error', 'message' => 'Unauthorized action']);
+            $userId = $testUser->getId();
+            $session->set('user_id', $userId);
         }
 
-        $data = json_decode($request->getContent(), true);
+        $user = $entityManager->getRepository(User::class)->find($userId);
+        if (!$user) {
+            throw new AccessDeniedException('User not found');
+        }
 
-        // Update leave dates
-        $conge->setDateDebut(new \DateTime($data['date_debut']));
-        $conge->setDateFin(new \DateTime($data['date_fin']));
+        $conges = $entityManager->getRepository(Conge::class)
+            ->findBy(
+                ['user' => $user],
+                ['dateDemande' => 'DESC']
+            );
 
-        // Create notification
-        $notification = new Notification();
-        $notification->setTitle('Leave Request Updated');
-        $notification->setMessage(sprintf(
-            'Your leave request from %s to %s has been modified',
-            $data['date_debut'],
-            $data['date_fin']
-        ));
-        $notification->setRecipient($user);
-        $notification->setCreatedAt(new \DateTimeImmutable());
+        // Prepare all status values and colors
+        $allStatuses = statutdedemande::cases();
+        $statusLabels = array_map(fn($s) => $s->value, $allStatuses);
+        $statusColors = [
+            statutdedemande::EN_ATTENTE->value => 'warning',
+            statutdedemande::APPROUVEE->value  => 'success',
+            statutdedemande::REJETEE->value    => 'danger',
+            statutdedemande::ANNULEE->value    => 'secondary',
+        ];
 
-        $this->entityManager->persist($notification);
-        $this->entityManager->flush();
-
-        return new JsonResponse([
-            'status' => 'success',
-            'newDateDebut' => $conge->getDateDebut()->format('Y-m-d'),
-            'newDateFin' => $conge->getDateFin()->format('Y-m-d')
+        return $this->render('my_leaves.html.twig', [  // ensure correct path
+            'conges'       => $conges,
+            'statuses'     => $statusLabels,
+            'statusColors' => $statusColors,
         ]);
     }
+    #[Route('/edit-conge/{id}', name: 'edit_conge', methods: ['POST'])]
+    public function editConge(Request $request, Conge $conge, EntityManagerInterface $em): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        if (!$data['dateDebut'] || !$data['dateFin']) {
+            return new JsonResponse(['success' => false, 'message' => 'Missing dates'], 400);
+        }
+
+        try {
+            $conge->setDateDebut(new \DateTime($data['dateDebut']));
+            $conge->setDateFin(new \DateTime($data['dateFin']));
+            $em->flush();
+
+            return new JsonResponse(['success' => true]);
+        } catch (\Exception $e) {
+            return new JsonResponse(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+// Cancel leave
+    #[Route('/cancel-conge/{id}', name: 'cancel_conge', methods: ['POST'])]
+    public function cancelConge(Conge $conge, EntityManagerInterface $em): JsonResponse
+    {
+        try {
+            $conge->setStatut(\App\Enum\statutdedemande::ANNULEE);
+            $em->flush();
+
+            return new JsonResponse(['success' => true]);
+        } catch (\Exception $e) {
+            return new JsonResponse(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+
+
+
 }

@@ -1,0 +1,12 @@
+{# templates/conge/edit_leave.html.twig #}
+{% extends 'base.html.twig' %}
+{% block body %}
+    <div class="container py-4">
+        <h1>Edit Leave #{{ form.vars.data.id }}</h1>
+        {{ form_start(form) }}
+        <div class="mb-3">{{ form_row(form.dateDebut) }}</div>
+        <div class="mb-3">{{ form_row(form.dateFin)   }}</div>
+        <button class="btn btn-primary">{{ form_widget(form.save) }}</button>
+        {{ form_end(form) }}
+    </div>
+{% endblock %}

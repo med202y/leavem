@@ -2,50 +2,57 @@
 
 namespace App\Entity;
 
-use App\Enum\statutdedemande;
 use App\Enum\typeconge;
-use App\Repository\CongeRepository;
+use App\Enum\statutdedemande;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\CongeRepository;
 
 #[ORM\Entity(repositoryClass: CongeRepository::class)]
+#[ORM\Table(name: 'conge')]
 class Conge
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column]
+    #[ORM\Column(type: 'integer')]
     private ?int $id = null;
 
-    #[ORM\Column]
-    private ?\DateTime $date_debut = null;
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: false)]
+    private User $user;
 
-    #[ORM\Column]
-    private ?\DateTime $date_fin = null;
+    #[ORM\Column(type: 'datetime', name: 'date_debut')]
+    private \DateTimeInterface $dateDebut;
 
-    #[ORM\Column(enumType: typeconge::class)]
-    private ?typeconge $type_conge = null;
+    #[ORM\Column(type: 'datetime', name: 'date_fin')]
+    private \DateTimeInterface $dateFin;
 
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(type: 'string', enumType: typeconge::class, name: 'type_conge')]
+    private typeconge $typeConge;
+
+    #[ORM\Column(type: 'text', nullable: true)]
     private ?string $motif = null;
 
-    #[ORM\Column(enumType: statutdedemande::class)]
-    private ?statutdedemande $statut = null;
+    #[ORM\Column(type: 'string', enumType: statutdedemande::class)]
+    private statutdedemande $statut;
 
-    #[ORM\Column]
-    private ?\DateTime $date_demande = null;
+    #[ORM\Column(type: 'datetime', name: 'date_demande')]
+    private \DateTimeInterface $dateDemande;
 
-    #[ORM\Column(nullable: true)]
-    private ?\DateTime $date_traitement = null;
+    #[ORM\Column(type: 'datetime', name: 'date_traitement', nullable: true)]
+    private ?\DateTimeInterface $dateTraitement = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $traite_par = null;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $traitePar = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $justificatif = null;
-    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'conges')]
-    #[ORM\JoinColumn(nullable: true)]
-    private ?User $user = null;
 
-    public function getUser(): ?User
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getUser(): User
     {
         return $this->user;
     }
@@ -53,47 +60,39 @@ class Conge
     public function setUser(User $user): self
     {
         $this->user = $user;
-
-        return $this;
-    }
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    public function getDateDebut(): ?\DateTime
-    {
-        return $this->date_debut;
-    }
-
-    public function setDateDebut(\DateTime $date_debut): static
-    {
-        $this->date_debut = $date_debut;
-
         return $this;
     }
 
-    public function getDateFin(): ?\DateTime
+    public function getDateDebut(): \DateTimeInterface
     {
-        return $this->date_fin;
+        return $this->dateDebut;
     }
 
-    public function setDateFin(\DateTime $date_fin): static
+    public function setDateDebut(\DateTimeInterface $dateDebut): self
     {
-        $this->date_fin = $date_fin;
-
+        $this->dateDebut = $dateDebut;
         return $this;
     }
 
-    public function getTypeConge(): ?typeconge
+    public function getDateFin(): \DateTimeInterface
     {
-        return $this->type_conge;
+        return $this->dateFin;
     }
 
-    public function setTypeConge(typeconge $type_conge): static
+    public function setDateFin(\DateTimeInterface $dateFin): self
     {
-        $this->type_conge = $type_conge;
+        $this->dateFin = $dateFin;
+        return $this;
+    }
 
+    public function getTypeConge(): typeconge
+    {
+        return $this->typeConge;
+    }
+
+    public function setTypeConge(typeconge $typeConge): self
+    {
+        $this->typeConge = $typeConge;
         return $this;
     }
 
@@ -102,70 +101,64 @@ class Conge
         return $this->motif;
     }
 
-    public function setMotif(string $motif): static
+    public function setMotif(?string $motif): self
     {
         $this->motif = $motif;
-
         return $this;
     }
 
-    public function getStatut(): ?statutdedemande
+    public function getStatut(): statutdedemande
     {
         return $this->statut;
     }
 
-    public function setStatut(statutdedemande $statut): static
+    public function setStatut(statutdedemande $statut): self
     {
         $this->statut = $statut;
-
         return $this;
     }
 
-    public function getDateDemande(): ?\DateTime
+    public function getDateDemande(): \DateTimeInterface
     {
-        return $this->date_demande;
+        return $this->dateDemande;
     }
 
-    public function setDateDemande(\DateTime $date_demande): static
+    public function setDateDemande(\DateTimeInterface $dateDemande): self
     {
-        $this->date_demande = $date_demande;
-
+        $this->dateDemande = $dateDemande;
         return $this;
     }
 
-    public function getDateTraitement(): ?\DateTime
+    public function getDateTraitement(): ?\DateTimeInterface
     {
-        return $this->date_traitement;
+        return $this->dateTraitement;
     }
 
-    public function setDateTraitement(?\DateTime $date_traitement): self
+    public function setDateTraitement(?\DateTimeInterface $dateTraitement): self
     {
-        $this->date_traitement = $date_traitement;
-
+        $this->dateTraitement = $dateTraitement;
         return $this;
     }
 
     public function getTraitePar(): ?string
     {
-        return $this->traite_par;
+        return $this->traitePar;
     }
 
-    public function setTraitePar(string $traite_par): static
+    public function setTraitePar(?string $traitePar): self
     {
-        $this->traite_par = $traite_par;
-
+        $this->traitePar = $traitePar;
         return $this;
     }
 
     public function getJustificatif(): ?string
     {
-        return $this->Justificatif;
+        return $this->justificatif;
     }
 
-    public function setJustificatif(string $Justificatif): static
+    public function setJustificatif(?string $justificatif): self
     {
-        $this->Justificatif = $Justificatif;
-
+        $this->justificatif = $justificatif;
         return $this;
     }
 }

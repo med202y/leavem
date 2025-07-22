@@ -24,15 +24,15 @@ class UserFixtures extends Fixture
         // Create teams
         $team1 = new Team();
         $team1->setName('Development Team')
-            ->setDescription('Équipe Alpha, en charge du développement front-end');;
+            ->setDescription('Équipe Alpha, en charge du développement front-end');
         $manager->persist($team1);
 
         $team2 = new Team();
         $team2->setName('HR Team')
-            ->setDescription('Équipe Alpha, en charge du développement front-end');;
+            ->setDescription('Équipe Bravo, en charge des ressources humaines');
         $manager->persist($team2);
 
-        // User 1 - Jean
+        // User 1 - Jean (Employee) - Team1
         $user1 = new User();
         $user1->setNom('Dupont');
         $user1->setPrenom('Jean');
@@ -46,7 +46,7 @@ class UserFixtures extends Fixture
         $manager->persist($user1);
         $this->addReference('user_jean', $user1);
 
-        // User 2 - Claire
+        // User 2 - Claire (Manager) - Team2
         $user2 = new User();
         $user2->setNom('Dubois');
         $user2->setPrenom('Claire');
@@ -59,6 +59,50 @@ class UserFixtures extends Fixture
         $user2->setTeam($team2);
         $manager->persist($user2);
         $this->addReference('user_claire', $user2);
+
+        // --- Employees for Claire's team (HR Team) ---
+
+        // Employee 1 - Alice
+        $alice = new User();
+        $alice->setNom('Martin');
+        $alice->setPrenom('Alice');
+        $alice->setEmail('alice.martin@example.com');
+        $password = $this->hasher->hashPassword($alice, 'password');
+        $alice->setMotDePasse($password);
+        $alice->setRole([Role::EMPLOYEE]);
+        $alice->setSoldeConge(18);
+        $alice->setDepartement(Departement::INTEGRATEUR);
+        $alice->setTeam($team2);  // Assign to Claire's team
+        $manager->persist($alice);
+        $this->addReference('user_alice', $alice);
+
+        // Employee 2 - Thomas
+        $thomas = new User();
+        $thomas->setNom('Lefevre');
+        $thomas->setPrenom('Thomas');
+        $thomas->setEmail('thomas.lefevre@example.com');
+        $password = $this->hasher->hashPassword($thomas, 'password');
+        $thomas->setMotDePasse($password);
+        $thomas->setRole([Role::EMPLOYEE]);
+        $thomas->setSoldeConge(22);
+        $thomas->setDepartement(Departement::INTEGRATEUR);
+        $thomas->setTeam($team2);  // Assign to Claire's team
+        $manager->persist($thomas);
+        $this->addReference('user_thomas', $thomas);
+
+        // Employee 3 - Sophie
+        $sophie = new User();
+        $sophie->setNom('Petit');
+        $sophie->setPrenom('Sophie');
+        $sophie->setEmail('sophie.petit@example.com');
+        $password = $this->hasher->hashPassword($sophie, 'password');
+        $sophie->setMotDePasse($password);
+        $sophie->setRole([Role::EMPLOYEE]);
+        $sophie->setSoldeConge(15);
+        $sophie->setDepartement(Departement::INTEGRATEUR);
+        $sophie->setTeam($team2);  // Assign to Claire's team
+        $manager->persist($sophie);
+        $this->addReference('user_sophie', $sophie);
 
         $manager->flush();
     }
