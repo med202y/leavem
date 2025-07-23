@@ -4,6 +4,7 @@
 namespace App\Controller;
 
 use App\Entity\Conge;
+use App\Entity\Notification;
 use App\Entity\User;
 use App\Enum\statutdedemande;
 use Doctrine\ORM\EntityManagerInterface;
@@ -55,8 +56,8 @@ class congecontroller extends AbstractController
         $statusLabels = array_map(fn($s) => $s->value, $allStatuses);
         $statusColors = [
             statutdedemande::EN_ATTENTE->value => 'warning',
-            statutdedemande::APPROUVEE->value  => 'success',
-            statutdedemande::REJETEE->value    => 'danger',
+            statutdedemande::ACCEPTE    ->value  => 'success',
+            statutdedemande::REFUSE->value    => 'danger',
             statutdedemande::ANNULEE->value    => 'secondary',
         ];
 
@@ -67,16 +68,41 @@ class congecontroller extends AbstractController
         ]);
     }
     #[Route('/edit-conge/{id}', name: 'edit_conge', methods: ['POST'])]
-    public function editConge(Request $request, Conge $conge, EntityManagerInterface $em): JsonResponse
-    {
+    public function editConge(
+        Request $request,
+        Conge $conge,
+        EntityManagerInterface $em,
+        SessionInterface $session
+    ): JsonResponse {
+        $userId = $session->get('user_id');
+        $user = $em->getRepository(User::class)->find($userId);
+
+        // Security check: only owner can edit
+        if ($conge->getUser()->getId() !== $userId) {
+            return new JsonResponse(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        // Only allow editing if status is EN_ATTENTE
+        if ($conge->getStatut() !== statutdedemande::EN_ATTENTE) {
+            return new JsonResponse(['success' => false, 'message' => 'Only pending leaves can be edited'], 400);
+        }
+
         $data = json_decode($request->getContent(), true);
-        if (!$data['dateDebut'] || !$data['dateFin']) {
+        if (empty($data['dateDebut']) || empty($data['dateFin'])) {
             return new JsonResponse(['success' => false, 'message' => 'Missing dates'], 400);
         }
 
         try {
             $conge->setDateDebut(new \DateTime($data['dateDebut']));
             $conge->setDateFin(new \DateTime($data['dateFin']));
+            $em->flush();
+
+            $notification = new Notification();
+            $notification->setTitle('Modification des congés');
+            $notification->setMessage("Votre congé a été modifié avec succès.");
+            $notification->setRecipient($user);
+
+            $em->persist($notification);
             $em->flush();
 
             return new JsonResponse(['success' => true]);
@@ -87,10 +113,33 @@ class congecontroller extends AbstractController
 
 // Cancel leave
     #[Route('/cancel-conge/{id}', name: 'cancel_conge', methods: ['POST'])]
-    public function cancelConge(Conge $conge, EntityManagerInterface $em): JsonResponse
-    {
+    public function cancelConge(
+        Conge $conge,
+        EntityManagerInterface $em,
+        SessionInterface $session
+    ): JsonResponse {
+        $userId = $session->get('user_id');
+        $user = $em->getRepository(User::class)->find($userId);
+
+        // Security check
+        if ($conge->getUser()->getId() !== $userId) {
+            return new JsonResponse(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        if ($conge->getStatut() !== statutdedemande::EN_ATTENTE) {
+            return new JsonResponse(['success' => false, 'message' => 'Only pending leaves can be cancelled'], 400);
+        }
+
         try {
-            $conge->setStatut(\App\Enum\statutdedemande::ANNULEE);
+            $conge->setStatut(statutdedemande::ANNULEE);
+            $em->flush();
+
+            $notification = new Notification();
+            $notification->setTitle('Annulation de congé');
+            $notification->setMessage("Votre congé a été annulé avec succès.");
+            $notification->setRecipient($user);
+
+            $em->persist($notification);
             $em->flush();
 
             return new JsonResponse(['success' => true]);
@@ -98,6 +147,7 @@ class congecontroller extends AbstractController
             return new JsonResponse(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
+
 
 
 

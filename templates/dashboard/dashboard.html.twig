@@ -71,11 +71,7 @@
                 {% if role.name in ['ADMIN', 'MANAGER'] %}
                     <div class="pt-4">
                         <p class="text-xs uppercase tracking-wide px-4 mb-2 opacity-60">Gestion</p>
-                        <a href="#" class="flex items-center gap-2 px-4 py-3 rounded-lg hover:bg-white/5 text-white/80">
-                            <i class="fas fa-users-cog w-5"></i>
-                            <span>Gérer les utilisateurs</span>
-                        </a>
-                        <a href="#" class="flex items-center gap-2 px-4 py-3 rounded-lg hover:bg-white/5 text-white/80">
+                        <a href="{{ path('manager_team_leaves') }}" class="flex items-center gap-2 px-4 py-3 rounded-lg hover:bg-white/5 text-white/80">
                             <i class="fas fa-calendar-check w-5"></i>
                             <span>Gérer les congés</span>
                         </a>
@@ -88,7 +84,7 @@
                         <i class="fas fa-user-cog w-5"></i>
                         <span>Paramètres du profil</span>
                     </a>
-                    <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 text-white/80">
+                    <a href="{{ path('logout') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 text-white/80">
                         <i class="fas fa-sign-out-alt w-5"></i>
                         <span>Déconnexion</span>
                     </a>
@@ -116,14 +112,8 @@
 
             <!-- Statistiques -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-                {% set stats = [
-                    {'label': 'Solde de congés', 'value': user.soldeConge ?? 0, 'icon': 'calendar-check', 'color': 'indigo', 'unit': 'Jours disponibles'},
-                    {'label': 'Demandes en attente', 'value': 2, 'icon': 'clock', 'color': 'yellow', 'unit': 'En attente de validation'},
-                    {'label': 'Congés approuvés', 'value': 5, 'icon': 'check-circle', 'color': 'green', 'unit': 'Cette année'},
-                    {'label': 'Membres de l\'équipe', 'value': 12, 'icon': 'users', 'color': 'blue', 'unit': 'Dans le département'}
-                ] %}
 
-                {% for stat in stats %}
+                {% for stat in dashboardStats %}
                     <div class="bg-white rounded-2xl p-5 shadow hover:shadow-lg transition-all">
                         <div class="flex justify-between items-center">
                             <div>
@@ -174,7 +164,7 @@
                             <div class="flex-1">
                                 <p class="font-semibold text-gray-800">{{ notification.title }}</p>
                                 <p class="text-sm text-gray-600">{{ notification.message }}</p>
-                                {# If you add a createdAt field, show time here #}
+                                {# Si vous ajoutez un champ createdAt, affichez l'heure ici #}
                             </div>
                         </div>
                     {% else %}

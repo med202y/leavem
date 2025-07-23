@@ -50,6 +50,8 @@ class demandecontroller extends AbstractController
             $conge->setMotif($motif);
             $conge->setDateDemande(new \DateTime());
             $conge->setStatut(\App\Enum\statutdedemande::EN_ATTENTE);
+            $conge->setUser($user);
+
 
             if ($typeConge) {
                 // Validate and convert string to enum case
@@ -80,7 +82,7 @@ class demandecontroller extends AbstractController
                     return $this->redirectToRoute('demande');
                 }
             }
-
+            $conge->setUser($user);
             $em->persist($conge);
             $em->flush();
 

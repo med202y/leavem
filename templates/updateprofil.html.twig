@@ -19,9 +19,8 @@
                         <ul class="space-y-1">
                             {% set menu = [
                                 {'label': 'Tableau de bord', 'icon': '🏠', 'url': path('dashboard')},
-                                {'label': 'Demander un congé', 'icon': '📄', 'url': '/leave/request'},
-                                {'label': 'Historique des congés', 'icon': '📜', 'url': '/leave/history'},
-                                {'label': 'Équipe', 'icon': '👥', 'url': '/team'}
+                                {'label': 'Demander un congé', 'icon': '📄', 'url': path('demande')},
+                                {'label': 'Équipe', 'icon': '👥', 'url': path('team')}
                             ] %}
 
                             {% for item in menu %}
@@ -35,7 +34,7 @@
                         </ul>
                         <div class="pt-4">
                             <p class="text-xs uppercase tracking-wide px-4 mb-2 opacity-60">Compte</p>
-                            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 text-white/80">
+                            <a href="{{ path('user_profile') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 text-white/80">
                                 <i class="fas fa-user-cog w-5"></i>
                                 <span>Paramètres du profil</span>
                             </a>

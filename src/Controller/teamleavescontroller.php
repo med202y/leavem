@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 class teamleavescontroller extends AbstractController
 {
@@ -69,31 +70,44 @@ class teamleavescontroller extends AbstractController
     }
 
     #[Route('/manager_leaves/update/{id}', name: 'manager_conge_update', methods: ['POST'])]
-    public function updateCongeStatus(Request $request, Conge $conge, EntityManagerInterface $em): Response
-    {
-        $manager = $this->getUser();
-
-        if (!$manager) {
-            return $this->redirectToRoute('custom_login');
+    public function updateCongeStatus(
+        Request $request,
+        Conge $conge,
+        EntityManagerInterface $em,
+        SessionInterface $session
+    ): JsonResponse {
+        // 1) Session‑based login check (same as your list action)
+        $userId = $session->get('user_id');
+        if (!$userId) {
+            return new JsonResponse(['success' => false, 'message' => 'Not logged in'], 401);
         }
 
+        $manager = $em->getRepository(User::class)->find($userId);
         if (!in_array('ROLE_MANAGER', $manager->getRoles(), true)) {
-            throw new AccessDeniedException('Vous devez être manager pour accéder à cette action.');
+            return new JsonResponse(['success' => false, 'message' => 'Access denied'], 403);
         }
 
+        // 2) Validate action
         $action = $request->request->get('action');
         if (!in_array($action, ['accept', 'refuse'], true)) {
-            throw $this->createNotFoundException('Invalid action.');
+            return new JsonResponse(['success' => false, 'message' => 'Invalid action'], 400);
         }
 
-        $conge->setStatut($action === 'accept' ? StatutDeDemande::ACCEPTE : StatutDeDemande::REFUSE);
-        $conge->setDateTraitement(new \DateTime());
-        $conge->setTraitePar($manager->getNom() . ' ' . $manager->getPrenom());
+        // 3) Apply the change
+        $newStatut = $action === 'accept'
+            ? StatutDeDemande::ACCEPTE
+            : StatutDeDemande::REFUSE;
 
-        $em->persist($conge);
+        $conge
+            ->setStatut($newStatut)
+            ->setDateTraitement(new \DateTime())
+            ->setTraitePar($manager->getPrenom() . ' ' . $manager->getNom());
+
+        // 4) Flush
         $em->flush();
 
-        return $this->redirectToRoute('manager_team_leaves');
+        // 5) Return success so your JS can reload/replace the card
+        return new JsonResponse(['success' => true]);
     }
 }
 
