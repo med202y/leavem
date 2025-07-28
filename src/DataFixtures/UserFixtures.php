@@ -43,6 +43,7 @@ class UserFixtures extends Fixture
         $user1->setSoldeConge(20);
         $user1->setDepartement(Departement::SYMFONY);
         $user1->setTeam($team1);
+        $user1->setDateDembauche(new \DateTime('2022-03-15'));
         $manager->persist($user1);
         $this->addReference('user_jean', $user1);
 
@@ -57,10 +58,9 @@ class UserFixtures extends Fixture
         $user2->setSoldeConge(15);
         $user2->setDepartement(Departement::INTEGRATEUR);
         $user2->setTeam($team2);
+        $user2->setDateDembauche(new \DateTime('2021-11-01'));
         $manager->persist($user2);
         $this->addReference('user_claire', $user2);
-
-        // --- Employees for Claire's team (HR Team) ---
 
         // Employee 1 - Alice
         $alice = new User();
@@ -72,7 +72,8 @@ class UserFixtures extends Fixture
         $alice->setRole([Role::EMPLOYEE]);
         $alice->setSoldeConge(18);
         $alice->setDepartement(Departement::INTEGRATEUR);
-        $alice->setTeam($team2);  // Assign to Claire's team
+        $alice->setTeam($team2);
+        $alice->setDateDembauche(new \DateTime('2023-01-10'));
         $manager->persist($alice);
         $this->addReference('user_alice', $alice);
 
@@ -86,7 +87,8 @@ class UserFixtures extends Fixture
         $thomas->setRole([Role::EMPLOYEE]);
         $thomas->setSoldeConge(22);
         $thomas->setDepartement(Departement::INTEGRATEUR);
-        $thomas->setTeam($team2);  // Assign to Claire's team
+        $thomas->setTeam($team2);
+        $thomas->setDateDembauche(new \DateTime('2022-06-05'));
         $manager->persist($thomas);
         $this->addReference('user_thomas', $thomas);
 
@@ -100,10 +102,27 @@ class UserFixtures extends Fixture
         $sophie->setRole([Role::EMPLOYEE]);
         $sophie->setSoldeConge(15);
         $sophie->setDepartement(Departement::INTEGRATEUR);
-        $sophie->setTeam($team2);  // Assign to Claire's team
+        $sophie->setTeam($team2);
+        $sophie->setDateDembauche(new \DateTime('2023-07-01'));
         $manager->persist($sophie);
         $this->addReference('user_sophie', $sophie);
+
+        // Big Admin
+        $bigAdmin = new User();
+        $bigAdmin->setNom('Root');
+        $bigAdmin->setPrenom('Admin');
+        $bigAdmin->setEmail('admin@example.com');
+        $password = $this->hasher->hashPassword($bigAdmin, 'adminpass');
+        $bigAdmin->setMotDePasse($password);
+        $bigAdmin->setRole([Role::BIGADMIN]);
+        $bigAdmin->setSoldeConge(99);
+        $bigAdmin->setDepartement(Departement::SYMFONY);
+        $bigAdmin->setTeam($team1);
+        $bigAdmin->setDateDembauche(new \DateTime('2020-01-01'));
+        $manager->persist($bigAdmin);
+        $this->addReference('user_admin', $bigAdmin);
 
         $manager->flush();
     }
 }
+

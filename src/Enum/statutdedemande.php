@@ -8,6 +8,7 @@ enum statutdedemande: string
     case ACCEPTE = 'approuvée';
     case REFUSE = 'rejetée';
     case ANNULEE = 'annulée';
+    case CONSOMME =  'consommée';
 
     public function label(): string
     {

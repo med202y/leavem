@@ -6,6 +6,37 @@
 {% block stylesheets %}
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Modal animations */
+        .modal-overlay {
+            animation: fadeIn 0.3s ease-out;
+        }
+        .modal-content {
+            animation: slideUp 0.3s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideUp {
+            from { transform: translateY(1rem); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .modal-overlay.hide {
+            animation: fadeOut 0.3s ease-out;
+        }
+        .modal-content.hide {
+            animation: slideDown 0.3s ease-out;
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+        @keyframes slideDown {
+            from { transform: translateY(0); opacity: 1; }
+            to { transform: translateY(1rem); opacity: 0; }
+        }
+    </style>
 {% endblock %}
 
 {% block body %}
@@ -28,7 +59,7 @@
             <!-- Filtres par statut -->
             <div class="flex flex-wrap gap-2 mb-6">
                 <button
-                    class="status-filter px-3 py-1 rounded-full bg-white text-gray-800 border border-gray-300 hover:border-indigo-500 active:border-indigo-500"
+                    class="status-filter px-3 py-1 rounded-full bg-white text-gray-800 border border-gray-300 hover:border-indigo-500 active:border-indigo-500 border font-bold"
                     data-status="all">Tous
                 </button>
                 {% for status in statuses %}
@@ -113,18 +144,51 @@
                                     {% endif %}
                                 </div>
                                 <div class="space-x-2">
-                                    <button
-                                        class="action-btn accept-btn px-3 py-1 text-sm rounded-lg bg-green-100 text-green-600 hover:bg-green-200 transition"
-                                        data-id="{{ conge.id }}"
-                                        data-action="accept">
-                                        Accepter
-                                    </button>
-                                    <button
-                                        class="action-btn refuse-btn px-3 py-1 text-sm rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition"
-                                        data-id="{{ conge.id }}"
-                                        data-action="refuse">
-                                        Refuser
-                                    </button>
+                                    {% if conge.statut.value == 'en_attente' %}
+                                        <button
+                                            class="action-btn accept-btn px-3 py-1 text-sm rounded-lg bg-green-100 text-green-600 hover:bg-green-200 transition transform hover:scale-105"
+                                            data-id="{{ conge.id }}"
+                                            data-action="accept"
+                                            data-user="{{ conge.user.prenom }} {{ conge.user.nom }}"
+                                            data-type="{{ conge.typeConge.value|title }}"
+                                            data-dates="{{ conge.dateDebut|date('d M Y') }} - {{ conge.dateFin|date('d M Y') }}">
+                                            <i class="fas fa-check mr-1"></i>
+                                            Accepter
+                                        </button>
+                                        <button
+                                            class="action-btn refuse-btn px-3 py-1 text-sm rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition transform hover:scale-105"
+                                            data-id="{{ conge.id }}"
+                                            data-action="refuse"
+                                            data-user="{{ conge.user.prenom }} {{ conge.user.nom }}"
+                                            data-type="{{ conge.typeConge.value|title }}"
+                                            data-dates="{{ conge.dateDebut|date('d M Y') }} - {{ conge.dateFin|date('d M Y') }}">
+                                            <i class="fas fa-times mr-1"></i>
+                                            Refuser
+                                        </button>
+                                        {% if conge.statut.value == 'annulée' %}
+                                            <button
+                                                class="action-btn approve-cancellation-btn px-3 py-1 text-sm rounded-lg bg-green-100 text-green-600 hover:bg-green-200 transition"
+                                                data-id="{{ conge.id }}"
+                                                data-action="approve_cancellation"
+                                                data-user="{{ conge.user.prenom }} {{ conge.user.nom }}"
+                                                data-type="{{ conge.typeConge.value|title }}"
+                                                data-dates="{{ conge.dateDebut|date('d M Y') }} - {{ conge.dateFin|date('d M Y') }}">
+                                                <i class="fas fa-check mr-1"></i>
+                                                Approuver l'annulation
+                                            </button>
+                                            <button
+                                                class="action-btn reject-cancellation-btn px-3 py-1 text-sm rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition"
+                                                data-id="{{ conge.id }}"
+                                                data-action="reject_cancellation"
+                                                data-user="{{ conge.user.prenom }} {{ conge.user.nom }}"
+                                                data-type="{{ conge.typeConge.value|title }}"
+                                                data-dates="{{ conge.dateDebut|date('d M Y') }} - {{ conge.dateFin|date('d M Y') }}">
+                                                <i class="fas fa-times mr-1"></i>
+                                                Rejeter l'annulation
+                                            </button>
+                                        {% endif %}
+
+                                    {% endif %}
                                 </div>
                             </footer>
 
@@ -134,11 +198,98 @@
             {% endif %}
         </div>
     </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmationModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden modal-overlay">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 modal-content">
+            <div class="p-6">
+                <!-- Modal Header -->
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center space-x-3">
+                        <div id="confirmationIcon" class="w-10 h-10 rounded-full flex items-center justify-center">
+                            <!-- Icon will be inserted by JavaScript -->
+                        </div>
+                        <h3 id="confirmationTitle" class="text-lg font-semibold text-gray-900"></h3>
+                    </div>
+                    <button id="closeModal" class="text-gray-400 hover:text-gray-600 transition">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="mb-6">
+                    <p id="confirmationMessage" class="text-gray-600 mb-4"></p>
+                    <div class="bg-gray-50 rounded-lg p-3">
+                        <div class="grid grid-cols-2 gap-2 text-sm">
+                            <div class="text-gray-500">Employé:</div>
+                            <div id="confirmUser" class="font-medium"></div>
+                            <div class="text-gray-500">Type:</div>
+                            <div id="confirmType" class="font-medium"></div>
+                            <div class="text-gray-500">Période:</div>
+                            <div id="confirmDates" class="font-medium"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reason input for refusal -->
+                <div id="reasonSection" class="mb-6 hidden">
+                    <label for="refusalReason" class="block text-sm font-medium text-gray-700 mb-2">
+                        Raison du refus (optionnel)
+                    </label>
+                    <textarea
+                        id="refusalReason"
+                        rows="3"
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        placeholder="Expliquez pourquoi cette demande est refusée..."></textarea>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="flex space-x-3">
+                    <button
+                        id="cancelAction"
+                        class="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
+                        <i class="fas fa-times mr-2"></i>
+                        Annuler
+                    </button>
+                    <button
+                        id="confirmAction"
+                        class="flex-1 px-4 py-2 text-white rounded-lg transition transform hover:scale-105">
+                        <!-- Content will be set by JavaScript -->
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success/Error Modal -->
+    <div id="alertModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden modal-overlay">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full mx-4 modal-content">
+            <div class="p-6 text-center">
+                <div id="alertIcon" class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center">
+                    <!-- Icon will be inserted by JavaScript -->
+                </div>
+                <h3 id="alertTitle" class="text-lg font-semibold text-gray-900 mb-2"></h3>
+                <p id="alertMessage" class="text-gray-600 mb-6"></p>
+                <button
+                    id="alertOk"
+                    class="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 
 {% block javascripts %}
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            let currentLeaveId = null;
+            let currentAction = null;
+
+            // Modal elements
+            const confirmationModal = document.getElementById('confirmationModal');
+            const alertModal = document.getElementById('alertModal');
+
             // Filtrage par statut
             document.querySelectorAll('.status-filter').forEach(btn => {
                 btn.addEventListener('click', () => {
@@ -152,41 +303,183 @@
                 });
             });
 
-            // Gestion des boutons d'action
-            document.querySelectorAll('.action-btn').forEach(button => {
-                button.addEventListener('click', () => {
-                    const id     = button.dataset.id;
-                    const action  = button.dataset.action;  // "accept" ou "refuse"
-                    const actionText = action === 'accept' ? 'accepter' : 'refuser';
+            // Show confirmation modal
+            function showConfirmationModal(action, leaveData) {
+                currentAction = action;
+                currentLeaveId = leaveData.id;
 
-                    if (!confirm(`Êtes-vous sûr de vouloir ${actionText} ce congé ?`)) {
-                        return;
+                const isAccept = action === 'accept';
+                const title = isAccept ? 'Accepter la demande' : 'Refuser la demande';
+                const message = isAccept
+                    ? 'Êtes-vous sûr de vouloir accepter cette demande de congé ?'
+                    : 'Êtes-vous sûr de vouloir refuser cette demande de congé ?';
+
+                // Set modal content
+                document.getElementById('confirmationTitle').textContent = title;
+                document.getElementById('confirmationMessage').textContent = message;
+                document.getElementById('confirmUser').textContent = leaveData.user;
+                document.getElementById('confirmType').textContent = leaveData.type;
+                document.getElementById('confirmDates').textContent = leaveData.dates;
+
+                // Set icon and colors
+                const icon = document.getElementById('confirmationIcon');
+                const confirmBtn = document.getElementById('confirmAction');
+                const reasonSection = document.getElementById('reasonSection');
+
+                if (isAccept) {
+                    icon.innerHTML = '<i class="fas fa-check text-white"></i>';
+                    icon.className = 'w-10 h-10 rounded-full flex items-center justify-center bg-green-500';
+                    confirmBtn.innerHTML = '<i class="fas fa-check mr-2"></i>Accepter';
+                    confirmBtn.className = 'flex-1 px-4 py-2 text-white rounded-lg transition transform hover:scale-105 bg-green-600 hover:bg-green-700';
+                    reasonSection.classList.add('hidden');
+                } else {
+                    icon.innerHTML = '<i class="fas fa-times text-white"></i>';
+                    icon.className = 'w-10 h-10 rounded-full flex items-center justify-center bg-red-500';
+                    confirmBtn.innerHTML = '<i class="fas fa-times mr-2"></i>Refuser';
+                    confirmBtn.className = 'flex-1 px-4 py-2 text-white rounded-lg transition transform hover:scale-105 bg-red-600 hover:bg-red-700';
+                    reasonSection.classList.remove('hidden');
+                }
+
+                confirmationModal.classList.remove('hidden');
+            }
+
+            // Show alert modal
+            function showAlert(title, message, type = 'success') {
+                const icon = document.getElementById('alertIcon');
+                const titleEl = document.getElementById('alertTitle');
+                const messageEl = document.getElementById('alertMessage');
+
+                titleEl.textContent = title;
+                messageEl.textContent = message;
+
+                if (type === 'success') {
+                    icon.innerHTML = '<i class="fas fa-check text-white text-2xl"></i>';
+                    icon.className = 'w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-green-500';
+                } else {
+                    icon.innerHTML = '<i class="fas fa-exclamation-triangle text-white text-2xl"></i>';
+                    icon.className = 'w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-red-500';
+                }
+
+                alertModal.classList.remove('hidden');
+            }
+
+            // Hide modal with animation
+            function hideModal(modal) {
+                const overlay = modal.querySelector('.modal-overlay') || modal;
+                const content = modal.querySelector('.modal-content');
+
+                overlay.classList.add('hide');
+                if (content) content.classList.add('hide');
+
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                    overlay.classList.remove('hide');
+                    if (content) content.classList.remove('hide');
+                }, 300);
+            }
+
+            // Close modal handlers
+            document.getElementById('closeModal').addEventListener('click', () => {
+                hideModal(confirmationModal);
+            });
+
+            document.getElementById('cancelAction').addEventListener('click', () => {
+                hideModal(confirmationModal);
+            });
+
+            document.getElementById('alertOk').addEventListener('click', () => {
+                hideModal(alertModal);
+                if (currentAction) {
+                    setTimeout(() => location.reload(), 500);
+                }
+            });
+
+            // Close modals when clicking outside
+            [confirmationModal, alertModal].forEach(modal => {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        hideModal(modal);
                     }
-
-                    fetch(`/manager_leaves/update/${id}`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                            'X-Requested-With': 'XMLHttpRequest'
-                        },
-                        body: new URLSearchParams({ action })
-                    })
-                        .then(res => {
-                            if (!res.ok) throw new Error(res.statusText);
-                            return res.json();
-                        })
-                        .then(data => {
-                            if (data.success) {
-                                alert(`Congé ${actionText} avec succès.`);
-                                location.reload();
-                            } else {
-                                alert(`Erreur : ${data.message || 'Impossible de mettre à jour.'}`);
-                            }
-                        })
-                        .catch(err => alert(`Erreur réseau : ${err.message}`));
                 });
             });
 
+            // ESC key to close modals
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    if (!confirmationModal.classList.contains('hidden')) {
+                        hideModal(confirmationModal);
+                    }
+                    if (!alertModal.classList.contains('hidden')) {
+                        hideModal(alertModal);
+                    }
+                }
+            });
+
+            // Handle action buttons
+            document.querySelectorAll('.action-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    const leaveData = {
+                        id: button.dataset.id,
+                        action: button.dataset.action,
+                        user: button.dataset.user,
+                        type: button.dataset.type,
+                        dates: button.dataset.dates
+                    };
+
+                    showConfirmationModal(leaveData.action, leaveData);
+                });
+            });
+
+            // Confirm action handler
+            document.getElementById('confirmAction').addEventListener('click', () => {
+                const confirmBtn = document.getElementById('confirmAction');
+                const reason = document.getElementById('refusalReason').value;
+
+                // Show loading state
+                confirmBtn.disabled = true;
+                confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Traitement...';
+
+                // Prepare request body
+                const formData = new URLSearchParams({ action: currentAction });
+                if (currentAction === 'refuse' && reason.trim()) {
+                    formData.append('reason', reason.trim());
+                }
+
+                fetch(`/manager_leaves/update/${currentLeaveId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: formData
+                })
+                    .then(res => {
+                        if (!res.ok) throw new Error(res.statusText);
+                        return res.json();
+                    })
+                    .then(data => {
+                        hideModal(confirmationModal);
+
+                        if (data.success) {
+                            const actionText = currentAction === 'accept' ? 'accepté' : 'refusé';
+                            showAlert('Succès', `Congé ${actionText} avec succès.`, 'success');
+                        } else {
+                            showAlert('Erreur', data.message || 'Impossible de mettre à jour.', 'error');
+                        }
+                    })
+                    .catch(err => {
+                        hideModal(confirmationModal);
+                        showAlert('Erreur', `Erreur réseau : ${err.message}`, 'error');
+                    })
+                    .finally(() => {
+                        // Reset button state
+                        confirmBtn.disabled = false;
+                        const isAccept = currentAction === 'accept';
+                        confirmBtn.innerHTML = isAccept
+                            ? '<i class="fas fa-check mr-2"></i>Accepter'
+                            : '<i class="fas fa-times mr-2"></i>Refuser';
+                    });
+            });
         });
     </script>
 {% endblock %}

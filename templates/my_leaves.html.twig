@@ -113,8 +113,15 @@
                                 </div>
                                 <div>
                                     {% if conge.statut.value == 'en_attente' %}
-                                        <button class="btn btn-sm btn-outline-secondary me-2 edit-btn" data-id="{{ conge.id }}">Modifier</button>
-                                        <button class="btn btn-sm btn-outline-danger cancel-btn" data-id="{{ conge.id }}">Annuler</button>
+                                        <button class="btn btn-sm btn-outline-secondary me-2 edit-btn"
+                                                data-id="{{ conge.id }}"
+                                                data-start="{{ conge.dateDebut|date('Y-m-d') }}"
+                                                data-end="{{ conge.dateFin|date('Y-m-d') }}">
+                                            Modifier
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger cancel-btn" data-id="{{ conge.id }}">
+                                            Annuler
+                                        </button>
                                     {% endif %}
                                 </div>
                             </div>
@@ -124,11 +131,116 @@
             </div>
         {% endif %}
     </div>
+
+    <!-- Edit Leave Modal -->
+    <div class="modal fade" id="editLeaveModal" tabindex="-1" aria-labelledby="editLeaveModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editLeaveModalLabel">
+                        <i class="bi bi-pencil-square"></i> Modifier la demande de congé
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editLeaveForm">
+                        <div class="mb-3">
+                            <label for="editStartDate" class="form-label">Date de début</label>
+                            <input type="date" class="form-control" id="editStartDate" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editEndDate" class="form-label">Date de fin</label>
+                            <input type="date" class="form-control" id="editEndDate" required>
+                        </div>
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> Seules les demandes en attente peuvent être modifiées.
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle"></i> Annuler
+                    </button>
+                    <button type="button" class="btn btn-primary" id="saveChangesBtn">
+                        <i class="bi bi-check-circle"></i> Enregistrer les modifications
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cancel Leave Modal -->
+    <div class="modal fade" id="cancelLeaveModal" tabindex="-1" aria-labelledby="cancelLeaveModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="cancelLeaveModalLabel">
+                        <i class="bi bi-exclamation-triangle"></i> Confirmer l'annulation
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="bi bi-question-circle-fill text-warning me-3" style="font-size: 2rem;"></i>
+                        <div>
+                            <h6 class="mb-1">Êtes-vous sûr de vouloir annuler cette demande de congé ?</h6>
+                            <small class="text-muted">Cette action ne peut pas être annulée.</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle"></i> Non, garder la demande
+                    </button>
+                    <button type="button" class="btn btn-danger" id="confirmCancelBtn">
+                        <i class="bi bi-trash"></i> Oui, annuler la demande
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success/Error Alert Modal -->
+    <div class="modal fade" id="alertModal" tabindex="-1" aria-labelledby="alertModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header" id="alertModalHeader">
+                    <h5 class="modal-title" id="alertModalLabel"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div id="alertModalIcon" class="mb-3"></div>
+                    <p id="alertModalMessage"></p>
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 
 {% block javascripts %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            let currentLeaveId = null;
+
+            // Check if bootstrap is loaded
+            if (typeof bootstrap === 'undefined') {
+                console.error('Bootstrap is not loaded');
+                return;
+            }
+
+            // Initialize modals
+            const editModalEl = document.getElementById('editLeaveModal');
+            const cancelModalEl = document.getElementById('cancelLeaveModal');
+            const alertModalEl = document.getElementById('alertModal');
+
+            const editModal = new bootstrap.Modal(editModalEl);
+            const cancelModal = new bootstrap.Modal(cancelModalEl);
+            const alertModal = new bootstrap.Modal(alertModalEl);
+
             // Filtrage par statut
             const statusFilters = document.querySelectorAll('.status-filter');
 
@@ -146,60 +258,162 @@
                 });
             });
 
+            // Show alert modal
+            function showAlert(title, message, type = 'success') {
+                const header = document.getElementById('alertModalHeader');
+                const titleEl = document.getElementById('alertModalLabel');
+                const iconEl = document.getElementById('alertModalIcon');
+                const messageEl = document.getElementById('alertModalMessage');
+
+                // Set header color and icon based on type
+                if (type === 'success') {
+                    header.className = 'modal-header bg-success text-white';
+                    iconEl.innerHTML = '<i class="bi bi-check-circle-fill text-success" style="font-size: 3rem;"></i>';
+                } else {
+                    header.className = 'modal-header bg-danger text-white';
+                    iconEl.innerHTML = '<i class="bi bi-exclamation-triangle-fill text-danger" style="font-size: 3rem;"></i>';
+                }
+
+                titleEl.textContent = title;
+                messageEl.textContent = message;
+                alertModal.show();
+            }
+
             // Gestion du bouton Modifier
             document.querySelectorAll('.edit-btn').forEach(button => {
                 button.addEventListener('click', function () {
-                    const id = this.dataset.id;
-                    const newStart = prompt("Entrez la nouvelle date de début (AAAA-MM-JJ) :");
-                    const newEnd = prompt("Entrez la nouvelle date de fin (AAAA-MM-JJ) :");
+                    currentLeaveId = this.dataset.id;
+                    const startDate = this.dataset.start;
+                    const endDate = this.dataset.end;
 
-                    if (newStart && newEnd) {
-                        fetch(`/edit-conge/${id}`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-Requested-With': 'XMLHttpRequest',
-                            },
-                            body: JSON.stringify({ dateDebut: newStart, dateFin: newEnd }),
-                        })
-                            .then(res => res.json())
-                            .then(data => {
-                                if (data.success) {
-                                    alert('Congé mis à jour avec succès');
-                                    location.reload();
-                                } else {
-                                    alert('Erreur : ' + data.message);
-                                }
-                            });
-                    }
+                    // Pre-fill the form
+                    document.getElementById('editStartDate').value = startDate;
+                    document.getElementById('editEndDate').value = endDate;
+
+                    editModal.show();
                 });
             });
+
+            // Handle edit form submission
+            const saveChangesBtn = document.getElementById('saveChangesBtn');
+            if (saveChangesBtn) {
+                saveChangesBtn.addEventListener('click', function () {
+                    const startDateEl = document.getElementById('editStartDate');
+                    const endDateEl = document.getElementById('editEndDate');
+
+                    if (!startDateEl || !endDateEl) {
+                        showAlert('Erreur', 'Éléments de formulaire introuvables', 'error');
+                        return;
+                    }
+
+                    const startDate = startDateEl.value;
+                    const endDate = endDateEl.value;
+
+                    if (!startDate || !endDate) {
+                        showAlert('Erreur', 'Veuillez remplir toutes les dates', 'error');
+                        return;
+                    }
+
+                    if (new Date(startDate) > new Date(endDate)) {
+                        showAlert('Erreur', 'La date de début doit être antérieure à la date de fin', 'error');
+                        return;
+                    }
+
+                    // Show loading state
+                    this.disabled = true;
+                    this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Enregistrement...';
+
+                    fetch(`/edit-conge/${currentLeaveId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                        body: JSON.stringify({ dateDebut: startDate, dateFin: endDate }),
+                    })
+                        .then(res => res.json())
+                        .then(data => {
+                            editModal.hide();
+
+                            if (data.success) {
+                                showAlert('Succès', 'Congé mis à jour avec succès', 'success');
+                                setTimeout(() => location.reload(), 2000);
+                            } else {
+                                showAlert('Erreur', data.message || 'Une erreur est survenue', 'error');
+                            }
+                        })
+                        .catch(error => {
+                            editModal.hide();
+                            showAlert('Erreur', 'Erreur de connexion', 'error');
+                        })
+                        .finally(() => {
+                            // Reset button state
+                            this.disabled = false;
+                            this.innerHTML = '<i class="bi bi-check-circle"></i> Enregistrer les modifications';
+                        });
+                });
+            }
 
             // Gestion du bouton Annuler
             document.querySelectorAll('.cancel-btn').forEach(button => {
                 button.addEventListener('click', function () {
-                    const id = this.dataset.id;
-
-                    if (confirm("Êtes-vous sûr de vouloir annuler cette demande de congé ?")) {
-                        fetch(`/cancel-conge/${id}`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-Requested-With': 'XMLHttpRequest',
-                            }
-                        })
-                            .then(res => res.json())
-                            .then(data => {
-                                if (data.success) {
-                                    alert('Demande de congé annulée avec succès');
-                                    location.reload();
-                                } else {
-                                    alert('Erreur : ' + data.message);
-                                }
-                            });
-                    }
+                    currentLeaveId = this.dataset.id;
+                    cancelModal.show();
                 });
             });
+
+            // Handle cancel confirmation
+            const confirmCancelBtn = document.getElementById('confirmCancelBtn');
+            if (confirmCancelBtn) {
+                confirmCancelBtn.addEventListener('click', function () {
+                    // Show loading state
+                    this.disabled = true;
+                    this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Annulation...';
+
+                    fetch(`/cancel-conge/${currentLeaveId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                        }
+                    })
+                        .then(res => res.json())
+                        .then(data => {
+                            cancelModal.hide();
+
+                            if (data.success) {
+                                showAlert('Succès', 'Demande de congé annulée avec succès', 'success');
+                                setTimeout(() => location.reload(), 2000);
+                            } else {
+                                showAlert('Erreur', data.message || 'Une erreur est survenue', 'error');
+                            }
+                        })
+                        .catch(error => {
+                            cancelModal.hide();
+                            showAlert('Erreur', 'Erreur de connexion', 'error');
+                        })
+                        .finally(() => {
+                            // Reset button state
+                            this.disabled = false;
+                            this.innerHTML = '<i class="bi bi-trash"></i> Oui, annuler la demande';
+                        });
+                });
+            }
+
+            // Reset modal forms when closed
+            if (editModalEl) {
+                editModalEl.addEventListener('hidden.bs.modal', function () {
+                    const form = document.getElementById('editLeaveForm');
+                    if (form) form.reset();
+                    currentLeaveId = null;
+                });
+            }
+
+            if (cancelModalEl) {
+                cancelModalEl.addEventListener('hidden.bs.modal', function () {
+                    currentLeaveId = null;
+                });
+            }
         });
     </script>
 {% endblock %}

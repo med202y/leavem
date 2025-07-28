@@ -59,6 +59,7 @@ class congecontroller extends AbstractController
             statutdedemande::ACCEPTE    ->value  => 'success',
             statutdedemande::REFUSE->value    => 'danger',
             statutdedemande::ANNULEE->value    => 'secondary',
+            statutdedemande::CONSOMME->value    => 'secondary',
         ];
 
         return $this->render('my_leaves.html.twig', [  // ensure correct path
@@ -136,7 +137,7 @@ class congecontroller extends AbstractController
 
             $notification = new Notification();
             $notification->setTitle('Annulation de congé');
-            $notification->setMessage("Votre congé a été annulé avec succès.");
+            $notification->setMessage("Votre demande de congé a été annulé.Veuillez patientez que votre Manager accepte.");
             $notification->setRecipient($user);
 
             $em->persist($notification);

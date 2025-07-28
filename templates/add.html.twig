@@ -1,0 +1,17 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Add New User{% endblock %}
+
+{% block body %}
+    <h1 class="mb-4">Add New User</h1>
+
+    {{ form_start(form) }}
+    {{ form_row(form.email) }}
+    {{ form_row(form.plainPassword) }}
+    {{ form_row(form.roles) }}
+
+    <button class="btn btn-success mt-3">Create User</button>
+    {{ form_end(form) }}
+
+    <a href="{{ path('admin_user_list') }}" class="btn btn-link mt-3">Back to list</a>
+{% endblock %}

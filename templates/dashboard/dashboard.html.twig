@@ -68,13 +68,23 @@
                         </li>
                     {% endfor %}
                 </ul>
-                {% if role.name in ['ADMIN', 'MANAGER'] %}
+                {% if role.name in ['BIGADMIN', 'MANAGER'] %}
                     <div class="pt-4">
                         <p class="text-xs uppercase tracking-wide px-4 mb-2 opacity-60">Gestion</p>
                         <a href="{{ path('manager_team_leaves') }}" class="flex items-center gap-2 px-4 py-3 rounded-lg hover:bg-white/5 text-white/80">
                             <i class="fas fa-calendar-check w-5"></i>
                             <span>Gérer les congés</span>
                         </a>
+                        {% if role.name in ['BIGADMIN'] %}
+                        <a href="{{ path('admin_users_index') }}" class="flex items-center gap-2 px-4 py-3 rounded-lg hover:bg-white/5 text-white/80">
+                            <i class="fas fa-calendar-check w-5"></i>
+                            <span>Gérer les utilisateurs</span>
+                        </a>
+                            <a href="{{ path('app_calendar') }}" class="flex items-center gap-2 px-4 py-3 rounded-lg hover:bg-white/5 text-white/80">
+                                <i class="fas fa-calendar-check w-5"></i>
+                                <span>Voir Calendrier</span>
+                            </a>
+                        {% endif %}
                     </div>
                 {% endif %}
 

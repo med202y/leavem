@@ -69,6 +69,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Conge::class, orphanRemoval: true, cascade: ['persist'])]
     private Collection $conges;
 
+    #[ORM\Column(nullable: true)]
+    private ?\DateTime $dateDembauche = null;
+
     public function __construct()
     {
         $this->notifications = new ArrayCollection();
@@ -198,6 +201,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->solde_conge;
     }
 
+
     public function setSoldeConge(float $solde_conge): static
     {
         $this->solde_conge = $solde_conge;
@@ -237,17 +241,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         // S'il y a des données sensibles temporaires, les nettoyer ici (ex: mot de passe en clair)
     }
 
-    public function getCIN(): ?string
-    {
-        return $this->CIN;
-    }
 
-    public function setCIN(string $CIN): static
-    {
-        $this->CIN = $CIN;
 
-        return $this;
-    }
+
     public function getObservations(): ?string
     {
         return $this->Observations;
@@ -302,15 +298,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getDateDembauche(): ?\DateTime
-    {
-        return $this->Date_dembauche;
-    }
+    public function getDateDembauche(): ?\DateTimeInterface
+{
+    return $this->dateDembauche;
+}
 
-    public function setDateDembauche(\DateTime $Date_dembauche): static
+    public function setDateDembauche(?\DateTimeInterface $dateDembauche): self
     {
-        $this->Date_dembauche = $Date_dembauche;
-
+        $this->dateDembauche = $dateDembauche;
         return $this;
     }
 
