@@ -119,9 +119,12 @@
                                                 data-end="{{ conge.dateFin|date('Y-m-d') }}">
                                             Modifier
                                         </button>
+                                    {% endif %}
+                                    {% if conge.statut.value in ['en_attente', 'approuvée'] %}
                                         <button class="btn btn-sm btn-outline-danger cancel-btn" data-id="{{ conge.id }}">
                                             Annuler
                                         </button>
+
                                     {% endif %}
                                 </div>
                             </div>

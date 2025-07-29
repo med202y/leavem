@@ -61,7 +61,7 @@ class teamleavescontroller extends AbstractController
             StatutDeDemande::REFUSE->value => 'red-300',
             StatutDeDemande::ANNULEE->value => 'gray-300',
             StatutDeDemande::CONSOMME->value => 'dark-300',
-
+            statutdedemande::ANNULATIONENATTENTE->value => 'warning',
         ];
 
         return $this->render('team_leaves.html.twig', [

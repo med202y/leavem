@@ -60,6 +60,7 @@ class congecontroller extends AbstractController
             statutdedemande::REFUSE->value    => 'danger',
             statutdedemande::ANNULEE->value    => 'secondary',
             statutdedemande::CONSOMME->value    => 'secondary',
+            statutdedemande::ANNULATIONENATTENTE->value => 'warning',
         ];
 
         return $this->render('my_leaves.html.twig', [  // ensure correct path
@@ -85,25 +86,17 @@ class congecontroller extends AbstractController
 
         // Only allow editing if status is EN_ATTENTE
         if ($conge->getStatut() !== statutdedemande::EN_ATTENTE) {
-            return new JsonResponse(['success' => false, 'message' => 'Only pending leaves can be edited'], 400);
+            return new JsonResponse(['success' => false, 'message' => 'Seuls les congés en attente peuvent être modifiés'], 400);
         }
 
         $data = json_decode($request->getContent(), true);
         if (empty($data['dateDebut']) || empty($data['dateFin'])) {
-            return new JsonResponse(['success' => false, 'message' => 'Missing dates'], 400);
+            return new JsonResponse(['success' => false, 'message' => 'Dates manquantes'], 400);
         }
 
         try {
             $conge->setDateDebut(new \DateTime($data['dateDebut']));
             $conge->setDateFin(new \DateTime($data['dateFin']));
-            $em->flush();
-
-            $notification = new Notification();
-            $notification->setTitle('Modification des congés');
-            $notification->setMessage("Votre congé a été modifié avec succès.");
-            $notification->setRecipient($user);
-
-            $em->persist($notification);
             $em->flush();
 
             return new JsonResponse(['success' => true]);
@@ -127,19 +120,32 @@ class congecontroller extends AbstractController
             return new JsonResponse(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
-        if ($conge->getStatut() !== statutdedemande::EN_ATTENTE) {
-            return new JsonResponse(['success' => false, 'message' => 'Only pending leaves can be cancelled'], 400);
+        // Only allow cancellation for pending or approved leaves
+        if (!in_array($conge->getStatut(), [statutdedemande::EN_ATTENTE, statutdedemande::ACCEPTE])) {
+            return new JsonResponse(
+                ['success' => false, 'message' => 'Seuls les congés en attente ou approuvés peuvent être annulés'],
+                400
+            );
         }
 
         try {
-            $conge->setStatut(statutdedemande::ANNULEE);
-            $em->flush();
+            if ($conge->getStatut() === statutdedemande::ACCEPTE) {
+                // For approved leaves, set status to pending cancellation
+                $conge->setStatut(statutdedemande::ANNULATIONENATTENTE);
 
-            $notification = new Notification();
-            $notification->setTitle('Annulation de congé');
-            $notification->setMessage("Votre demande de congé a été annulé.Veuillez patientez que votre Manager accepte.");
+                $notification = new Notification();
+                $notification->setTitle('Demande d\'annulation');
+                $notification->setMessage("Votre demande d'annulation est en attente de validation par votre manager.");
+            } else {
+                // For pending leaves, cancel directly
+                $conge->setStatut(statutdedemande::ANNULEE);
+
+                $notification = new Notification();
+                $notification->setTitle('Annulation de congé');
+                $notification->setMessage("Votre demande de congé a été annulée.");
+            }
+
             $notification->setRecipient($user);
-
             $em->persist($notification);
             $em->flush();
 

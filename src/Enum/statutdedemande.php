@@ -9,6 +9,7 @@ enum statutdedemande: string
     case REFUSE = 'rejetée';
     case ANNULEE = 'annulée';
     case CONSOMME =  'consommée';
+    case ANNULATIONENATTENTE = 'annulation en attente';
 
     public function label(): string
     {
@@ -17,6 +18,8 @@ enum statutdedemande: string
             self::ACCEPTE => 'Approuvée',
             self::REFUSE => 'Rejetée',
             self::ANNULEE => 'Annulée',
+            self::CONSOMME => 'consommée',
+            self::ANNULATIONENATTENTE => 'Annulation en attente',
         };
     }
 }
