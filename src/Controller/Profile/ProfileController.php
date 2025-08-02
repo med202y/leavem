@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller;
+namespace App\Controller\Profile;
 
 use App\Entity\Notification;
 use App\Entity\User;
@@ -10,32 +10,20 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-class updateprofilcontroller extends AbstractController
+class ProfileController extends AbstractController
 {
     #[Route('/user_profile', name: 'user_profile')]
+    #[IsGranted('ROLE_EMPLOYEE')]
     public function user_profile(
         Request $request,
         EntityManagerInterface $em,
-        SessionInterface $session,
         UserPasswordHasherInterface $passwordHasher
     ): Response
     {
-        // Récupération de l'ID utilisateur depuis la session
-        $userId = $session->get('user_id');
-
-        if (!$userId) {
-            return $this->redirectToRoute('custom_login');
-        }
-
-        // Chargement de l'utilisateur
-        $user = $em->getRepository(User::class)->find($userId);
-
-        if (!$user) {
-            return $this->redirectToRoute('custom_login');
-        }
+        $user = $this->getUser();
 
         // Création et gestion du formulaire
         $form = $this->createForm(UserProfileType::class, $user);
@@ -52,7 +40,7 @@ class updateprofilcontroller extends AbstractController
                 // Vérifier l'ancien mot de passe
                 if (empty($oldPassword) || !$passwordHasher->isPasswordValid($user, $oldPassword)) {
                     $this->addFlash('error', 'L\'ancien mot de passe est incorrect');
-                    return $this->render('updateprofil.html.twig', [
+                    return $this->render('profile/edit.html.twig', [
                         'form' => $form->createView(),
                         'user' => $user,
                     ]);
@@ -61,7 +49,7 @@ class updateprofilcontroller extends AbstractController
                 // Vérifier que les nouveaux mots de passe correspondent
                 if ($newPassword !== $confirmPassword) {
                     $this->addFlash('error', 'Les nouveaux mots de passe ne correspondent pas');
-                    return $this->render('updateprofil.html.twig', [
+                    return $this->render('profile/edit.html.twig', [
                         'form' => $form->createView(),
                         'user' => $user,
                     ]);
@@ -70,7 +58,7 @@ class updateprofilcontroller extends AbstractController
                 // Vérifier la longueur du mot de passe
                 if (strlen($newPassword) < 6) {
                     $this->addFlash('error', 'Le mot de passe doit contenir au moins 6 caractères');
-                    return $this->render('updateprofil.html.twig', [
+                    return $this->render('profile/edit.html.twig', [
                         'form' => $form->createView(),
                         'user' => $user,
                     ]);
@@ -95,7 +83,7 @@ class updateprofilcontroller extends AbstractController
             return $this->redirectToRoute('user_profile');
         }
 
-        return $this->render('updateprofil.html.twig', [
+        return $this->render('profile/edit.html.twig', [
             'form' => $form->createView(),
             'user' => $user,
         ]);

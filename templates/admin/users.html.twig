@@ -26,7 +26,7 @@
                 <nav class="flex-1 p-4">
                     <ul class="space-y-1">
                         {% set adminMenu = [
-                            {'label': 'Utilisateurs', 'icon': '👤', 'url': path('admin_users_index')},
+                            {'label': 'Utilisateurs', 'icon': '👤', 'url': path('admin_index')},
                             {'label': 'Équipes', 'icon': '👥', 'url': path('team')},
                             {'label': 'Tableau de bord', 'icon': '📊', 'url': path('dashboard')}
                         ] %}
@@ -49,7 +49,13 @@
         <div class="p-6 max-w-7xl mx-auto">
             <div class="bg-white rounded-2xl p-6 shadow mb-6 flex justify-between items-center">
                 <h1 class="text-3xl font-bold text-indigo-700">Gestion des utilisateurs</h1>
-                <p class="text-sm text-gray-500">{{ "now"|date("l, F j, Y")|trans }}</p>
+                <div class="flex items-center gap-4">
+                    <button type="button" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg shadow flex items-center gap-2" data-toggle="modal" data-target="#createUserModal">
+                        <i class="fas fa-plus"></i>
+                        Ajouter un utilisateur
+                    </button>
+                    <p class="text-sm text-gray-500">{{ "now"|date("l, F j, Y")|trans }}</p>
+                </div>
             </div>
 
             <div class="bg-white rounded-2xl shadow p-6 overflow-x-auto">
@@ -145,7 +151,7 @@
                                                         {% for team in teams %}
                                                             <option value="{{ team.id }}" {% if user.team is not null and team.id == user.team.id %}selected{% endif %}>
 
-                                                            {{ team.name }}
+                                                                {{ team.name }}
                                                             </option>
                                                         {% endfor %}
                                                     </select>
@@ -195,7 +201,6 @@
                                 </div>
                             </div>
 
-
                         {% endfor %}
                         </tbody>
                     </table>
@@ -205,6 +210,117 @@
             </div>
         </div>
     </main>
+
+    <!-- Modal for Creating New User -->
+    <div class="modal fade" id="createUserModal" tabindex="-1" role="dialog" aria-labelledby="createUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <form method="POST" action="{{ path('admin_users_create') }}">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="createUserModalLabel">Ajouter un nouvel utilisateur</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="nom">Nom <span class="text-danger">*</span></label>
+                                    <input name="nom" id="nom" type="text" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="prenom">Prénom <span class="text-danger">*</span></label>
+                                    <input name="prenom" id="prenom" type="text" class="form-control" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Email <span class="text-danger">*</span></label>
+                            <input name="email" id="email" type="email" class="form-control" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password">Mot de passe <span class="text-danger">*</span></label>
+                            <input name="password" id="password" type="password" class="form-control" required>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="departement">Département</label>
+                                    <select name="departement" id="departement" class="form-control">
+                                        <option value="">— Sélectionner —</option>
+                                        {% for dept in departments %}
+                                            <option value="{{ dept.value }}">{{ dept.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="team_id">Équipe</label>
+                                    <select name="team_id" id="team_id" class="form-control">
+                                        <option value="">— Aucune —</option>
+                                        {% for team in teams %}
+                                            <option value="{{ team.id }}">{{ team.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Rôle(s)</label>
+                            <div class="row">
+                                {% for role in roles %}
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="roles[]" value="{{ role.value }}" id="role_{{ role.value }}">
+                                            <label class="form-check-label" for="role_{{ role.value }}">{{ role.name }}</label>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="solde_conge">Solde de congé</label>
+                                    <input name="solde_conge" id="solde_conge" type="number" step="0.1" value="25.0" class="form-control">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="date_embauche">Date d'embauche</label>
+                                    <input name="date_embauche" id="date_embauche" type="date" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="observations">Observations</label>
+                            <textarea name="observations" id="observations" class="form-control" rows="3"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-plus mr-1"></i>
+                            Créer l'utilisateur
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
 {% endblock %}
 
 {% block javascripts %}

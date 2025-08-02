@@ -9,36 +9,45 @@ use App\Enum\Role;
 use App\Enum\Departement;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-class dashboardcontroller extends AbstractController
+class DashboardController extends AbstractController
 {
     #[Route('/dashboard', name: 'dashboard')]
-    public function dashboard(
-        SessionInterface $session,
-        EntityManagerInterface $em
-    ): Response {
-        $userId = $session->get('user_id');
-
-        if (!$userId) {
-            return $this->redirectToRoute('custom_login');
-        }
-
-        $user = $em->getRepository(User::class)->find($userId);
+    #[IsGranted('ROLE_EMPLOYEE')]
+    public function dashboard(EntityManagerInterface $em): Response
+    {
+        $user = $this->getUser();
 
         if (!$user) {
-            return $this->redirectToRoute('custom_login');
+            return $this->redirectToRoute('app_login');
+        }
+
+        // --- Get All User's Congés ---
+        $conges = $em->getRepository(Conge::class)->findBy(['user' => $user]);
+
+        // --- Update statut to "consommée" if approuvée and dateFin < today ---
+        $today = new \DateTimeImmutable('today');
+        $updated = false;
+        foreach ($conges as $conge) {
+            if (
+                $conge->getStatut()->value === 'approuvée'
+                && $conge->getDateFin() < $today
+            ) {
+                $conge->setStatut(\App\Enum\statutdedemande::CONSOMME);
+                $em->persist($conge);
+                $updated = true;
+            }
+        }
+        if ($updated) {
+            $em->flush();
         }
 
         // --- Get Notifications ---
         $notifications = $em->getRepository(Notification::class)
             ->findBy(['recipient' => $user], ['id' => 'DESC']);
-
-        // --- Get All User's Congés ---
-        $conges = $em->getRepository(Conge::class)->findBy(['user' => $user]);
 
         // --- Solde de congés ---
         $soldeConge = $user->getSoldeConge() ?? 0;
@@ -93,7 +102,7 @@ class dashboardcontroller extends AbstractController
             ]
         ];
 
-        return $this->render('dashboard/dashboard.html.twig', [
+        return $this->render('dashboard/index.html.twig', [
             'user' => $user,
             'notifications' => $notifications,
             'role' => $user->getRole()[0],
@@ -101,5 +110,4 @@ class dashboardcontroller extends AbstractController
             'dashboardStats' => $dashboardStats
         ]);
     }
-
 }

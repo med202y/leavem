@@ -1,0 +1,280 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des Congés - {{ user.prenom }} {{ user.nom }}{% endblock %}
+
+{% block stylesheets %}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .form-section {
+            @apply bg-white rounded-2xl p-6 shadow mb-6;
+        }
+        .form-label {
+            @apply block text-sm font-semibold text-gray-700 mb-2;
+        }
+        .form-input {
+            @apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all;
+        }
+        .info-display {
+            @apply bg-gray-50 px-4 py-3 rounded-lg text-gray-800 font-medium;
+        }
+        .action-btn {
+            @apply px-6 py-3 rounded-lg font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-offset-2;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <!-- Bouton menu mobile -->
+    <button id="mobile-menu-btn" class="md:hidden fixed top-4 left-4 z-50 bg-indigo-600 text-white p-3 rounded-lg shadow-md">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Barre latérale -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-72 bg-indigo-800 text-white shadow-md hidden md:block">
+        <div class="h-full flex flex-col justify-between">
+            <div>
+                <div class="p-6 text-2xl font-bold">
+                    <i class="fas fa-user-circle mr-2"></i> Espace Utilisateur
+                </div>
+                <nav class="flex-1 p-4">
+                    <ul class="space-y-1">
+                        {% set menu = [
+                            {'label': 'Tableau de bord', 'icon': '🏠', 'url': path('dashboard')},
+                            {'label': 'Demander un congé', 'icon': '📄', 'url': path('demande')},
+                            {'label': 'Équipe', 'icon': '👥', 'url': path('team')}
+                        ] %}
+
+                        {% for item in menu %}
+                            <li>
+                                <a href="{{ item.url }}" class="flex items-center gap-2 px-4 py-2 rounded hover:bg-white/10 transition-colors">
+                                    <span class="text-lg">{{ item.icon }}</span>
+                                    <span class="text-sm font-medium">{{ item.label }}</span>
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                    <div class="pt-4">
+                        <p class="text-xs uppercase tracking-wide px-4 mb-2 opacity-60">Compte</p>
+                        <a href="{{ path('user_profile') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 text-white/80">
+                            <i class="fas fa-user-cog w-5"></i>
+                            <span>Paramètres du profil</span>
+                        </a>
+                        <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 text-white/80">
+                            <i class="fas fa-sign-out-alt w-5"></i>
+                            <span>Déconnexion</span>
+                        </a>
+                    </div>
+                </nav>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Contenu principal -->
+    <main class="min-h-screen bg-gray-100 md:ml-72 transition-all">
+        <div class="p-6 max-w-7xl mx-auto">
+            <!-- En-tête -->
+            <div class="bg-white rounded-2xl p-6 shadow mb-6">
+                <div class="flex justify-between items-center flex-wrap gap-4">
+                    <div>
+                        <h1 class="text-2xl md:text-3xl font-bold text-indigo-700">Formulaire de Gestion des Congés</h1>
+                        <p class="text-gray-600 mt-2">Remplissez les informations relatives aux congés du salarié</p>
+                    </div>
+                    <div class="text-right hidden md:block">
+                        <p class="text-sm text-gray-500">{{ "now"|date("l, F j, Y")|trans }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Messages flash -->
+            {% for label, messages in app.flashes %}
+                {% for message in messages %}
+                    <div class="mb-4 p-4 rounded-lg {% if label == 'success' %}bg-green-100 text-green-800 border border-green-300{% elseif label == 'error' %}bg-red-100 text-red-800 border border-red-300{% else %}bg-blue-100 text-blue-800 border border-blue-300{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endfor %}
+
+            <!-- Formulaire -->
+            {{ form_start(form, {
+                'attr': {
+                    'enctype': 'multipart/form-data',
+                    'novalidate': 'novalidate',
+                    'class': 'space-y-6'
+                }
+            }) }}
+            
+                <!-- Section Informations de base -->
+                <div class="form-section">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4 border-b pb-2 flex items-center">
+                        <i class="fas fa-user mr-2 text-indigo-600"></i>Informations du Salarié
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Colonne 1 -->
+                        <div class="space-y-4">
+                            <div>
+                                <label class="form-label">Nom</label>
+                                <p class="info-display">{{ user.nom }}</p>
+                            </div>
+                            <div>
+                                <label class="form-label">Prénom</label>
+                                <p class="info-display">{{ user.prenom }}</p>
+                            </div>
+                        </div>
+                        <!-- Colonne 2 -->
+                        <div class="space-y-4">
+                            <div>
+                                <label class="form-label">Poste / Fonction</label>
+                                <p class="info-display">{{ user.departement.value }}</p>
+                            </div>
+                            <div>
+                                <label class="form-label">Solde de congés (jours disponibles)</label>
+                                <p class="info-display">{{ user.soldeConge }} jours</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section Gestion des congés -->
+                <div class="form-section">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4 border-b pb-2 flex items-center">
+                        <i class="fas fa-calendar-alt mr-2 text-indigo-600"></i>Gestion des Congés
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Colonne 1 -->
+                        <div class="space-y-4">
+                            <div>
+                                {{ form_label(form.typeConge, null, {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.typeConge, {'attr': {'class': 'form-input'}}) }}
+                                {{ form_errors(form.typeConge) }}
+                            </div>
+                            <div>
+                                {{ form_label(form.dateDebut, null, {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.dateDebut, {'attr': {'class': 'form-input'}}) }}
+                                {{ form_errors(form.dateDebut) }}
+                            </div>
+                            <div>
+                                {{ form_label(form.dateFin, null, {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.dateFin, {'attr': {'class': 'form-input'}}) }}
+                                {{ form_errors(form.dateFin) }}
+                            </div>
+                        </div>
+                        <!-- Colonne 2 -->
+                        <div class="space-y-4">
+                            <div>
+                                {{ form_label(form.motif, null, {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.motif, {'attr': {'class': 'form-input', 'rows': 4, 'placeholder': 'Décrivez brièvement le motif de votre demande...'}}) }}
+                                {{ form_errors(form.motif) }}
+                            </div>
+                            <div>
+                                {{ form_label(form.justificatif, null, {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.justificatif, {'attr': {'class': 'form-input', 'accept': '.pdf,.jpg,.jpeg,.png,.gif'}}) }}
+                                {{ form_errors(form.justificatif) }}
+                                <p class="text-xs text-gray-500 mt-1">Formats acceptés: PDF, JPG, PNG, GIF (max. 5MB)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Token CSRF et champs cachés -->
+                {{ form_rest(form) }}
+
+                <!-- Boutons de soumission -->
+                <div class="flex justify-end gap-4 pt-4">
+                    <button type="reset" class="action-btn bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-indigo-500">
+                        <i class="fas fa-times mr-2"></i> Annuler
+                    </button>
+                    <button type="submit" class="action-btn bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500">
+                        <i class="fas fa-save mr-2"></i> Enregistrer la demande
+                    </button>
+                </div>
+                
+            {{ form_end(form) }}
+        </div>
+    </main>
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        // Menu mobile
+        const menuBtn = document.getElementById('mobile-menu-btn');
+        const sidebar = document.getElementById('sidebar');
+        menuBtn?.addEventListener('click', () => sidebar?.classList.toggle('hidden'));
+
+        // Gestion du fichier justificatif
+        const justificatifInput = document.querySelector('input[type="file"]');
+        if (justificatifInput) {
+            justificatifInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    // Vérifier la taille du fichier (5MB max)
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert('Le fichier est trop volumineux. Taille maximale: 5MB');
+                        e.target.value = '';
+                        return;
+                    }
+                    
+                    // Vérifier le type de fichier
+                    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                    if (!allowedTypes.includes(file.type)) {
+                        alert('Type de fichier non supporté. Utilisez PDF, JPG, PNG ou GIF.');
+                        e.target.value = '';
+                        return;
+                    }
+                    
+                    console.log('Fichier sélectionné:', file.name);
+                }
+            });
+        }
+
+        // Validation des dates
+        const form = document.querySelector('form');
+        const dateDebutInput = document.getElementById('conge_dateDebut');
+        const dateFinInput = document.getElementById('conge_dateFin');
+        
+        if (form && dateDebutInput && dateFinInput) {
+            // Validation en temps réel
+            function validateDates() {
+                if (dateDebutInput.value && dateFinInput.value) {
+                    const dateDebut = new Date(dateDebutInput.value);
+                    const dateFin = new Date(dateFinInput.value);
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    
+                    // Vérifier que la date de début n'est pas dans le passé
+                    if (dateDebut < today) {
+                        dateDebutInput.setCustomValidity('La date de début ne peut pas être dans le passé');
+                    } else {
+                        dateDebutInput.setCustomValidity('');
+                    }
+                    
+                    // Vérifier que la date de fin est après la date de début
+                    if (dateDebut > dateFin) {
+                        dateFinInput.setCustomValidity('La date de fin doit être postérieure à la date de début');
+                    } else {
+                        dateFinInput.setCustomValidity('');
+                    }
+                }
+            }
+            
+            dateDebutInput.addEventListener('change', validateDates);
+            dateFinInput.addEventListener('change', validateDates);
+            
+            // Validation finale à la soumission
+            form.addEventListener('submit', function(e) {
+                validateDates();
+                
+                if (!dateDebutInput.checkValidity() || !dateFinInput.checkValidity()) {
+                    e.preventDefault();
+                    alert('Veuillez corriger les erreurs dans les dates avant de soumettre le formulaire.');
+                }
+            });
+        }
+
+        // Auto-focus sur le premier champ du formulaire
+        const firstInput = document.querySelector('.form-input');
+        if (firstInput) {
+            firstInput.focus();
+        }
+    </script>
+{% endblock %}

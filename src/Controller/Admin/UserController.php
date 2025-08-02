@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller;
+namespace App\Controller\Admin;
 
 use App\Entity\User;
 use App\Enum\Role;
@@ -12,12 +12,13 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
+use Symfony\Component\Security\Http\Attribute\CurrentUser;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-class adminuserscontroller extends AbstractController
+class UserController extends AbstractController
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
@@ -27,29 +28,15 @@ class adminuserscontroller extends AbstractController
     ) {
     }
 
-    #[Route('/adminusers', name: 'admin_users_index', methods: ['GET'])]
+    #[Route('/admin', name: 'admin_index', methods: ['GET'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function index(
-        SessionInterface $session,
-        EntityManagerInterface $em,
-        CongeRepository $congeRepository
+        CongeRepository $congeRepository,
+        #[CurrentUser] User $currentUser,
     ): Response
     {
-        $userId = $session->get('user_id');
-
-        // Vérifier qu'il est connecté
-        if (!$userId) {
-            return $this->redirectToRoute('custom_login');
-        }
-
-        $user = $em->getRepository(User::class)->find($userId);
-
-        if (!$user) {
-            $session->remove('user_id');
-            return $this->redirectToRoute('custom_login');
-        }
-
         // Vérifier le rôle "BIGADMIN" (qui correspond à ROLE_ADMIN)
-        $userRoles = $user->getRoles();
+        $userRoles = $currentUser->getRoles();
         if (!in_array('BIGADMIN', $userRoles, true) && !in_array('ROLE_ADMIN', $userRoles, true)) {
             throw new AccessDeniedException('Vous devez être administrateur pour accéder à cette page.');
         }
@@ -57,26 +44,22 @@ class adminuserscontroller extends AbstractController
         $users = $this->userRepository->findAll();
         $teams = $this->teamRepository->findAll();
 
-        return $this->render('adminusers.html.twig', [
+        return $this->render('admin/users.html.twig', [
             'users' => $users,
             'teams' => $teams,
             'departments' => Departement::cases(),
             'roles' => Role::cases(),
-            'current_user' => $user,
+            'current_user' => $currentUser,
         ]);
     }
 
-    #[Route('/adminusers/create', name: 'admin_users_create', methods: ['POST'])]
-    public function create(Request $request, SessionInterface $session): Response
+    #[Route('/admin/users/create', name: 'admin_users_create', methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN')]
+    public function create(Request $request): Response
     {
-        // Check authentication
-        $userId = $session->get('user_id');
-        if (!$userId) {
-            return $this->redirectToRoute('custom_login');
-        }
-
         $user = new User();
 
+        // todo user symfony form
         // Récupération des données du formulaire
         $nom = $request->request->get('nom');
         $prenom = $request->request->get('prenom');
@@ -159,14 +142,9 @@ class adminuserscontroller extends AbstractController
     }
 
     #[Route('/adminusers/{id}/update', name: 'admin_users_update', methods: ['POST'])]
-    public function update(int $id, Request $request, SessionInterface $session): Response
+    #[IsGranted('ROLE_ADMIN')]
+    public function update(int $id, Request $request): Response
     {
-        // Check authentication
-        $userId = $session->get('user_id');
-        if (!$userId) {
-            return $this->redirectToRoute('custom_login');
-        }
-
         $user = $this->userRepository->find($id);
 
         if (!$user) {
@@ -175,7 +153,7 @@ class adminuserscontroller extends AbstractController
         }
 
         // Prevent admin from modifying their own account (optional)
-        $currentUser = $this->entityManager->getRepository(User::class)->find($userId);
+        $currentUser = $this->getUser();
         if ($user === $currentUser) {
             $this->addFlash('error', 'Vous ne pouvez pas modifier votre propre compte.');
             return $this->redirectToRoute('admin_users_index');
@@ -262,14 +240,9 @@ class adminuserscontroller extends AbstractController
     }
 
     #[Route('/adminusers/{id}/delete', name: 'admin_users_delete', methods: ['POST'])]
-    public function delete(int $id, SessionInterface $session): Response
+    #[IsGranted('ROLE_ADMIN')]
+    public function delete(int $id): Response
     {
-        // Check authentication
-        $userId = $session->get('user_id');
-        if (!$userId) {
-            return $this->redirectToRoute('custom_login');
-        }
-
         $user = $this->userRepository->find($id);
 
         if (!$user) {
@@ -278,7 +251,7 @@ class adminuserscontroller extends AbstractController
         }
 
         // Prevent admin from deleting their own account
-        $currentUser = $this->entityManager->getRepository(User::class)->find($userId);
+        $currentUser = $this->getUser();
         if ($user === $currentUser) {
             $this->addFlash('error', 'Vous ne pouvez pas supprimer votre propre compte.');
             return $this->redirectToRoute('admin_users_index');
@@ -297,14 +270,9 @@ class adminuserscontroller extends AbstractController
     }
 
     #[Route('/adminusers/{id}/toggle-status', name: 'admin_users_toggle_status', methods: ['POST'])]
-    public function toggleStatus(int $id, SessionInterface $session): Response
+    #[IsGranted('ROLE_ADMIN')]
+    public function toggleStatus(int $id): Response
     {
-        // Check authentication
-        $userId = $session->get('user_id');
-        if (!$userId) {
-            return $this->redirectToRoute('custom_login');
-        }
-
         $user = $this->userRepository->find($id);
 
         if (!$user) {
@@ -313,7 +281,7 @@ class adminuserscontroller extends AbstractController
         }
 
         // Prevent admin from disabling their own account
-        $currentUser = $this->entityManager->getRepository(User::class)->find($userId);
+        $currentUser = $this->getUser();
         if ($user === $currentUser) {
             $this->addFlash('error', 'Vous ne pouvez pas modifier le statut de votre propre compte.');
             return $this->redirectToRoute('admin_users_index');
@@ -328,14 +296,9 @@ class adminuserscontroller extends AbstractController
     }
 
     #[Route('/adminusers/bulk-update-solde', name: 'admin_users_bulk_update_solde', methods: ['POST'])]
-    public function bulkUpdateSolde(Request $request, SessionInterface $session): Response
+    #[IsGranted('ROLE_ADMIN')]
+    public function bulkUpdateSolde(Request $request): Response
     {
-        // Check authentication
-        $userId = $session->get('user_id');
-        if (!$userId) {
-            return $this->redirectToRoute('custom_login');
-        }
-
         $userIds = $request->request->all('user_ids');
         $newSolde = (float) $request->request->get('new_solde');
 
@@ -346,7 +309,7 @@ class adminuserscontroller extends AbstractController
 
         try {
             $users = $this->userRepository->findBy(['id' => $userIds]);
-            $currentUser = $this->entityManager->getRepository(User::class)->find($userId);
+            $currentUser = $this->getUser();
 
             foreach ($users as $user) {
                 // Skip the current admin user for safety
@@ -358,7 +321,7 @@ class adminuserscontroller extends AbstractController
             $this->entityManager->flush();
 
             $updatedCount = count($users);
-            if (in_array($userId, $userIds)) {
+            if (in_array($currentUser->getId(), $userIds)) {
                 $updatedCount--; // Exclude current user from count if they were in the list
             }
 

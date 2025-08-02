@@ -92,6 +92,17 @@
                                     </div>
                                 {% endif %}
 
+                                {% if conge.justificatif %}
+                                    <div class="mb-2">
+                                        <small class="text-muted">Justificatif</small>
+                                        <div>
+                                            <a href="{{ asset('images/' ~ conge.justificatif) }}" class="btn btn-sm btn-outline-primary" download>
+                                                <i class="bi bi-download"></i> Télécharger
+                                            </a>
+                                        </div>
+                                    </div>
+                                {% endif %}
+
                                 <div class="mt-3">
                                     <small class="text-muted">Demandé le</small>
                                     <div>{{ conge.dateDemande|date('d M Y H:i') }}</div>

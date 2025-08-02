@@ -72,10 +72,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(nullable: true)]
     private ?\DateTime $dateDembauche = null;
 
+    /**
+     * @var Collection<int, Team>
+     */
+    #[ORM\OneToMany(targetEntity: Team::class, mappedBy: 'manager')]
+    private Collection $manager;
+
     public function __construct()
     {
         $this->notifications = new ArrayCollection();
         $this->conges       = new ArrayCollection();
+        $this->manager = new ArrayCollection();
     }
 
     /**
@@ -117,6 +124,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->team = $team;
 
         return $this;
+    }
+    public function getManager(): ?User
+    {
+        return $this->team?->getManager();
     }
 
 
@@ -306,6 +317,30 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setDateDembauche(?\DateTimeInterface $dateDembauche): self
     {
         $this->dateDembauche = $dateDembauche;
+        return $this;
+    }
+
+
+
+    public function addManager(Team $manager): static
+    {
+        if (!$this->manager->contains($manager)) {
+            $this->manager->add($manager);
+            $manager->setManager($this);
+        }
+
+        return $this;
+    }
+
+    public function removeManager(Team $manager): static
+    {
+        if ($this->manager->removeElement($manager)) {
+            // set the owning side to null (unless already changed)
+            if ($manager->getManager() === $this) {
+                $manager->setManager(null);
+            }
+        }
+
         return $this;
     }
 

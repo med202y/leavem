@@ -19,6 +19,9 @@ class Team
     #[ORM\Column(length: 255)]
     private ?string $description = null;
 
+    #[ORM\ManyToOne(inversedBy: 'manager')]
+    private ?User $manager = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -45,6 +48,33 @@ class Team
     {
         $this->description = $description;
 
+        return $this;
+    }
+
+    public function getManager(): ?User
+    {
+        return $this->manager;
+    }
+
+    public function setManager(?User $manager): static
+    {
+        $this->manager = $manager;
+
+        return $this;
+    }
+    /** @return Collection<int, User> */
+    public function getUsers(): Collection { return $this->users; }
+    public function addUser(User $user): static {
+        if (!$this->users->contains($user)) {
+            $this->users->add($user);
+            $user->setTeam($this);
+        }
+        return $this;
+    }
+    public function removeUser(User $user): static {
+        if ($this->users->removeElement($user)) {
+            if ($user->getTeam() === $this) $user->setTeam(null);
+        }
         return $this;
     }
 }

@@ -1,7 +1,5 @@
 <?php
-// src/DataFixtures/CongeFixtures.php
-// src/DataFixtures/CongeFixtures.php
-// src/DataFixtures/CongeFixtures.php
+
 namespace App\DataFixtures;
 
 use App\Entity\Conge;
@@ -16,12 +14,12 @@ class CongeFixtures extends Fixture implements DependentFixtureInterface
 {
     public function load(ObjectManager $manager): void
     {
-        // Get references to all users
-        $jean = $this->getReference('user_jean', User::class);
-        $claire = $this->getReference('user_claire', User::class);
-        $alice = $this->getReference('user_alice', User::class);
-        $thomas = $this->getReference('user_thomas', User::class);
-        $sophie = $this->getReference('user_sophie', User::class);
+        // Get references to users using the constants from UserFixtures
+        $jean = $this->getReference(UserFixtures::USER_JEAN_REFERENCE, User::class);
+        $alice = $this->getReference(UserFixtures::USER_ALICE_REFERENCE, User::class);
+        $thomas = $this->getReference(UserFixtures::USER_THOMAS_REFERENCE, User::class);
+        $sophie = $this->getReference(UserFixtures::USER_SOPHIE_REFERENCE, User::class);
+        $claire = $this->getReference(UserFixtures::MANAGER_DEV_REFERENCE, User::class); // Claire is a manager
 
         // --- Jean's Leaves (Development Team) ---
         $manager->persist($this->createLeave(
@@ -33,7 +31,7 @@ class CongeFixtures extends Fixture implements DependentFixtureInterface
             StatutDeDemande::ACCEPTE,
             '2025-06-15',
             '2025-06-20',
-            'Manager Martin'
+            'Claire Dubois'
         ));
 
         $manager->persist($this->createLeave(
@@ -87,7 +85,7 @@ class CongeFixtures extends Fixture implements DependentFixtureInterface
             StatutDeDemande::ACCEPTE,
             '2025-06-20',
             '2025-06-25',
-            'Claire Dubois'
+            'John Smith'
         ));
 
         $manager->persist($this->createLeave(
@@ -120,7 +118,7 @@ class CongeFixtures extends Fixture implements DependentFixtureInterface
             StatutDeDemande::ACCEPTE,
             '2025-06-10',
             '2025-06-15',
-            'Claire Dubois'
+            'John Smith'
         ));
 
         $manager->persist($this->createLeave(
@@ -153,7 +151,7 @@ class CongeFixtures extends Fixture implements DependentFixtureInterface
             StatutDeDemande::ACCEPTE,
             '2025-07-01',
             '2025-07-05',
-            'Claire Dubois'
+            'John Smith'
         ));
 
         $manager->persist($this->createLeave(
