@@ -40,13 +40,13 @@
             {% endfor %}
         </div>
 
-        {% if conges is empty %}
+        {% if pagination is empty %}
             <div class="alert alert-info">
                 <i class="bi bi-info-circle"></i> Vous n'avez soumis aucune demande de congé pour le moment.
             </div>
         {% else %}
             <div class="row row-cols-1 row-cols-md-2 g-4">
-                {% for conge in conges %}
+                {% for conge in pagination %}
                     <div class="col conge-card" data-status="{{ conge.statut.value }}">
                         <div class="card h-100 shadow-sm">
                             <div class="card-header d-flex justify-content-between align-items-center">
@@ -89,6 +89,13 @@
                                     <div class="mb-2">
                                         <small class="text-muted">Motif</small>
                                         <div>{{ conge.motif }}</div>
+                                    </div>
+                                {% endif %}
+
+                                {% if conge.statut.value == 'rejetée' and conge.refusalReason %}
+                                    <div class="mb-2">
+                                        <small class="text-muted">Raison du refus</small>
+                                        <div class="text-danger">{{ conge.refusalReason }}</div>
                                     </div>
                                 {% endif %}
 
@@ -142,6 +149,9 @@
                         </div>
                     </div>
                 {% endfor %}
+            </div>
+            <div class="mt-4 d-flex justify-content-center">
+                {{ knp_pagination_render(pagination) }}
             </div>
         {% endif %}
     </div>

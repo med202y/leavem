@@ -6,7 +6,7 @@ enum statutdedemande: string
 {
     case EN_ATTENTE = 'en_attente';
     case ACCEPTE = 'approuvée';
-    case REFUSE = 'rejetée';
+    case REFUSE = "rejetée";
     case ANNULEE = 'annulée';
     case CONSOMME =  'consommée';
     case ANNULATIONENATTENTE = 'annulation en attente';

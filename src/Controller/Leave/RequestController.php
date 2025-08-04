@@ -14,6 +14,7 @@ use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use App\Form\CongeType;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Psr\Log\LoggerInterface;
 
 class RequestController extends AbstractController
 {
@@ -21,7 +22,8 @@ class RequestController extends AbstractController
     #[IsGranted('ROLE_EMPLOYEE')]
     public function demande(
         EntityManagerInterface $em,
-        Request $request
+        Request $request,
+        LoggerInterface $logger
     ){
         $user = $this->getUser();
 
@@ -51,6 +53,13 @@ class RequestController extends AbstractController
 
             $em->persist($conge);
             $em->flush();
+
+            $logger->info(sprintf(
+                'Nouvelle demande de congé: User %s, Dates %s - %s',
+                $user->getUserIdentifier(),
+                $conge->getDateDebut()->format('Y-m-d'),
+                $conge->getDateFin()->format('Y-m-d')
+            ));
 
             // Notification for the user
             $notification = new Notification();

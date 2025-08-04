@@ -145,6 +145,13 @@
                                         </a>
                                     </div>
                                 {% endif %}
+
+                                {% if conge.refusalReason %}
+                                    <div class="mb-2">
+                                        <small class="block text-gray-600">Raison du refus</small>
+                                        <p class="text-red-600">{{ conge.refusalReason }}</p>
+                                    </div>
+                                {% endif %}
                             </div>
 
                             <footer class="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">

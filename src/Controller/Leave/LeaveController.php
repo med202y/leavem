@@ -15,17 +15,28 @@ use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Knp\Component\Pager\PaginatorInterface;
 
 class LeaveController extends AbstractController
 {
     #[Route('/my-leaves', name: 'my_leaves')]
     #[IsGranted('ROLE_EMPLOYEE')]
-    public function myLeaves(EntityManagerInterface $entityManager): Response
+    public function myLeaves(EntityManagerInterface $entityManager, Request $request, PaginatorInterface $paginator): Response
     {
         $user = $this->getUser();
 
-        $conges = $entityManager->getRepository(Conge::class)
-            ->findBy(['user' => $user], ['dateDemande' => 'DESC']);
+        $query = $entityManager->getRepository(Conge::class)
+            ->createQueryBuilder('c')
+            ->where('c.user = :user')
+            ->setParameter('user', $user)
+            ->orderBy('c.dateDemande', 'DESC')
+            ->getQuery();
+
+        $pagination = $paginator->paginate(
+            $query,
+            $request->query->getInt('page', 1), // Current page number
+            6 // Items per page
+        );
 
         // Prepare all status values and colors
         $allStatuses = statutdedemande::cases();
@@ -40,7 +51,7 @@ class LeaveController extends AbstractController
         ];
 
         return $this->render('Leave/my_leaves.html.twig', [
-            'conges'       => $conges,
+            'pagination'   => $pagination,
             'statuses'     => $statusLabels,
             'statusColors' => $statusColors,
         ]);

@@ -12,16 +12,18 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Psr\Log\LoggerInterface;
 
 class DashboardController extends AbstractController
 {
     #[Route('/dashboard', name: 'dashboard')]
     #[IsGranted('ROLE_EMPLOYEE')]
-    public function dashboard(EntityManagerInterface $em): Response
+    public function dashboard(EntityManagerInterface $em, LoggerInterface $logger): Response
     {
         $user = $this->getUser();
 
         if (!$user) {
+            $logger->warning('Dashboard access attempt without authentication.');
             return $this->redirectToRoute('app_login');
         }
 
@@ -36,6 +38,13 @@ class DashboardController extends AbstractController
                 $conge->getStatut()->value === 'approuvée'
                 && $conge->getDateFin() < $today
             ) {
+                $logger->info(sprintf(
+                    'Congé consommé automatiquement: ID %d, User %s, Dates %s - %s',
+                    $conge->getId(),
+                    $user->getUserIdentifier(),
+                    $conge->getDateDebut()->format('Y-m-d'),
+                    $conge->getDateFin()->format('Y-m-d')
+                ));
                 $conge->setStatut(\App\Enum\statutdedemande::CONSOMME);
                 $em->persist($conge);
                 $updated = true;
@@ -43,6 +52,7 @@ class DashboardController extends AbstractController
         }
         if ($updated) {
             $em->flush();
+            $logger->info('Statut des congés mis à jour pour l\'utilisateur: ' . $user->getUserIdentifier());
         }
 
         // --- Get Notifications ---

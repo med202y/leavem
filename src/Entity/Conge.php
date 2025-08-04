@@ -47,6 +47,9 @@ class Conge
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $justificatif = null;
 
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $refusalReason = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -159,6 +162,17 @@ class Conge
     public function setJustificatif(?string $justificatif): self
     {
         $this->justificatif = $justificatif;
+        return $this;
+    }
+
+    public function getRefusalReason(): ?string
+    {
+        return $this->refusalReason;
+    }
+
+    public function setRefusalReason(?string $reason): self
+    {
+        $this->refusalReason = $reason;
         return $this;
     }
 }

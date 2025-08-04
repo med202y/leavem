@@ -161,6 +161,12 @@ class TeamLeavesController extends AbstractController
                     ->setDateTraitement(new \DateTime())
                     ->setTraitePar($manager->getPrenom() . ' ' . $manager->getNom());
 
+                // Set refusal reason if action is refuse
+                if ($newStatut === StatutDeDemande::REFUSE) {
+                    $reason = $request->request->get('reason');
+                    $conge->setRefusalReason($reason);
+                }
+
                 $notifEmp = new Notification();
                 $notifMan = new Notification();
 
@@ -198,6 +204,7 @@ class TeamLeavesController extends AbstractController
                     $notifMan->setRecipient($manager);
                 }
 
+                $em->persist($conge); 
                 $em->persist($notifEmp);
                 $em->persist($notifMan);
             }
