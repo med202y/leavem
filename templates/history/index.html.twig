@@ -1,7 +1,7 @@
 {# templates/history.html.twig #}
 {% extends 'base.html.twig' %}
 
-{% block title %}Historique des notifications - {{ user.prenom }} {{ user.nom }}{% endblock %}
+{% block title %}Historique des notifications - {{ user.firstName }} {{ user.lastName }}{% endblock %}
 
 {% block stylesheets %}
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -17,44 +17,38 @@
     <!-- Barre latérale -->
     <aside id="sidebar" class="sidebar fixed top-0 left-0 h-full w-72 z-50 bg-gradient-to-br from-indigo-600 to-purple-700 text-white transform transition-transform duration-300 md:translate-x-0 -translate-x-full md:block">
         <div class="flex flex-col h-full">
-            <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-72 bg-indigo-800 text-white shadow-md hidden md:block">
-                <div class="h-full flex flex-col justify-between">
-                    <div>
-                        <div class="p-6 text-2xl font-bold">
-                            <i class="fas fa-user-circle mr-2"></i> Espace Utilisateur
-                        </div>
-                        <nav class="flex-1 p-4">
-                            <ul class="space-y-1">
-                                {% set menu = [
-                                    {'label': 'Tableau de bord', 'icon': '🏠', 'url': path('dashboard')},
-                                    {'label': 'Demander un congé', 'icon': '📄', 'url': path('demande')},
-                                    {'label': 'Équipe', 'icon': '👥', 'url': path('team')}
-                                ] %}
+            <div class="p-6 text-2xl font-bold">
+                <i class="fas fa-user-circle mr-2"></i> Espace Utilisateur
+            </div>
+            <nav class="flex-1 p-4">
+                <ul class="space-y-1">
+                    {% set menu = [
+                        {'label': 'Tableau de bord', 'icon': '🏠', 'url': path('dashboard')},
+                        {'label': 'Demander un congé', 'icon': '📄', 'url': path('request_leave')},
+                        {'label': 'Équipe', 'icon': '👥', 'url': path('team')}
+                    ] %}
 
-                                {% for item in menu %}
-                                    <li>
-                                        <a href="{{ item.url }}" class="flex items-center gap-2 px-4 py-2 rounded hover:bg-white/10 transition-colors">
-                                            <span class="text-lg">{{ item.icon }}</span>
-                                            <span class="text-sm font-medium">{{ item.label }}</span>
-                                        </a>
-                                    </li>
-                                {% endfor %}
-                            </ul>
-                            <div class="pt-4">
-                                <p class="text-xs uppercase tracking-wide px-4 mb-2 opacity-60">Compte</p>
-                                <a href="{{ path('user_profile') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 text-white/80">
-                                    <i class="fas fa-user-cog w-5"></i>
-                                    <span>Paramètres du profil</span>
-                                </a>
-                                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 text-white/80">
-                                    <i class="fas fa-sign-out-alt w-5"></i>
-                                    <span>Déconnexion</span>
-                                </a>
-                            </div>
-                        </nav>
-                    </div>
+                    {% for item in menu %}
+                        <li>
+                            <a href="{{ item.url }}" class="flex items-center gap-2 px-4 py-2 rounded hover:bg-white/10 transition-colors">
+                                <span class="text-lg">{{ item.icon }}</span>
+                                <span class="text-sm font-medium">{{ item.label }}</span>
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+                <div class="pt-4">
+                    <p class="text-xs uppercase tracking-wide px-4 mb-2 opacity-60">Compte</p>
+                    <a href="{{ path('user_profile') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 text-white/80">
+                        <i class="fas fa-user-cog w-5"></i>
+                        <span>Paramètres du profil</span>
+                    </a>
+                    <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 text-white/80">
+                        <i class="fas fa-sign-out-alt w-5"></i>
+                        <span>Déconnexion</span>
+                    </a>
                 </div>
-            </aside>
+            </nav>
         </div>
     </aside>
 
@@ -64,10 +58,10 @@
             {# En-tête #}
             <div class="bg-white rounded-2xl p-6 shadow mb-6 flex justify-between items-center">
                 <h1 class="text-3xl font-bold text-indigo-700">Historique des notifications</h1>
-                <p class="text-sm text-gray-500">{{ "now"|date("l, F j, Y")|trans }}</p>
+                <p class="text-sm text-gray-500">{{ "now"|date("l, F j, Y") }}</p>
             </div>
 
-            {# Tableau d’historique #}
+            {# Tableau d'historique #}
             <div class="bg-white rounded-2xl shadow p-6">
                 {% if notifications|length > 0 %}
                     <div class="overflow-x-auto">
@@ -77,7 +71,6 @@
                                 <th class="px-4 py-2">Date</th>
                                 <th class="px-4 py-2">Titre</th>
                                 <th class="px-4 py-2">Message</th>
-
                             </tr>
                             </thead>
                             <tbody>
@@ -92,7 +85,6 @@
                                     <td class="px-4 py-3 text-gray-700">
                                         {{ notification.message }}
                                     </td>
-
                                 </tr>
                             {% endfor %}
                             </tbody>
@@ -102,7 +94,7 @@
                     {# Pagination si nécessaire #}
 
                 {% else %}
-                    <p class="text-center text-gray-500">Aucune notification dans l’historique.</p>
+                    <p class="text-center text-gray-500">Aucune notification dans l'historique.</p>
                 {% endif %}
             </div>
         </div>

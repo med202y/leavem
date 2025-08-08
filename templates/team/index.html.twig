@@ -26,7 +26,7 @@
                     <ul class="space-y-1">
                         {% set menu = [
                             {'label': 'Tableau de bord', 'icon': '🏠', 'url': path('dashboard')},
-                            {'label': 'Demander un congé', 'icon': '📄', 'url': path('demande')},
+                            {'label': 'Demander un congé', 'icon': '📄', 'url': path('request_leave')},
                             {'label': 'Équipe', 'icon': '👥', 'url': path('team')}
                         ] %}
 
@@ -45,7 +45,7 @@
                             <i class="fas fa-user-cog w-5"></i>
                             <span>Paramètres du profil</span>
                         </a>
-                        <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 text-white/80">
+                        <a href="{{ path('app_logout') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 text-white/80">
                             <i class="fas fa-sign-out-alt w-5"></i>
                             <span>Déconnexion</span>
                         </a>
@@ -88,15 +88,16 @@
                             <tbody>
                             {% for member in members %}
                                 <tr class="border-b hover:bg-gray-50">
+                                   {# Dans team.html.twig #}
                                     <td class="px-4 py-3 text-gray-800">
-                                        {{ member.nom }}
+                                          {{ member.lastName }} {# Remplacer member.nom #}
                                     </td>
                                     <td class="px-4 py-3 text-gray-800">
-                                        {{ member.prenom }}
-                                    </td>
+                                          {{ member.firstName }} {# Remplacer member.prenom #}
+                                    </td> 
                                     <td class="px-4 py-3 text-gray-600">
-                                        {{ member.departement.name ?? '–' }}
-                                    </td>
+    {{ member.department.value ?? '–' }} {# Accéder à la valeur de l'énumération #}
+</td>
                                 </tr>
                             {% endfor %}
                             </tbody>

@@ -3,7 +3,7 @@
 namespace App\Enum;
 
 
-enum typeconge: string
+enum LeaveType: string
 {
     // Congés administratifs
     case ANNUEL = 'congé annuel';

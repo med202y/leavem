@@ -50,7 +50,7 @@
                     </a>
                     <span>Mes Demandes de Congé</span>
                 </h1>
-                <a href="{{ path('demande') }}"
+                <a href="{{ path('request_leave') }}"
                    class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 transition">
                     <i class="fas fa-plus-circle mr-2"></i> Nouvelle Demande
                 </a>
@@ -58,152 +58,164 @@
 
             <!-- Filtres par statut -->
             <div class="flex flex-wrap gap-2 mb-6">
-                <button
-                    class="status-filter px-3 py-1 rounded-full bg-white text-gray-800 border border-gray-300 hover:border-indigo-500 active:border-indigo-500 border font-bold"
-                    data-status="all">Tous
-                </button>
-                {% for status in statuses %}
-                    <button
-                        class="status-filter px-3 py-1 rounded-full bg-{{ statusColors[status] }}-100 text-{{ statusColors[status] }}-800 hover:bg-{{ statusColors[status] }}-200"
-                        data-status="{{ status }}">
-                        {{ status|replace({'_': ' '})|title }}
-                    </button>
-                {% endfor %}
-            </div>
-
-            {% if conges is empty %}
+    <button
+        class="status-filter px-3 py-1 rounded-full bg-white text-gray-800 border border-gray-300 hover:border-indigo-500 active:border-indigo-500 border font-bold"
+        data-status="all">Tous
+    </button>
+    {% for status in statuses %}
+        {% set color = statusColors[status] %}
+        <button
+            class="status-filter px-3 py-1 rounded-full 
+            {% if color == 'success' %}bg-green-100 text-green-800 hover:bg-green-200
+            {% elseif color == 'danger' %}bg-red-100 text-red-800 hover:bg-red-200
+            {% elseif color == 'warning' %}bg-yellow-100 text-yellow-800 hover:bg-yellow-200
+            {% elseif color == 'secondary' %}bg-gray-100 text-gray-800 hover:bg-gray-200
+            {% elseif color == 'info' %}bg-blue-100 text-blue-800 hover:bg-blue-200
+            {% endif %}"
+            data-status="{{ status }}">
+            {{ status|replace({'_': ' '})|title }}
+        </button>
+    {% endfor %}
+</div>
+            {% if leaves is empty %}
                 <div class="bg-white p-4 rounded-lg shadow text-center text-gray-500">
                     <i class="fas fa-info-circle mr-2"></i>
                     Vous n'avez soumis aucune demande de congé pour le moment.
                 </div>
             {% else %}
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {% for conge in conges %}
+                    {% for leave in leaves %}
                         <div class="conge-card bg-white rounded-2xl shadow hover:shadow-lg transition p-4 flex flex-col justify-between"
-                             data-status="{{ conge.statut.value }}">
+                             data-status="{{ leave.status.value }}">
                             <header class="flex justify-between items-center mb-3">
-                                <span
-                                    class="px-2 py-1 rounded-full bg-{{ statusColors[conge.statut.value] }}-100 text-{{ statusColors[conge.statut.value] }}-800 text-sm">
-                                    {{ conge.statut.value|replace({'_': ' '})|title }}
-                                </span>
-                                <span class="text-gray-400 text-sm">#{{ conge.id }}</span>
+                                <span class="px-2 py-1 rounded-full 
+    {% if statusColors[leave.status.value] == 'success' %}bg-green-100 text-green-800
+    {% elseif statusColors[leave.status.value] == 'danger' %}bg-red-100 text-red-800
+    {% elseif statusColors[leave.status.value] == 'warning' %}bg-yellow-100 text-yellow-800
+    {% elseif statusColors[leave.status.value] == 'secondary' %}bg-gray-100 text-gray-800
+    {% elseif statusColors[leave.status.value] == 'info' %}bg-blue-100 text-blue-800
+    {% endif %} text-sm">
+    {{ leave.status.value|replace({'_': ' '})|title }}
+</span>
+                                <span class="text-gray-400 text-sm">#{{ leave.id }}</span>
                             </header>
 
                             <div class="mb-4">
                                 <h2 class="text-xl font-semibold text-gray-800 mb-2">
                                     <i class="fas fa-calendar-alt mr-1"></i>
-                                    {{ conge.typeConge.value|title }}
+                                    {{ leave.leaveType.value|title }}
                                 </h2>
 
                                 <div class="flex items-center justify-between text-gray-600 mb-2">
                                     <div>
                                         <small class="block">Du</small>
-                                        <span class="font-medium">{{ conge.dateDebut|date('d M Y') }}</span>
+                                        <span class="font-medium">{{ leave.startDate|date('d M Y') }}</span>
                                     </div>
                                     <i class="fas fa-arrow-right mx-2"></i>
                                     <div>
                                         <small class="block">Au</small>
-                                        <span class="font-medium">{{ conge.dateFin|date('d M Y') }}</span>
+                                        <span class="font-medium">{{ leave.endDate|date('d M Y') }}</span>
                                     </div>
                                 </div>
 
                                 <div class="mb-2">
                                     <small class="block text-gray-600">Durée</small>
-                                    <span class="font-medium">{{ conge.dateFin.diff(conge.dateDebut).days + 1 }} jours</span>
+                                    <span class="font-medium">{{ leave.endDate.diff(leave.startDate).days + 1 }} jours</span>
                                 </div>
 
-                                {% if conge.motif %}
+                                {% if leave.reason %}
                                     <div class="mb-2">
                                         <small class="block text-gray-600">Motif</small>
-                                        <p>{{ conge.motif }}</p>
+                                        <p>{{ leave.reason }}</p>
                                     </div>
                                 {% endif %}
 
                                 <div class="mb-2">
                                     <small class="block text-gray-600">Demandé le</small>
-                                    <span>{{ conge.dateDemande|date('d M Y H:i') }}</span>
+                                    <span>{{ leave.requestDate|date('d M Y H:i') }}</span>
                                 </div>
                                 <div class="mb-2">
                                     <small class="block text-gray-600">Demandé par</small>
                                     <span class="font-medium">
-                                        {{ conge.user.prenom }} {{ conge.user.nom }}
+                                        {{ leave.user.firstName }} {{ leave.user.lastName }}
                                     </span>
                                 </div>
-                                {% if conge.dateTraitement %}
+                                {% if leave.processDate %}
                                     <div>
                                         <small class="block text-gray-600">Traité le</small>
-                                        <span>{{ conge.dateTraitement|date('d M Y H:i') }}</span>
+                                        <span>{{ leave.processDate|date('d M Y H:i') }}</span>
                                     </div>
                                 {% endif %}
 
                                 {# Download justificatif button #}
-                                {% if conge.justificatif %}
+                                {% if leave.proof %}
                                     <div class="mb-2">
                                         <small class="block text-gray-600">Justificatif</small>
-                                        <a href="{{ asset('images/' ~ conge.justificatif) }}" class="btn btn-sm btn-outline-primary mt-1" download>
+                                        <a href="{{ asset('images/' ~ leave.proof) }}" class="btn btn-sm btn-outline-primary mt-1" download>
                                             <i class="fas fa-download"></i> Télécharger
                                         </a>
                                     </div>
                                 {% endif %}
 
-                                {% if conge.refusalReason %}
+                                {% if leave.refusalReason %}
                                     <div class="mb-2">
                                         <small class="block text-gray-600">Raison du refus</small>
-                                        <p class="text-red-600">{{ conge.refusalReason }}</p>
+                                        <p class="text-red-600">{{ leave.refusalReason }}</p>
                                     </div>
                                 {% endif %}
                             </div>
 
                             <footer class="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
                                 <div>
-                                    {% if conge.traitePar %}
-                                        <small class="text-gray-500">Traité par : {{ conge.traitePar }}</small>
+                                    {% if leave.processedBy %}
+                                        <small class="text-gray-500">Traité par : {{ leave.processedBy }}</small>
                                     {% endif %}
                                 </div>
                                 <div class="space-x-2">
-                                    {% if conge.statut.value == 'en_attente' %}
-                                        <button
-                                            class="action-btn accept-btn px-3 py-1 text-sm rounded-lg bg-green-100 text-green-600 hover:bg-green-200 transition transform hover:scale-105"
-                                            data-id="{{ conge.id }}"
-                                            data-action="accept"
-                                            data-user="{{ conge.user.prenom }} {{ conge.user.nom }}"
-                                            data-type="{{ conge.typeConge.value|title }}"
-                                            data-dates="{{ conge.dateDebut|date('d M Y') }} - {{ conge.dateFin|date('d M Y') }}">
-                                            <i class="fas fa-check mr-1"></i>
-                                            Accepter
-                                        </button>
-                                        <button
-                                            class="action-btn refuse-btn px-3 py-1 text-sm rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition transform hover:scale-105"
-                                            data-id="{{ conge.id }}"
-                                            data-action="refuse"
-                                            data-user="{{ conge.user.prenom }} {{ conge.user.nom }}"
-                                            data-type="{{ conge.typeConge.value|title }}"
-                                            data-dates="{{ conge.dateDebut|date('d M Y') }} - {{ conge.dateFin|date('d M Y') }}">
-                                            <i class="fas fa-times mr-1"></i>
-                                            Refuser
-                                        </button>
-                                    {% elseif conge.statut.value == 'annulation en attente' %}
-                                        <button
-                                            class="action-btn approve-cancellation-btn px-3 py-1 text-sm rounded-lg bg-green-100 text-green-600 hover:bg-green-200 transition"
-                                            data-id="{{ conge.id }}"
-                                            data-action="approve_cancellation"
-                                            data-user="{{ conge.user.prenom }} {{ conge.user.nom }}"
-                                            data-type="{{ conge.typeConge.value|title }}"
-                                            data-dates="{{ conge.dateDebut|date('d M Y') }} - {{ conge.dateFin|date('d M Y') }}">
-                                            <i class="fas fa-check mr-1"></i>
-                                            Approuver l'annulation
-                                        </button>
-                                        <button
-                                            class="action-btn reject-cancellation-btn px-3 py-1 text-sm rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition"
-                                            data-id="{{ conge.id }}"
-                                            data-action="reject_cancellation"
-                                            data-user="{{ conge.user.prenom }} {{ conge.user.nom }}"
-                                            data-type="{{ conge.typeConge.value|title }}"
-                                            data-dates="{{ conge.dateDebut|date('d M Y') }} - {{ conge.dateFin|date('d M Y') }}">
-                                            <i class="fas fa-times mr-1"></i>
-                                            Rejeter l'annulation
-                                        </button>
-                                    {% endif %}
+                                    {% if leave.status.value == 'en_attente' %}
+    <button
+        class="action-btn accept-btn px-3 py-1 text-sm rounded-lg bg-green-100 text-green-600 hover:bg-green-200 transition transform hover:scale-105"
+        data-id="{{ leave.id }}"
+        data-action="accept"
+        data-user="{{ leave.user.firstName }} {{ leave.user.lastName }}"
+        data-type="{{ leave.leaveType.value|title }}"
+        data-dates="{{ leave.startDate|date('d M Y') }} - {{ leave.endDate|date('d M Y') }}">
+        <i class="fas fa-check mr-1"></i>
+        Accepter
+    </button>
+    <button
+        class="action-btn refuse-btn px-3 py-1 text-sm rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition transform hover:scale-105"
+        data-id="{{ leave.id }}"
+        data-action="refuse"
+        data-user="{{ leave.user.firstName }} {{ leave.user.lastName }}"
+        data-type="{{ leave.leaveType.value|title }}"
+        data-dates="{{ leave.startDate|date('d M Y') }} - {{ leave.endDate|date('d M Y') }}">
+        <i class="fas fa-times mr-1"></i>
+        Refuser
+    </button>
+{% elseif leave.status.value == 'annulation en attente' %}
+    <button
+        class="action-btn approve-cancellation-btn px-3 py-1 text-sm rounded-lg bg-green-100 text-green-600 hover:bg-green-200 transition"
+        data-id="{{ leave.id }}"
+        data-action="approve_cancellation"
+        data-user="{{ leave.user.firstName }} {{ leave.user.lastName }}"
+        data-type="{{ leave.leaveType.value|title }}"
+        data-dates="{{ leave.startDate|date('d M Y') }} - {{ leave.endDate|date('d M Y') }}">
+        <i class="fas fa-check mr-1"></i>
+        Approuver l'annulation
+    </button>
+    <button
+        class="action-btn reject-cancellation-btn px-3 py-1 text-sm rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition"
+        data-id="{{ leave.id }}"
+        data-action="reject_cancellation"
+        data-user="{{ leave.user.firstName }} {{ leave.user.lastName }}"
+        data-type="{{ leave.leaveType.value|title }}"
+        data-dates="{{ leave.startDate|date('d M Y') }} - {{ leave.endDate|date('d M Y') }}">
+        <i class="fas fa-times mr-1"></i>
+        Rejeter l'annulation
+    </button>
+{% endif %}
+
                                 </div>
                             </footer>
                         </div>
@@ -319,43 +331,79 @@
 
             // Show confirmation modal
             function showConfirmationModal(action, leaveData) {
-                currentAction = action;
-                currentLeaveId = leaveData.id;
+    currentAction = action;
+    currentLeaveId = leaveData.id;
 
-                const isAccept = action === 'accept';
-                const title = isAccept ? 'Accepter la demande' : 'Refuser la demande';
-                const message = isAccept
-                    ? 'Êtes-vous sûr de vouloir accepter cette demande de congé ?'
-                    : 'Êtes-vous sûr de vouloir refuser cette demande de congé ?';
+    let title = '';
+    let message = '';
+    let iconHtml = '';
+    let iconBg = '';
+    let btnText = '';
+    let btnClass = '';
+    let showReason = false;
 
-                // Set modal content
-                document.getElementById('confirmationTitle').textContent = title;
-                document.getElementById('confirmationMessage').textContent = message;
-                document.getElementById('confirmUser').textContent = leaveData.user;
-                document.getElementById('confirmType').textContent = leaveData.type;
-                document.getElementById('confirmDates').textContent = leaveData.dates;
+    switch (action) {
+        case 'accept':
+            title = 'Accepter la demande';
+            message = 'Êtes-vous sûr de vouloir accepter cette demande de congé ?';
+            iconHtml = '<i class="fas fa-check text-white"></i>';
+            iconBg = 'bg-green-500';
+            btnText = '<i class="fas fa-check mr-2"></i>Accepter';
+            btnClass = 'bg-green-600 hover:bg-green-700';
+            break;
+        case 'refuse':
+            title = 'Refuser la demande';
+            message = 'Êtes-vous sûr de vouloir refuser cette demande de congé ?';
+            iconHtml = '<i class="fas fa-times text-white"></i>';
+            iconBg = 'bg-red-500';
+            btnText = '<i class="fas fa-times mr-2"></i>Refuser';
+            btnClass = 'bg-red-600 hover:bg-red-700';
+            showReason = true;
+            break;
+        case 'approve_cancellation':
+            title = 'Approuver l\'annulation';
+            message = 'Êtes-vous sûr de vouloir approuver cette demande d\'annulation ?';
+            iconHtml = '<i class="fas fa-check text-white"></i>';
+            iconBg = 'bg-green-500';
+            btnText = '<i class="fas fa-check mr-2"></i>Approuver';
+            btnClass = 'bg-green-600 hover:bg-green-700';
+            break;
+        case 'reject_cancellation':
+            title = 'Rejeter l\'annulation';
+            message = 'Êtes-vous sûr de vouloir rejeter cette demande d\'annulation ?';
+            iconHtml = '<i class="fas fa-times text-white"></i>';
+            iconBg = 'bg-red-500';
+            btnText = '<i class="fas fa-times mr-2"></i>Rejeter';
+            btnClass = 'bg-red-600 hover:bg-red-700';
+            break;
+    }
 
-                // Set icon and colors
-                const icon = document.getElementById('confirmationIcon');
-                const confirmBtn = document.getElementById('confirmAction');
-                const reasonSection = document.getElementById('reasonSection');
+    // Set modal content
+    document.getElementById('confirmationTitle').textContent = title;
+    document.getElementById('confirmationMessage').textContent = message;
+    document.getElementById('confirmUser').textContent = leaveData.user;
+    document.getElementById('confirmType').textContent = leaveData.type;
+    document.getElementById('confirmDates').textContent = leaveData.dates;
 
-                if (isAccept) {
-                    icon.innerHTML = '<i class="fas fa-check text-white"></i>';
-                    icon.className = 'w-10 h-10 rounded-full flex items-center justify-center bg-green-500';
-                    confirmBtn.innerHTML = '<i class="fas fa-check mr-2"></i>Accepter';
-                    confirmBtn.className = 'flex-1 px-4 py-2 text-white rounded-lg transition transform hover:scale-105 bg-green-600 hover:bg-green-700';
-                    reasonSection.classList.add('hidden');
-                } else {
-                    icon.innerHTML = '<i class="fas fa-times text-white"></i>';
-                    icon.className = 'w-10 h-10 rounded-full flex items-center justify-center bg-red-500';
-                    confirmBtn.innerHTML = '<i class="fas fa-times mr-2"></i>Refuser';
-                    confirmBtn.className = 'flex-1 px-4 py-2 text-white rounded-lg transition transform hover:scale-105 bg-red-600 hover:bg-red-700';
-                    reasonSection.classList.remove('hidden');
-                }
+    // Set icon and button style
+    const icon = document.getElementById('confirmationIcon');
+    const confirmBtn = document.getElementById('confirmAction');
+    const reasonSection = document.getElementById('reasonSection');
 
-                confirmationModal.classList.remove('hidden');
-            }
+    icon.innerHTML = iconHtml;
+    icon.className = `w-10 h-10 rounded-full flex items-center justify-center ${iconBg}`;
+    confirmBtn.innerHTML = btnText;
+    confirmBtn.className = `flex-1 px-4 py-2 text-white rounded-lg transition transform hover:scale-105 ${btnClass}`;
+
+    if (showReason) {
+        reasonSection.classList.remove('hidden');
+    } else {
+        reasonSection.classList.add('hidden');
+    }
+
+    confirmationModal.classList.remove('hidden');
+}
+
 
             // Show alert modal
             function showAlert(title, message, type = 'success') {
@@ -474,12 +522,12 @@
                     .then(data => {
                         hideModal(confirmationModal);
 
-                        if (data.success) {
-                            const actionText = currentAction === 'accept' ? 'accepté' : 'refusé';
-                            showAlert('Succès', `Congé ${actionText} avec succès.`, 'success');
-                        } else {
-                            showAlert('Erreur', data.message || 'Impossible de mettre à jour.', 'error');
-                        }
+                       if (data.status === 'ok') {
+    showAlert('Succès', data.message, 'success');
+} else {
+    showAlert('Erreur', data.message || 'Impossible de mettre à jour.', 'error');
+}
+
                     })
                     .catch(err => {
                         hideModal(confirmationModal);

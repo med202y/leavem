@@ -6,6 +6,7 @@ use App\Repository\NotificationRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: NotificationRepository::class)]
+#[ORM\Table(name: '`notification`')]
 class Notification
 {
     #[ORM\Id]
@@ -20,6 +21,8 @@ class Notification
     private ?string $message = null;
 
     #[ORM\ManyToOne(inversedBy: 'notifications')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+
     private ?User $recipient = null;
 
     #[ORM\Column(nullable: true)]

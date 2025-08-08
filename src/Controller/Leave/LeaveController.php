@@ -1,199 +1,145 @@
 <?php
 
-// src/Controller/CongeController.php
 namespace App\Controller\Leave;
 
-use App\Entity\Conge;
-use App\Entity\Notification;
+use App\Entity\Leave;
 use App\Entity\User;
-use App\Enum\statutdedemande;
+use App\Enum\RequestStatus;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Core\Exception\AccessDeniedException;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Knp\Component\Pager\PaginatorInterface;
-
+use App\Repository\LeaveRepository;
+use App\Repository\NotificationRepository;
+use DateTime;
+ #[IsGranted('ROLE_EMPLOYEE')]
 class LeaveController extends AbstractController
 {
     #[Route('/my-leaves', name: 'my_leaves')]
-    #[IsGranted('ROLE_EMPLOYEE')]
-    public function myLeaves(EntityManagerInterface $entityManager, Request $request, PaginatorInterface $paginator): Response
-    {
+    
+    public function myLeaves(
+        LeaveRepository $leaveRepository, 
+        Request $request, 
+        PaginatorInterface $paginator
+    ): Response {
         $user = $this->getUser();
-
-        $query = $entityManager->getRepository(Conge::class)
-            ->createQueryBuilder('c')
-            ->where('c.user = :user')
-            ->setParameter('user', $user)
-            ->orderBy('c.dateDemande', 'DESC')
-            ->getQuery();
-
+        $query = $leaveRepository->createQueryBuilderForUserOrderedByDate($user);
         $pagination = $paginator->paginate(
             $query,
-            $request->query->getInt('page', 1), // Current page number
-            6 // Items per page
+            $request->query->getInt('page', 1),
+            6
         );
 
-        // Prepare all status values and colors
-        $allStatuses = statutdedemande::cases();
-        $statusLabels = array_map(fn($s) => $s->value, $allStatuses);
-        $statusColors = [
-            statutdedemande::EN_ATTENTE->value => 'warning',
-            statutdedemande::ACCEPTE    ->value  => 'success',
-            statutdedemande::REFUSE->value    => 'danger',
-            statutdedemande::ANNULEE->value    => 'secondary',
-            statutdedemande::CONSOMME->value    => 'secondary',
-            statutdedemande::ANNULATIONENATTENTE->value => 'warning',
-        ];
 
-        return $this->render('Leave/my_leaves.html.twig', [
-            'pagination'   => $pagination,
-            'statuses'     => $statusLabels,
-            'statusColors' => $statusColors,
+        return $this->render('leave/my_leaves.html.twig', [
+            'pagination' => $pagination,
+            'statuses' => array_map(fn($s) => $s->value, RequestStatus::cases()),
+            'statusColors' => RequestStatus::colorMap(),
         ]);
     }
 
-    #[Route('/edit-conge/{id}', name: 'edit_conge', methods: ['POST'])]
-    #[IsGranted('ROLE_EMPLOYEE')]
-    public function editConge(
+    #[Route('/edit-leave/{id}', name: 'edit_leave', methods: ['POST'])]
+    public function editLeave(
         Request $request,
-        Conge $conge,
-        EntityManagerInterface $em
-    ): JsonResponse {
+        Leave $leave,
+        EntityManagerInterface $em,
+        NotificationRepository $notificationRepo
+    ): Response {
         $user = $this->getUser();
 
-        // Sécurité : seul le propriétaire peut modifier
-        if ($conge->getUser()->getId() !== $user->getId()) {
-            return new JsonResponse(['success' => false, 'message' => 'Accès non autorisé'], 403);
-        }
-
-        // Seulement si EN_ATTENTE
-        if ($conge->getStatut() !== statutdedemande::EN_ATTENTE) {
-            return new JsonResponse(['success' => false, 'message' => 'Seuls les congés en attente peuvent être modifiés'], 400);
-        }
-
-        $data = json_decode($request->getContent(), true);
-        if (empty($data['dateDebut']) || empty($data['dateFin'])) {
-            return new JsonResponse(['success' => false, 'message' => 'Dates manquantes'], 400);
+        // Security checks
+        if (!$this->isLeaveEditable($leave, $user)) {
+            $this->addFlash('error', 'Cette demande ne peut pas être modifiée');
+            return $this->redirectToRoute('my_leaves');
         }
 
         try {
-            $conge->setDateDebut(new \DateTime($data['dateDebut']));
-            $conge->setDateFin(new \DateTime($data['dateFin']));
+            $data = json_decode($request->getContent(), true);
+            $startDate = new DateTime($data['startDate'] ?? '');
+            $endDate = new DateTime($data['endDate'] ?? '');
 
-            // Notification employé
-            $notifEmp = new Notification();
-            $notifEmp->setTitle('Demande de congé modifiée');
-            $notifEmp->setMessage("Votre demande de congé a été modifiée. Nouvelle période : " .
-                $conge->getDateDebut()->format('d/m/Y') . " au " .
-                $conge->getDateFin()->format('d/m/Y') . ".");
-            $notifEmp->setRecipient($user);
+            $this->validateLeaveDates($startDate, $endDate);
+            
+            $leave
+                ->setStartDate($startDate)
+                ->setEndDate($endDate)
+                ->setRequestDate(new DateTime()); // Update request date
 
-            // Notification manager
-            $manager = $user->getManager();
-            if ($manager) {
-                $notifMan = new Notification();
-                $notifMan->setTitle('Action : Congé modifié');
-                $notifMan->setMessage($user->getPrenom() . " " . $user->getNom() .
-                    " a modifié sa demande de congé. Nouvelle période : " .
-                    $conge->getDateDebut()->format('d/m/Y') . " au " .
-                    $conge->getDateFin()->format('d/m/Y') . ".");
-                $notifMan->setRecipient($manager);
-                $em->persist($notifMan);
-            }
-
-            $em->persist($notifEmp);
+            $notificationRepo->createLeaveModifiedNotification($leave, $user);
             $em->flush();
 
-            return new JsonResponse(['success' => true]);
+            $this->addFlash('success', 'Congé modifié avec succès');
+        } catch (\InvalidArgumentException $e) {
+            $this->addFlash('error', $e->getMessage());
         } catch (\Exception $e) {
-            return new JsonResponse(['success' => false, 'message' => $e->getMessage()], 500);
+            $this->addFlash('error', 'Erreur lors de la modification');
         }
+        // Redirect to the same page to see the updated leave
+        return $this->redirectToRoute('my_leaves');
     }
 
-    #[Route('/cancel-conge/{id}', name: 'cancel_conge', methods: ['POST'])]
-    #[IsGranted('ROLE_EMPLOYEE')]
-    public function cancelConge(
-        Conge $conge,
-        EntityManagerInterface $em
-    ): JsonResponse {
+    #[Route('/cancel-leave/{id}', name: 'cancel_leave', methods: ['POST'])]
+    public function cancelLeave(
+        Leave $leave,
+        EntityManagerInterface $em,
+        NotificationRepository $notificationRepo
+    ): Response {
         $user = $this->getUser();
 
-        // Sécurité
-        if ($conge->getUser()->getId() !== $user->getId()) {
-            return new JsonResponse(['success' => false, 'message' => 'Accès non autorisé'], 403);
-        }
-
-        // Seulement si EN_ATTENTE ou ACCEPTE
-        if (!in_array($conge->getStatut(), [statutdedemande::EN_ATTENTE, statutdedemande::ACCEPTE])) {
-            return new JsonResponse(
-                ['success' => false, 'message' => 'Seuls les congés en attente ou approuvés peuvent être annulés'],
-                400
-            );
+        if (!$this->isLeaveCancellable($leave, $user)) {
+            $this->addFlash('error', 'Cette demande ne peut pas être annulée');
+            return $this->redirectToRoute('my_leaves');
         }
 
         try {
-            $manager = $user->getManager();
-
-            // Si congé approuvé → Annulation en attente
-            if ($conge->getStatut() === statutdedemande::ACCEPTE) {
-                $conge->setStatut(statutdedemande::ANNULATIONENATTENTE);
-
-                // Notification employé
-                $notifEmp = new Notification();
-                $notifEmp->setTitle('Demande d\'annulation envoyée');
-                $notifEmp->setMessage("Votre demande d'annulation du congé du " .
-                    $conge->getDateDebut()->format('d/m/Y') . " au " .
-                    $conge->getDateFin()->format('d/m/Y') . " est en attente de validation.");
-                $notifEmp->setRecipient($user);
-
-                // Notification manager
-                if ($manager) {
-                    $notifMan = new Notification();
-                    $notifMan->setTitle('Action requise : Annulation à valider');
-                    $notifMan->setMessage($user->getPrenom() . " " . $user->getNom() .
-                        " a demandé l'annulation de son congé (du " .
-                        $conge->getDateDebut()->format('d/m/Y') . " au " .
-                        $conge->getDateFin()->format('d/m/Y') . ").");
-                    $notifMan->setRecipient($manager);
-                    $em->persist($notifMan);
-                }
-
-                $em->persist($notifEmp);
-
+            if ($leave->getStatus() === RequestStatus::ACCEPTE) {
+                $leave->setStatus(RequestStatus::ANNULATIONENATTENTE);
+                $message = 'Demande d\'annulation envoyée';
             } else {
-                // Si congé en attente → Annulation directe
-                $conge->setStatut(statutdedemande::ANNULEE);
-
-                // Notification employé
-                $notifEmp = new Notification();
-                $notifEmp->setTitle('Annulation de congé confirmée');
-                $notifEmp->setMessage("Votre demande de congé a été annulée avec succès.");
-                $notifEmp->setRecipient($user);
-
-                // Notification manager
-                if ($manager) {
-                    $notifMan = new Notification();
-                    $notifMan->setTitle('Information : Congé annulé');
-                    $notifMan->setMessage($user->getPrenom() . " " . $user->getNom() .
-                        " a annulé sa demande de congé (du " .
-                        $conge->getDateDebut()->format('d/m/Y') . " au " .
-                        $conge->getDateFin()->format('d/m/Y') . ").");
-                    $notifMan->setRecipient($manager);
-                    $em->persist($notifMan);
-                }
-
-                $em->persist($notifEmp);
+                $leave->setStatus(RequestStatus::ANNULEE);
+                $message = 'Congé annulé avec succès';
+                $notificationRepo->createLeaveCancellationNotification($leave, $user);
             }
 
             $em->flush();
-            return new JsonResponse(['success' => true]);
+            $this->addFlash('success', $message);
         } catch (\Exception $e) {
-            return new JsonResponse(['success' => false, 'message' => $e->getMessage()], 500);
+            $this->addFlash('error', 'Erreur lors de l\'annulation');
+        }
+
+        return $this->redirectToRoute('my_leaves');
+    }
+
+    private function isLeaveEditable(Leave $leave, User $user): bool
+    {
+        return $leave->getUser()->getId() === $user->getId() 
+            && in_array($leave->getStatus(), [
+                RequestStatus::EN_ATTENTE,
+                RequestStatus::ACCEPTE
+            ])
+            && $leave->getStartDate() > new DateTime('today');
+    }
+
+    private function isLeaveCancellable(Leave $leave, User $user): bool
+    {
+        return $leave->getUser()->getId() === $user->getId()
+            && in_array($leave->getStatus(), [
+                RequestStatus::EN_ATTENTE,
+                RequestStatus::ACCEPTE
+            ]);
+    }
+
+    private function validateLeaveDates(DateTime $startDate, DateTime $endDate): void
+    {
+        if ($startDate > $endDate) {
+            throw new \InvalidArgumentException('La date de fin doit être postérieure à la date de début');
+        }
+
+        if ($startDate < new DateTime('today')) {
+            throw new \InvalidArgumentException('La date de début ne peut pas être dans le passé');
         }
     }
 }

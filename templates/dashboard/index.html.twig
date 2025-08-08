@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Tableau de bord - {{ user.prenom }} {{ user.nom }}{% endblock %}
+{% block title %}Tableau de bord - {{ user.firstName }} {{ user.lastName }}{% endblock %}
 
 {% block stylesheets %}
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -33,12 +33,12 @@
             <div class="p-6 border-b border-white/10">
                 <div class="flex items-center gap-3">
                     <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center font-bold text-lg">
-                        {{ user.prenom|slice(0,1)|upper }}{{ user.nom|slice(0,1)|upper }}
+                        {{ user.firstName|slice(0,1)|upper }}{{ user.lastName|slice(0,1)|upper }}
                     </div>
                     <div>
-                        <h3 class="font-semibold">{{ user.prenom }} {{ user.nom }}</h3>
-                        <p class="text-sm opacity-70">{{ role.name ?? 'Employé' }}</p>
-                        <p class="text-xs opacity-60">{{ departement.name ?? 'N/A' }}</p>
+                        <h3 class="font-semibold">{{ user.firstName }} {{ user.lastName }}</h3>
+                        <p class="text-sm opacity-70">{{ role ?? 'Employé' }}</p>
+                        <p class="text-xs opacity-60">{{ user.department.value ?? 'N/A' }}</p>
                     </div>
                 </div>
             </div>
@@ -50,38 +50,38 @@
                     {% set navItems = [
                         {'label': 'Tableau de bord', 'icon': 'home', 'path': 'dashboard'},
                         {'label': 'Demander un congé', 'icon': 'plus', 'path': 'demande'},
-                        {'label': 'Historique des congés', 'icon': 'history', 'path': 'my-leaves'},
+                        {'label': 'Historique des congés', 'icon': 'history', 'path': 'my_leaves'},
                         {'label': 'Équipe', 'icon': 'users', 'path': 'team'}
                     ] %}
                     {% set menu = [
                         {'label': 'Tableau de bord', 'icon': '🏠', 'path': 'dashboard'},
-                        {'label': 'Demandes', 'icon': '📄', 'path': 'my-leaves'},
+                        {'label': 'Demandes', 'icon': '📄', 'path': 'my_leaves'},
                         {'label': 'Équipe', 'icon': '👥', 'path': 'team'}
                     ] %}
 
                     {% for item in menu %}
                         <li>
-                            <a href="{{ item.path }}" class="flex items-center gap-2 px-4 py-2 rounded hover:bg-white/10 transition-colors">
+                            <a href="{{ path(item.path) }}" class="flex items-center gap-2 px-4 py-2 rounded hover:bg-white/10 transition-colors">
                                 <span class="text-lg">{{ item.icon }}</span>
                                 <span class="text-sm font-medium">{{ item.label }}</span>
                             </a>
                         </li>
                     {% endfor %}
                 </ul>
-                {% if role.name in ['BIGADMIN', 'MANAGER'] %}
+                {% if 'ROLE_MANAGER' in user.roles or 'ROLE_ADMIN' in user.roles %}
                     <div class="pt-4">
                         <p class="text-xs uppercase tracking-wide px-4 mb-2 opacity-60">Gestion</p>
-                        <a href="{{ path('manager_team_leaves') }}" class="flex items-center gap-2 px-4 py-3 rounded-lg hover:bg-white/5 text-white/80">
+                        <a href="{{ path('manager_leaves') }}" class="flex items-center gap-2 px-4 py-3 rounded-lg hover:bg-white/5 text-white/80">
                             <i class="fas fa-calendar-check w-5"></i>
                             <span>Gérer les congés</span>
                         </a>
-                        {% if role.name in ['BIGADMIN'] %}
+                        {% if 'ROLE_ADMIN' in user.roles %}
                         <a href="{{ path('admin_index') }}" class="flex items-center gap-2 px-4 py-3 rounded-lg hover:bg-white/5 text-white/80">
-                            <i class="fas fa-calendar-check w-5"></i>
+                            <i class="fas fa-users-cog w-5"></i>
                             <span>Gérer les utilisateurs</span>
                         </a>
                             <a href="{{ path('app_calendar') }}" class="flex items-center gap-2 px-4 py-3 rounded-lg hover:bg-white/5 text-white/80">
-                                <i class="fas fa-calendar-check w-5"></i>
+                                <i class="fas fa-calendar-alt w-5"></i>
                                 <span>Voir Calendrier</span>
                             </a>
                         {% endif %}
@@ -110,7 +110,7 @@
             <div class="bg-white rounded-2xl p-6 shadow mb-6">
                 <div class="flex justify-between items-center flex-wrap gap-4">
                     <div>
-                        <h1 class="text-3xl font-bold text-indigo-700">Bon retour, {{ user.prenom }} !</h1>
+                        <h1 class="text-3xl font-bold text-indigo-700">Bon retour, {{ user.firstName }} !</h1>
                         <p class="text-gray-600">Voici ce qui se passe aujourd'hui dans la gestion de vos congés.</p>
                     </div>
                     <div class="text-right hidden md:block">
@@ -122,7 +122,6 @@
 
             <!-- Statistiques -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-
                 {% for stat in dashboardStats %}
                     <div class="bg-white rounded-2xl p-5 shadow hover:shadow-lg transition-all">
                         <div class="flex justify-between items-center">
@@ -146,7 +145,7 @@
                 </h2>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     {% set actions = [
-                        {'label': 'Demander un congé', 'icon': 'plus', 'url': path('demande')},
+                        {'label': 'Demander un congé', 'icon': 'plus', 'url': path('request_leave')},
                         {'label': 'Voir l\'historique', 'icon': 'history', 'url': path('notifications_history')},
                         {'label': 'Mettre à jour le profil', 'icon': 'user-cog', 'url': path('user_profile')},
                         {'label': 'Voir l\'équipe', 'icon': 'users', 'url': path('team')}
@@ -174,7 +173,9 @@
                             <div class="flex-1">
                                 <p class="font-semibold text-gray-800">{{ notification.title }}</p>
                                 <p class="text-sm text-gray-600">{{ notification.message }}</p>
-                                {# Si vous ajoutez un champ createdAt, affichez l'heure ici #}
+                                {% if notification.createdAt %}
+                                    <p class="text-xs text-gray-500 mt-1">{{ notification.createdAt|date('d/m/Y H:i') }}</p>
+                                {% endif %}
                             </div>
                         </div>
                     {% else %}
@@ -184,7 +185,6 @@
             </div>
         </div>
     </main>
-
 {% endblock %}
 
 {% block javascripts %}

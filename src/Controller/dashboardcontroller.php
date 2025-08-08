@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Entity\Conge;
+use App\Entity\Leave;
 use App\Entity\User;
 use App\Entity\Notification;
 use App\Enum\Role;
@@ -27,26 +27,26 @@ class DashboardController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
 
-        // --- Get All User's Congés ---
-        $conges = $em->getRepository(Conge::class)->findBy(['user' => $user]);
+        // --- Get All User's Leaves ---
+        $leaves = $em->getRepository(Leave::class)->findBy(['user' => $user]);
 
         // --- Update statut to "consommée" if approuvée and dateFin < today ---
         $today = new \DateTimeImmutable('today');
         $updated = false;
-        foreach ($conges as $conge) {
+        foreach ($leaves as $leave) {
             if (
-                $conge->getStatut()->value === 'approuvée'
-                && $conge->getDateFin() < $today
+                $leave->getStatus()->value === 'approuvée'
+                && $leave->getEndDate() < $today
             ) {
                 $logger->info(sprintf(
                     'Congé consommé automatiquement: ID %d, User %s, Dates %s - %s',
-                    $conge->getId(),
+                    $leave->getId(),
                     $user->getUserIdentifier(),
-                    $conge->getDateDebut()->format('Y-m-d'),
-                    $conge->getDateFin()->format('Y-m-d')
+                    $leave->getStartDate()->format('Y-m-d'),
+                    $leave->getEndDate()->format('Y-m-d')
                 ));
-                $conge->setStatut(\App\Enum\statutdedemande::CONSOMME);
-                $em->persist($conge);
+                $leave->setStatut(\App\Enum\RequestStatus::CONSOMME);
+                $em->persist($leave);
                 $updated = true;
             }
         }
@@ -60,63 +60,63 @@ class DashboardController extends AbstractController
             ->findBy(['recipient' => $user], ['id' => 'DESC']);
 
         // --- Solde de congés ---
-        $soldeConge = $user->getSoldeConge() ?? 0;
+        $leaveBalance = $user->getLeaveBalance() ?? 0;
 
         // --- Demandes en attente ---
-        $demandesEnAttente = array_filter($conges, fn($conge) => $conge->getStatut()->value === 'en_attente');
+        $demandesEnAttente = array_filter($leaves, fn($leave) => $leave->getStatus  ()->value === 'en_attente');
 
         // --- Congés approuvés cette année ---
         $currentYear = (int)date('Y');
-        $congesApprouves = array_filter($conges, function ($conge) use ($currentYear) {
-            return $conge->getStatut()->value === 'approuvée' &&
-                $conge->getDateDebut()->format('Y') == $currentYear;
+        $leavesApprouves = array_filter($leaves, function ($leave) use ($currentYear) {
+            return $leave->getStatus()->value === 'approuvée' &&
+                $leave->getStartDate()->format('Y') == $currentYear;
         });
 
         // --- Membres dans le même département ---
         $teamMembersCount = $em->getRepository(User::class)->createQueryBuilder('u')
             ->select('count(u.id)')
-            ->where('u.departement = :dep')
-            ->setParameter('dep', $user->getDepartement())
+            ->where('u.department = :dep')
+            ->setParameter('dep', $user->getDepartment())
             ->getQuery()
             ->getSingleScalarResult();
 
         // --- Prepare Dashboard Stats ---
         $dashboardStats = [
-            [
-                'label' => 'Solde de congés',
-                'value' => $soldeConge,
-                'icon' => 'calendar-check',
-                'color' => 'indigo',
-                'unit' => 'Jours disponibles'
-            ],
-            [
-                'label' => 'Demandes en attente',
-                'value' => count($demandesEnAttente),
-                'icon' => 'clock',
-                'color' => 'yellow',
-                'unit' => 'En attente de validation'
-            ],
-            [
-                'label' => 'Congés approuvés',
-                'value' => count($congesApprouves),
-                'icon' => 'check-circle',
-                'color' => 'green',
-                'unit' => 'Cette année'
-            ],
-            [
-                'label' => 'Membres de l\'équipe',
-                'value' => $teamMembersCount,
-                'icon' => 'users',
-                'color' => 'blue',
-                'unit' => 'Dans le département'
-            ]
-        ];
+    [
+        'label' => 'Solde de congés',
+        'value' => $leaveBalance,
+        'icon' => 'calendar-check',
+        'color' => 'indigo',
+        'unit' => 'Jours disponibles'
+    ],
+    [
+        'label' => 'Demandes en attente',
+        'value' => count($demandesEnAttente),
+        'icon' => 'clock',
+        'color' => 'yellow',
+        'unit' => 'En attente de validation'
+    ],
+    [
+        'label' => 'Congés approuvés',
+        'value' => count($leavesApprouves),
+        'icon' => 'check-circle',
+        'color' => 'green',
+        'unit' => 'Cette année'
+    ],
+    [
+        'label' => 'Membres de l\'équipe',
+        'value' => $teamMembersCount,
+        'icon' => 'users',
+        'color' => 'blue',
+        'unit' => 'Dans le département'
+    ]
+];
 
         return $this->render('dashboard/index.html.twig', [
             'user' => $user,
             'notifications' => $notifications,
-            'role' => $user->getRole()[0],
-            'departement' => $user->getDepartement(),
+            'role' => $user->getRoles()[0],
+            'department' => $user->getDepartment(),
             'dashboardStats' => $dashboardStats
         ]);
     }

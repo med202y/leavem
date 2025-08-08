@@ -2,19 +2,41 @@
 
 namespace App\Repository;
 
-use App\Entity\Conge;
+use App\Entity\Leave;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-/**
- * @extends ServiceEntityRepository<Conge>
- */
-class CongeRepository extends ServiceEntityRepository
+class LeaveRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, Conge::class);
+        parent::__construct($registry, Leave::class);
     }
+
+    /**
+     * @return Leave[] Returns an array of Leave objects
+     */
+    public function findByUserOrderedByRequestDateDesc(User $user): array
+    {
+        return $this->createQueryBuilder('l')
+            ->andWhere('l.user = :user')
+            ->setParameter('user', $user)
+            ->orderBy('l.requestDate', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    // For pagination support
+    public function createQueryBuilderForUserOrderedByDate(User $user)
+    {
+        return $this->createQueryBuilder('l')
+            ->andWhere('l.user = :user')
+            ->setParameter('user', $user)
+            ->orderBy('l.requestDate', 'DESC');
+    }
+
+
 
 //    /**
 //     * @return Conge[] Returns an array of Conge objects

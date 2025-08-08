@@ -16,21 +16,28 @@ class TeamController extends AbstractController
     #[IsGranted('ROLE_EMPLOYEE')]
     public function index(EntityManagerInterface $em): Response
     {
+        /** @var User $user */
         $user = $this->getUser();
 
         $team = $user->getTeam();
         $members = [];
+        
         if ($team instanceof Team) {
+            // Fixed: Changed 'nom' to 'lastName' to match User entity property
             $members = $em->getRepository(User::class)
-                ->findBy(['team' => $team], ['nom' => 'ASC']);
+                ->findBy(['team' => $team], ['lastName' => 'ASC']);
         }
 
+        // Get user roles - fixed method call
+        $userRoles = $user->getRoles(); // This returns string array
+        $firstRole = !empty($userRoles) ? $userRoles[0] : null;
+
         return $this->render('team/index.html.twig', [
-            'user'      => $user,
-            'team'      => $team,
-            'members'   => $members,
-            'role'      => $user->getRole()[0] ?? null,
-            'departement' => $user->getDepartement(),
+            'user'       => $user,
+            'team'       => $team,
+            'members'    => $members,
+            'role'       => $firstRole,
+            'departement' => $user->getDepartment(), // Fixed: getDepartment() not getDepartement()
         ]);
     }
 }

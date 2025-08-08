@@ -18,8 +18,6 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 #[ORM\InheritanceType('JOINED')]
 #[ORM\DiscriminatorColumn(name: 'user_type', type: 'string')]
 #[ORM\DiscriminatorMap(['user' => User::class, 'manager' => Manager::class])]
-
-
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -28,30 +26,31 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $nom = null;
+    private ?string $lastName = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $prenom = null;
+    private ?string $firstName = null;
 
     #[ORM\Column(length: 255)]
     private ?string $email = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $mot_de_passe = null;
+    private ?string $password = null;
 
     #[ORM\Column(type: Types::SIMPLE_ARRAY, enumType: Role::class)]
-    private array $Role = [];
+    private array $roles = [];
 
     #[ORM\Column]
-    private ?float $solde_conge = null;
+    private ?float $leaveBalance = null;
 
     #[ORM\Column(enumType: Departement::class)]
-    private ?Departement $departement = null;
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $Observations = null;
+    private ?Departement $department = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    private ?string $chemin = null;
+    private ?string $notes = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $filePath = null;
 
     /**
      * @var Collection<int, Notification>
@@ -59,61 +58,72 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Notification::class, mappedBy: 'recipient')]
     private Collection $notifications;
 
-
-    #[ORM\ManyToOne(targetEntity: Team::class, inversedBy: 'users')]
+    #[ORM\ManyToOne(targetEntity: Team::class, inversedBy: 'members')]
     #[ORM\JoinColumn(nullable: true)]
     private ?Team $team = null;
+    #[ORM\ManyToOne(targetEntity: self::class)]
+    #[ORM\JoinColumn(name: 'direct_manager_id', nullable: true)]
+    private ?User $directManager = null;
+
     /**
-     * @var Collection<int, Conge>
+     * @var Collection<int, Leave>
      */
-    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Conge::class, orphanRemoval: true, cascade: ['persist'])]
-    private Collection $conges;
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Leave::class, orphanRemoval: true, cascade: ['persist'])]
+    private Collection $leaves;
 
     #[ORM\Column(nullable: true)]
-    private ?\DateTime $dateDembauche = null;
+    private ?\DateTime $hireDate = null;
 
     /**
      * @var Collection<int, Team>
      */
     #[ORM\OneToMany(targetEntity: Team::class, mappedBy: 'manager')]
-    private Collection $manager;
+    private Collection $managedTeams;
 
     public function __construct()
     {
         $this->notifications = new ArrayCollection();
-        $this->conges       = new ArrayCollection();
-        $this->manager = new ArrayCollection();
+        $this->leaves = new ArrayCollection();
+        $this->managedTeams = new ArrayCollection();
+    }
+        public function getManager(): ?User
+    {
+        // First check direct manager, then fall back to team manager
+        return $this->directManager ?? $this->team?->getManager();
     }
 
+    public function setManager(?User $manager): self
+    {
+        $this->directManager = $manager;
+        return $this;
+    }
     /**
-     * @return Collection<int, Conge>
+     * @return Collection<int, Leave>
      */
-    public function getConges(): Collection
+    public function getLeaves(): Collection
     {
-        return $this->conges;
+        return $this->leaves;
     }
 
-    public function addConge(Conge $conge): self
+    public function addLeave(Leave $leave): self
     {
-        if (!$this->conges->contains($conge)) {
-            $this->conges->add($conge);
-            $conge->setUser($this);
+        if (!$this->leaves->contains($leave)) {
+            $this->leaves->add($leave);
+            $leave->setUser($this);
         }
-
         return $this;
     }
 
-    public function removeConge(Conge $conge): self
+    public function removeLeave(Leave $leave): self
     {
-        if ($this->conges->removeElement($conge)) {
-            // détache l'utilisateur si besoin
-            if ($conge->getUser() === $this) {
-                $conge->setUser(null);
+        if ($this->leaves->removeElement($leave)) {
+            if ($leave->getUser() === $this) {
+                $leave->setUser(null);
             }
         }
-
         return $this;
     }
+
     public function getTeam(): ?Team
     {
         return $this->team;
@@ -122,15 +132,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setTeam(?Team $team): self
     {
         $this->team = $team;
-
         return $this;
     }
-    public function getManager(): ?User
-    {
-        return $this->team?->getManager();
-    }
 
-
+   
 
     public function getId(): ?int
     {
@@ -140,31 +145,28 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setId(int $id): static
     {
         $this->id = $id;
-
         return $this;
     }
 
-    public function getNom(): ?string
+    public function getLastName(): ?string
     {
-        return $this->nom;
+        return $this->lastName;
     }
 
-    public function setNom(string $nom): static
+    public function setLastName(string $lastName): static
     {
-        $this->nom = $nom;
-
+        $this->lastName = $lastName;
         return $this;
     }
 
-    public function getPrenom(): ?string
+    public function getFirstName(): ?string
     {
-        return $this->prenom;
+        return $this->firstName;
     }
 
-    public function setPrenom(string $prenom): static
+    public function setFirstName(string $firstName): static
     {
-        $this->prenom = $prenom;
-
+        $this->firstName = $firstName;
         return $this;
     }
 
@@ -176,58 +178,53 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setEmail(string $email): static
     {
         $this->email = $email;
-
         return $this;
     }
 
-    public function getMotDePasse(): ?string
+    public function getPassword(): ?string
     {
-        return $this->mot_de_passe;
+        return $this->password;
     }
 
-    public function setMotDePasse(string $mot_de_passe): static
+    public function setPassword(string $password): static
     {
-        $this->mot_de_passe = $mot_de_passe;
-
+        $this->password = $password;
         return $this;
     }
 
     /**
      * @return Role[]
      */
-    public function getRole(): array
+    public function getRolesArray(): array
     {
-        return $this->Role;
+        return $this->roles;
     }
 
-    public function setRole(array $Role): static
+    public function setRolesArray(array $roles): static
     {
-        $this->Role = $Role;
-
+        $this->roles = $roles;
         return $this;
     }
 
-    public function getSoldeConge(): ?float
+    public function getLeaveBalance(): ?float
     {
-        return $this->solde_conge;
+        return $this->leaveBalance;
     }
 
-
-    public function setSoldeConge(float $solde_conge): static
+    public function setLeaveBalance(float $leaveBalance): static
     {
-        $this->solde_conge = $solde_conge;
-
+        $this->leaveBalance = $leaveBalance;
         return $this;
     }
 
-    public function getDepartement(): ?departement
+    public function getDepartment(): ?Departement
     {
-        return $this->departement;
+        return $this->department;
     }
 
-    public function setDepartement(departement $departement): static
+    public function setDepartment(Departement $department): static
     {
-        $this->departement = $departement;
+        $this->department = $department;
         return $this;
     }
 
@@ -236,46 +233,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->email;
     }
 
-    public function getPassword(): string
-    {
-        return $this->mot_de_passe;
-    }
-
     public function getRoles(): array
     {
-        // Convertir les objets Role en string, si tu utilises un Enum
-        return array_map(fn($role) => $role->value, $this->Role);
+        // Convert Role enums to string values
+        return array_map(fn($role) => $role->value, $this->roles);
     }
 
     public function eraseCredentials(): void
     {
-        // S'il y a des données sensibles temporaires, les nettoyer ici (ex: mot de passe en clair)
+        // Clean up sensitive data if needed
     }
 
-
-
-
-    public function getObservations(): ?string
+    public function getNotes(): ?string
     {
-        return $this->Observations;
+        return $this->notes;
     }
 
-    public function setObservations(?string $Observations): static
+    public function setNotes(?string $notes): static
     {
-        $this->Observations = $Observations;
-
+        $this->notes = $notes;
         return $this;
     }
 
-    public function getChemin(): ?string
+    public function getFilePath(): ?string
     {
-        return $this->chemin;
+        return $this->filePath;
     }
 
-    public function setChemin(?string $chemin): static
+    public function setFilePath(?string $filePath): static
     {
-        $this->chemin = $chemin;
-
+        $this->filePath = $filePath;
         return $this;
     }
 
@@ -293,55 +280,46 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             $this->notifications->add($notification);
             $notification->setRecipient($this);
         }
-
         return $this;
     }
 
     public function removeNotification(Notification $notification): static
     {
         if ($this->notifications->removeElement($notification)) {
-            // set the owning side to null (unless already changed)
             if ($notification->getRecipient() === $this) {
                 $notification->setRecipient(null);
             }
         }
-
         return $this;
     }
 
-    public function getDateDembauche(): ?\DateTimeInterface
-{
-    return $this->dateDembauche;
-}
-
-    public function setDateDembauche(?\DateTimeInterface $dateDembauche): self
+    public function getHireDate(): ?\DateTimeInterface
     {
-        $this->dateDembauche = $dateDembauche;
+        return $this->hireDate;
+    }
+
+    public function setHireDate(?\DateTimeInterface $hireDate): self
+    {
+        $this->hireDate = $hireDate;
         return $this;
     }
 
-
-
-    public function addManager(Team $manager): static
+    public function addManagedTeam(Team $team): static
     {
-        if (!$this->manager->contains($manager)) {
-            $this->manager->add($manager);
-            $manager->setManager($this);
+        if (!$this->managedTeams->contains($team)) {
+            $this->managedTeams->add($team);
+            $team->setManager($this);
         }
-
         return $this;
     }
 
-    public function removeManager(Team $manager): static
+    public function removeManagedTeam(Team $team): static
     {
-        if ($this->manager->removeElement($manager)) {
-            // set the owning side to null (unless already changed)
-            if ($manager->getManager() === $this) {
-                $manager->setManager(null);
+        if ($this->managedTeams->removeElement($team)) {
+            if ($team->getManager() === $this) {
+                $team->setManager(null);
             }
         }
-
         return $this;
     }
-
 }

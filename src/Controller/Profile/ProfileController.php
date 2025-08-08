@@ -4,6 +4,7 @@ namespace App\Controller\Profile;
 
 use App\Entity\Notification;
 use App\Entity\User;
+use App\Repository\NotificationRepository;
 use App\Form\UserProfileType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -20,7 +21,8 @@ class ProfileController extends AbstractController
     public function user_profile(
         Request $request,
         EntityManagerInterface $em,
-        UserPasswordHasherInterface $passwordHasher
+        UserPasswordHasherInterface $passwordHasher,
+        NotificationRepository $notificationRepository
     ): Response
     {
         $user = $this->getUser();
@@ -66,18 +68,9 @@ class ProfileController extends AbstractController
 
                 // Hasher et sauvegarder le nouveau mot de passe
                 $hashedPassword = $passwordHasher->hashPassword($user, $newPassword);
-                $user->setMotDePasse($hashedPassword);
+                $user->setPassword($hashedPassword);
             }
-            $notification = new Notification();
-            $notification->setTitle('Profil mis a jour');
-            $notification->setMessage("Votre mot de passe a été changé avec succes");
-            $notification->setRecipient($user);
-
-            $em->persist($notification);
-            $em->flush();
-
-            $em->persist($user);
-            $em->flush();
+            $notificationRepository->profileUpdateNotification($user);
 
             $this->addFlash('success', 'Profil mis à jour avec succès');
             return $this->redirectToRoute('user_profile');

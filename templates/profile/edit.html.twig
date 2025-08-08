@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Profil - {{ user.prenom }} {{ user.nom }}{% endblock %}
+{% block title %}Profil - {{ user.firstName }} {{ user.lastName }}{% endblock %}
 
 {% block stylesheets %}
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -19,7 +19,7 @@
                         <ul class="space-y-1">
                             {% set menu = [
                                 {'label': 'Tableau de bord', 'icon': '🏠', 'url': path('dashboard')},
-                                {'label': 'Demander un congé', 'icon': '📄', 'url': path('demande')},
+                                {'label': 'Demander un congé', 'icon': '📄', 'url': path('request_leave')},
                                 {'label': 'Équipe', 'icon': '👥', 'url': path('team')}
                             ] %}
 
@@ -74,19 +74,19 @@
                             <div class="grid grid-cols-1 gap-4">
                                 <div>
                                     <label class="block text-sm font-medium mb-1">Prénom</label>
-                                    <p class="font-semibold text-gray-700">{{ user.prenom}} </p>
+                                    <p class="font-semibold text-gray-700">{{ user.firstName }}</p>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium mb-1">Nom</label>
-                                    <p class="font-semibold text-gray-700">{{ user.nom}} </p>
+                                    <p class="font-semibold text-gray-700">{{ user.lastName }}</p>
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium mb-1">Departement</label>
-                                    <p class="font-semibold text-gray-700">{{ user.Departement.value}} </p>
+                                    <label class="block text-sm font-medium mb-1">Département</label>
+                                    <p class="font-semibold text-gray-700">{{ user.department.value }}</p>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium mb-1">Email</label>
-                                    <p class="font-semibold text-gray-700">{{ user.email}} </p>
+                                    <p class="font-semibold text-gray-700">{{ user.email }}</p>
                                 </div>
                             </div>
                         </div>
@@ -115,7 +115,7 @@
                         </div>
                     </div>
 
-                    {# Hidden form fields that we don't want to display manually #}
+                    {# Hidden form fields #}
                     <div style="display: none;">
                         {{ form_rest(form) }}
                     </div>

@@ -1,23 +1,41 @@
+{# templates/admin/users.html.twig #}
 {% extends 'base.html.twig' %}
 
 {% block title %}Gestion des utilisateurs{% endblock %}
 
 {% block stylesheets %}
+    {{ parent() }}
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
-
+    <style>
+        /* Custom styles for form validation errors */
+        .form-error {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+        .form-control.is-invalid {
+            border-color: #dc3545;
+        }
+        /* Sidebar animation */
+        .sidebar-transition {
+            transition: transform 0.3s ease-in-out;
+        }
+    </style>
 {% endblock %}
 
 {% block body %}
+    <!-- Mobile Menu Button -->
     <button id="mobile-menu-btn"
             class="md:hidden fixed top-4 left-4 z-50 bg-indigo-600 text-white p-3 rounded-lg shadow-md">
         <i class="fas fa-bars"></i>
     </button>
 
-    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-72 bg-indigo-800 text-white shadow-md hidden md:block">
+    <!-- Sidebar -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-72 bg-indigo-800 text-white shadow-md sidebar-transition transform -translate-x-full md:translate-x-0">
         <div class="h-full flex flex-col justify-between">
             <div>
                 <div class="p-6 text-2xl font-bold">
@@ -45,8 +63,22 @@
         </div>
     </aside>
 
+    <!-- Main Content -->
     <main class="min-h-screen bg-gray-100 md:ml-72">
         <div class="p-6 max-w-7xl mx-auto">
+            <!-- Flash Messages -->
+            {% for type, messages in app.flashes %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ type == 'error' ? 'danger' : type }} alert-dismissible fade show mb-4" role="alert">
+                        {{ message }}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                {% endfor %}
+            {% endfor %}
+
+            <!-- Header with Title and Actions -->
             <div class="bg-white rounded-2xl p-6 shadow mb-6 flex justify-between items-center">
                 <h1 class="text-3xl font-bold text-indigo-700">Gestion des utilisateurs</h1>
                 <div class="flex items-center gap-4">
@@ -58,6 +90,7 @@
                 </div>
             </div>
 
+            <!-- Users Table -->
             <div class="bg-white rounded-2xl shadow p-6 overflow-x-auto">
                 {% if users|length > 0 %}
                     <table class="min-w-full table-auto">
@@ -77,111 +110,34 @@
                         <tbody>
                         {% for user in users %}
                             <tr class="border-b hover:bg-gray-50">
-                                <td class="px-4 py-3">{{ user.nom }}</td>
-                                <td class="px-4 py-3">{{ user.prenom }}</td>
+                                <td class="px-4 py-3">{{ user.lastName }}</td>
+                                <td class="px-4 py-3">{{ user.firstName }}</td>
                                 <td class="px-4 py-3">{{ user.email }}</td>
-                                <td class="px-4 py-3">{{ user.departement.value }}</td>
+                                <td class="px-4 py-3">{{ user.department ? user.department.value : '–' }}</td>
                                 <td class="px-4 py-3">
-                                    {% for role in user.role %}
-                                        <span class="inline-block bg-indigo-200 text-indigo-800 text-xs font-semibold px-2 py-1 rounded mr-1">{{ role.name }}</span>
+                                    {% for role in user.rolesArray %}
+                                        <span class="inline-block bg-indigo-200 text-indigo-800 text-xs font-semibold px-2 py-1 rounded mr-1">{{ role.value }}</span>
                                     {% endfor %}
                                 </td>
-                                <td class="px-4 py-3">{{ user.team.name}}</td>
-                                <td class="px-4 py-3">{{ user.soldeConge }}</td>
-                                <td class="px-4 py-3">{{ user.dateDembauche ? user.dateDembauche|date('Y-m-d') : '–' }}</td>
+                                <td class="px-4 py-3">{{ user.team ? user.team.name : '–' }}</td>
+                                <td class="px-4 py-3">{{ user.leaveBalance }}</td>
+                                <td class="px-4 py-3">{{ user.hireDate ? user.hireDate|date('Y-m-d') : '–' }}</td>
                                 <td class="px-4 py-3">
-                                    <!-- Trigger Button -->
-                                    <button type="button" class="text-indigo-600 hover:underline text-sm" data-toggle="modal" data-target="#editUserModal{{ user.id }}">
-                                        Modifier
-                                    </button>
+                                  <button type="button" class="text-indigo-600 hover:underline text-sm mr-3" data-toggle="modal" data-target="#editUserModal{{ user.id }}">
+    Modifier
+</button>
 
                                     <button type="button" class="text-red-600 hover:underline text-sm" data-toggle="modal" data-target="#deleteUserModal{{ user.id }}">
                                         Supprimer
                                     </button>
-
                                 </td>
                             </tr>
-                            <!-- Modal for Editing User -->
-                            <div class="modal fade" id="editUserModal{{ user.id }}" tabindex="-1" role="dialog" aria-labelledby="editUserModalLabel{{ user.id }}" aria-hidden="true">
-                                <div class="modal-dialog" role="document">
-                                    <form method="POST" action="{{ path('admin_users_update', {'id': user.id}) }}">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title" id="editUserModalLabel{{ user.id }}">Modifier l'utilisateur</h5>
-                                                <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
-                                                    <span aria-hidden="true">&times;</span>
-                                                </button>
-                                            </div>
-
-                                            <div class="modal-body">
-                                                <div class="form-group">
-                                                    <label>Nom</label>
-                                                    <input name="nom" value="{{ user.nom }}" class="form-control" required>
-                                                </div>
-                                                <div class="form-group">
-                                                    <label>Prénom</label>
-                                                    <input name="prenom" value="{{ user.prenom }}" class="form-control" required>
-                                                </div>
-                                                <div class="form-group">
-                                                    <label>Email</label>
-                                                    <input name="email" type="email" value="{{ user.email }}" class="form-control" required>
-                                                </div>
-                                                <div class="form-group">
-                                                    <label>Département</label>
-                                                    <select name="departement" class="form-control">
-                                                        {% for dept in departments %}
-                                                            <option value="{{ dept.value }}" {% if dept == user.departement %}selected{% endif %}>{{ dept.name }}</option>
-                                                        {% endfor %}
-                                                    </select>
-                                                </div>
-                                                <div class="form-group">
-                                                    <label>Rôle(s)</label>
-                                                    {% for role in roles %}
-                                                        <div class="form-check">
-                                                            <input class="form-check-input" type="checkbox" name="roles[]" value="{{ role.value }}"
-                                                                   {% if role in user.role %}checked{% endif %}>
-                                                            <label class="form-check-label">{{ role.name }}</label>
-                                                        </div>
-                                                    {% endfor %}
-                                                </div>
-                                                <div class="form-group">
-                                                    <label>Équipe</label>
-                                                    <select name="team_id" class="form-control">
-                                                        <option value="">— Aucun —</option>
-                                                        {% for team in teams %}
-                                                            <option value="{{ team.id }}" {% if user.team is not null and team.id == user.team.id %}selected{% endif %}>
-
-                                                                {{ team.name }}
-                                                            </option>
-                                                        {% endfor %}
-                                                    </select>
-                                                </div>
-                                                <div class="form-group">
-                                                    <label>Solde de congé</label>
-                                                    <input name="solde_conge" type="number" step="0.1" value="{{ user.soldeConge }}" class="form-control">
-                                                </div>
-                                                <div class="form-group">
-                                                    <label>Date d'embauche</label>
-                                                    <input name="date_embauche" type="date" value="{{ user.dateDembauche ? user.dateDembauche|date('Y-m-d') : '' }}" class="form-control">
-                                                </div>
-                                                <div class="form-group">
-                                                    <label>Nouveau mot de passe (laisser vide pour ne pas changer)</label>
-                                                    <input name="password" type="password" class="form-control">
-                                                </div>
-                                            </div>
-
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
-                                                <button type="submit" class="btn btn-primary">Enregistrer</button>
-                                            </div>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                            <!-- Modal for Deleting User -->
+                            
+                            <!-- Delete User Modal -->
                             <div class="modal fade" id="deleteUserModal{{ user.id }}" tabindex="-1" role="dialog" aria-labelledby="deleteUserModalLabel{{ user.id }}" aria-hidden="true">
                                 <div class="modal-dialog" role="document">
                                     <form method="POST" action="{{ path('admin_users_delete', {'id': user.id}) }}">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete_user_' ~ user.id) }}">
                                         <div class="modal-content">
                                             <div class="modal-header">
                                                 <h5 class="modal-title" id="deleteUserModalLabel{{ user.id }}">Confirmer la suppression</h5>
@@ -190,7 +146,7 @@
                                                 </button>
                                             </div>
                                             <div class="modal-body">
-                                                Êtes-vous sûr de vouloir supprimer l'utilisateur <strong>{{ user.prenom }} {{ user.nom }}</strong> ?
+                                                Êtes-vous sûr de vouloir supprimer l'utilisateur <strong>{{ user.firstName }} {{ user.lastName }}</strong> ?
                                             </div>
                                             <div class="modal-footer">
                                                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
@@ -200,6 +156,36 @@
                                     </form>
                                 </div>
                             </div>
+                            <!-- Edit User Modal -->
+<div class="modal fade" id="editUserModal{{ user.id }}" tabindex="-1" role="dialog" aria-labelledby="editUserModalLabel{{ user.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            {{ form_start(editForms[user.id], {
+                'method': 'POST',
+                'action': path('admin_users_edit', {'id': user.id}),
+                'attr': {'class': 'needs-validation', 'novalidate': true}
+            }) }}
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editUserModalLabel{{ user.id }}">Modifier l'utilisateur</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    {{ form_widget(editForms[user.id]) }}
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save mr-1"></i> Enregistrer les modifications
+                    </button>
+                </div>
+            {{ form_end(editForms[user.id]) }}
+        </div>
+    </div>
+</div>
 
                         {% endfor %}
                         </tbody>
@@ -211,11 +197,16 @@
         </div>
     </main>
 
-    <!-- Modal for Creating New User -->
+
+    <!-- Create User Modal -->
     <div class="modal fade" id="createUserModal" tabindex="-1" role="dialog" aria-labelledby="createUserModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
-            <form method="POST" action="{{ path('admin_users_create') }}">
-                <div class="modal-content">
+            <div class="modal-content">
+                {{ form_start(createForm, {
+                    'method': 'POST',
+                    'action': path('admin_index'),
+                    'attr': {'class': 'needs-validation', 'novalidate': true}
+                }) }}
                     <div class="modal-header">
                         <h5 class="modal-title" id="createUserModalLabel">Ajouter un nouvel utilisateur</h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
@@ -227,86 +218,88 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="nom">Nom <span class="text-danger">*</span></label>
-                                    <input name="nom" id="nom" type="text" class="form-control" required>
+                                    {{ form_label(createForm.lastName, 'Nom', {'label_attr': {'class': 'font-weight-bold'}}) }}
+                                    <span class="text-danger">*</span>
+                                    {{ form_widget(createForm.lastName, {'attr': {'class': 'form-control'}}) }}
+                                    {{ form_errors(createForm.lastName) }}
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="prenom">Prénom <span class="text-danger">*</span></label>
-                                    <input name="prenom" id="prenom" type="text" class="form-control" required>
+                                    {{ form_label(createForm.firstName, 'Prénom', {'label_attr': {'class': 'font-weight-bold'}}) }}
+                                    <span class="text-danger">*</span>
+                                    {{ form_widget(createForm.firstName, {'attr': {'class': 'form-control'}}) }}
+                                    {{ form_errors(createForm.firstName) }}
                                 </div>
                             </div>
                         </div>
 
                         <div class="form-group">
-                            <label for="email">Email <span class="text-danger">*</span></label>
-                            <input name="email" id="email" type="email" class="form-control" required>
+                            {{ form_label(createForm.email, 'Email', {'label_attr': {'class': 'font-weight-bold'}}) }}
+                            <span class="text-danger">*</span>
+                            {{ form_widget(createForm.email, {'attr': {'class': 'form-control'}}) }}
+                            {{ form_errors(createForm.email) }}
                         </div>
 
                         <div class="form-group">
-                            <label for="password">Mot de passe <span class="text-danger">*</span></label>
-                            <input name="password" id="password" type="password" class="form-control" required>
+                            {{ form_label(createForm.plainPassword, 'Mot de passe', {'label_attr': {'class': 'font-weight-bold'}}) }}
+                            <span class="text-danger">*</span>
+                            {{ form_widget(createForm.plainPassword, {'attr': {'class': 'form-control'}}) }}
+                            {{ form_errors(createForm.plainPassword) }}
                         </div>
 
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="departement">Département</label>
-                                    <select name="departement" id="departement" class="form-control">
-                                        <option value="">— Sélectionner —</option>
-                                        {% for dept in departments %}
-                                            <option value="{{ dept.value }}">{{ dept.name }}</option>
-                                        {% endfor %}
-                                    </select>
+                                    {{ form_label(createForm.department, 'Département', {'label_attr': {'class': 'font-weight-bold'}}) }}
+                                    {{ form_widget(createForm.department, {'attr': {'class': 'form-control'}}) }}
+                                    {{ form_errors(createForm.department) }}
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="team_id">Équipe</label>
-                                    <select name="team_id" id="team_id" class="form-control">
-                                        <option value="">— Aucune —</option>
-                                        {% for team in teams %}
-                                            <option value="{{ team.id }}">{{ team.name }}</option>
-                                        {% endfor %}
-                                    </select>
+                                    {{ form_label(createForm.team, 'Équipe', {'label_attr': {'class': 'font-weight-bold'}}) }}
+                                    {{ form_widget(createForm.team, {'attr': {'class': 'form-control'}}) }}
+                                    {{ form_errors(createForm.team) }}
                                 </div>
                             </div>
                         </div>
 
                         <div class="form-group">
-                            <label>Rôle(s)</label>
+                            {{ form_label(createForm.rolesArray, 'Rôle(s)', {'label_attr': {'class': 'font-weight-bold'}}) }}
                             <div class="row">
-                                {% for role in roles %}
+                                {% for choice in createForm.rolesArray %}
                                     <div class="col-md-6">
                                         <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="roles[]" value="{{ role.value }}" id="role_{{ role.value }}">
-                                            <label class="form-check-label" for="role_{{ role.value }}">{{ role.name }}</label>
+                                            {{ form_widget(choice, {'attr': {'class': 'form-check-input'}}) }}
+                                            {{ form_label(choice, null, {'label_attr': {'class': 'form-check-label'}}) }}
                                         </div>
                                     </div>
                                 {% endfor %}
                             </div>
+                            {{ form_errors(createForm.rolesArray) }}
                         </div>
 
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="solde_conge">Solde de congé</label>
-                                    <input name="solde_conge" id="solde_conge" type="number" step="0.1" value="25.0" class="form-control">
+                                    {{ form_label(createForm.leaveBalance, 'Solde de congé', {'label_attr': {'class': 'font-weight-bold'}}) }}
+                                    {{ form_widget(createForm.leaveBalance, {'attr': {'class': 'form-control', 'step': '0.1'}}) }}
+                                    {{ form_errors(createForm.leaveBalance) }}
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="date_embauche">Date d'embauche</label>
-                                    <input name="date_embauche" id="date_embauche" type="date" class="form-control">
+                                    {{ form_label(createForm.hireDate, 'Date d\'embauche', {'label_attr': {'class': 'font-weight-bold'}}) }}
+                                    {{ form_widget(createForm.hireDate, {'attr': {'class': 'form-control'}}) }}
+                                    {{ form_errors(createForm.hireDate) }}
                                 </div>
                             </div>
                         </div>
 
-                        <div class="form-group">
-                            <label for="observations">Observations</label>
-                            <textarea name="observations" id="observations" class="form-control" rows="3"></textarea>
-                        </div>
+                       
+
+                        {{ form_rest(createForm) }}
                     </div>
 
                     <div class="modal-footer">
@@ -316,17 +309,37 @@
                             Créer l'utilisateur
                         </button>
                     </div>
-                </div>
-            </form>
+                {{ form_end(createForm) }}
+            </div>
         </div>
     </div>
-
 {% endblock %}
 
 {% block javascripts %}
+    {{ parent() }}
     <script>
+        // Mobile menu toggle
         const menuBtn = document.getElementById('mobile-menu-btn');
         const sidebar = document.getElementById('sidebar');
-        menuBtn?.addEventListener('click', () => sidebar?.classList.toggle('-translate-x-full'));
+        
+        menuBtn?.addEventListener('click', () => {
+            sidebar.classList.toggle('-translate-x-full');
+        });
+
+        // Form validation feedback
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add Bootstrap validation classes based on Symfony form errors
+            document.querySelectorAll('.form-control').forEach(function(element) {
+                const errorDiv = element.parentNode.querySelector('.form-error, .invalid-feedback');
+                if (errorDiv && errorDiv.textContent.trim()) {
+                    element.classList.add('is-invalid');
+                }
+            });
+
+            // Auto-show modal if there are form errors
+            {% if createForm.vars.submitted and not createForm.vars.valid %}
+                $('#createUserModal').modal('show');
+            {% endif %}
+        });
     </script>
 {% endblock %}

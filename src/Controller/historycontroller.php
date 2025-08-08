@@ -9,6 +9,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+
 class HistoryController extends AbstractController
 {
     #[Route('/history', name: 'notifications_history')]
@@ -23,8 +24,8 @@ class HistoryController extends AbstractController
         return $this->render('history/index.html.twig', [
             'user'          => $user,
             'notifications' => $notifications,
-            'role'          => $user->getRole()[0] ?? null,
-            'departement'   => $user->getDepartement(),
+            'role'          => $user->getRoles()[0] ?? null,  
+            'departement'   => $user->getDepartment(),        
         ]);
     }
 }

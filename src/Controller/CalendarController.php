@@ -2,8 +2,8 @@
 
 namespace App\Controller;
 
-use App\Entity\Conge;
-use App\Enum\statutdedemande;
+use App\Entity\Leave;
+use App\Enum\RequestStatus;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,44 +18,39 @@ class CalendarController extends AbstractController
     #[IsGranted('ROLE_ADMIN')]
     public function index(Request $request, EntityManagerInterface $em): Response
     {
-        // Récupérer les statuts sélectionnés depuis les paramètres de requête
-        $selectedStatuses = $request->query->all('statuses') ?: [statutdedemande::ACCEPTE->value];
+        // Récupérer les statuts sélectionnés depuis les paramètres de requête (par défaut, uniquement accepté)
+        $selectedStatuses = $request->query->all('statuses') ?: [RequestStatus::ACCEPTE->value];
 
         // Convertir les valeurs string en enum cases
-        $statusEnums = [];
-        foreach ($selectedStatuses as $statusValue) {
-            foreach (statutdedemande::cases() as $case) {
-                if ($case->value === $statusValue) {
-                    $statusEnums[] = $case;
-                    break;
-                }
-            }
-        }
+        $statusEnums = array_filter(
+            RequestStatus::cases(),
+            fn(RequestStatus $case) => in_array($case->value, $selectedStatuses, true)
+        );
 
         // Requête pour récupérer les congés avec les statuts sélectionnés
-        $qb = $em->getRepository(Conge::class)->createQueryBuilder('c');
+        $qb = $em->getRepository(Leave::class)->createQueryBuilder('l');
         if (!empty($statusEnums)) {
-            $qb->where($qb->expr()->in('c.statut', ':statuses'))
-                ->setParameter('statuses', $statusEnums);
+            $qb->where($qb->expr()->in('l.status', ':statuses'))
+               ->setParameter('statuses', $statusEnums);
         }
-        $conges = $qb->getQuery()->getResult();
+        $leaves = $qb->orderBy('l.requestDate', 'DESC')->getQuery()->getResult();
 
-        $events = $this->buildEvents($conges);
+        $events = $this->buildEvents($leaves);
 
-        // Préparer les données pour le template
-        $allStatuses = [];
-        foreach (statutdedemande::cases() as $status) {
-            $allStatuses[] = [
+        // Préparer les données des statuts pour le template
+        $allStatuses = array_map(
+            fn(RequestStatus $status) => [
                 'value' => $status->value,
                 'label' => $status->label(),
-                'selected' => in_array($status->value, $selectedStatuses)
-            ];
-        }
+                'selected' => in_array($status->value, $selectedStatuses, true)
+            ],
+            RequestStatus::cases()
+        );
 
-        return $this->render('calendar\index.html.twig', [
+        return $this->render('calendar/index.html.twig', [
             'events' => json_encode($events),
             'statuses' => $allStatuses,
-            'selectedStatuses' => $selectedStatuses
+            'selectedStatuses' => $selectedStatuses,
         ]);
     }
 
@@ -63,60 +58,52 @@ class CalendarController extends AbstractController
     public function getEvents(Request $request, EntityManagerInterface $em): JsonResponse
     {
         $selectedStatuses = $request->query->all('statuses') ?: [];
+        $statusEnums = array_filter(
+            RequestStatus::cases(),
+            fn(RequestStatus $case) => in_array($case->value, $selectedStatuses, true)
+        );
 
-        // Convertir les valeurs string en enum cases
-        $statusEnums = [];
-        foreach ($selectedStatuses as $statusValue) {
-            foreach (statutdedemande::cases() as $case) {
-                if ($case->value === $statusValue) {
-                    $statusEnums[] = $case;
-                    break;
-                }
-            }
-        }
-
-        // Requête pour récupérer les congés avec les statuts sélectionnés
-        $qb = $em->getRepository(Conge::class)->createQueryBuilder('c');
+        $qb = $em->getRepository(Leave::class)->createQueryBuilder('l');
         if (!empty($statusEnums)) {
-            $qb->where($qb->expr()->in('c.statut', ':statuses'))
-                ->setParameter('statuses', $statusEnums);
+            $qb->where($qb->expr()->in('l.status', ':statuses'))
+               ->setParameter('statuses', $statusEnums);
         }
-        $conges = $qb->getQuery()->getResult();
+        $leaves = $qb->getQuery()->getResult();
 
-        $events = $this->buildEvents($conges);
-
+        $events = $this->buildEvents($leaves);
         return new JsonResponse($events);
     }
 
-    private function buildEvents(array $conges): array
+    private function buildEvents(array $leaves): array
     {
         $events = [];
         $statusColors = [
-            statutdedemande::EN_ATTENTE->value => '#fbbf24', // Jaune
-            statutdedemande::ACCEPTE->value => '#10b981', // Vert
-            statutdedemande::REFUSE->value => '#ef4444', // Rouge
-            statutdedemande::ANNULEE->value => '#6b7280', // Gris
-            statutdedemande::CONSOMME->value => '#8b5cf6', // Violet
-            statutdedemande::ANNULATIONENATTENTE->value => '#f97316', // Orange
+            RequestStatus::EN_ATTENTE->value => '#fbbf24',
+            RequestStatus::ACCEPTE->value => '#10b981',
+            RequestStatus::REFUSE->value => '#ef4444',
+            RequestStatus::ANNULEE->value => '#6b7280',
+            RequestStatus::CONSOMME->value => '#8b5cf6',
+            RequestStatus::ANNULATIONENATTENTE->value => '#f97316',
         ];
 
-        foreach ($conges as $conge) {
-            $user = $conge->getUser();
-            $status = $conge->getStatut();
+        foreach ($leaves as $leave) {
+            $user = $leave->getUser();
+            $status = $leave->getStatus();
 
             $events[] = [
-                'id' => $conge->getId(),
-                'title' => $user->getPrenom() . ' ' . $user->getNom() . ' (' . $status->label() . ')',
-                'start' => $conge->getDateDebut()->format('Y-m-d'),
-                'end' => $conge->getDateFin()->modify('+1 day')->format('Y-m-d'),
+                'id' => $leave->getId(),
+                'title' => sprintf('%s %s (%s)', $user->getFirstName(), $user->getLastName(), $status->label()),
+                'start' => $leave->getStartDate()->format('Y-m-d'),
+                // FullCalendar end date is exclusive, donc on ajoute un jour
+                'end' => $leave->getEndDate()->modify('+1 day')->format('Y-m-d'),
                 'color' => $statusColors[$status->value] ?? '#008080',
                 'extendedProps' => [
                     'status' => $status->value,
                     'statusLabel' => $status->label(),
-                    'typeConge' => $conge->getTypeConge()->value,
-                    'motif' => $conge->getMotif(),
-                    'userName' => $user->getPrenom() . ' ' . $user->getNom()
-                ]
+                    'typeConge' => $leave->getLeaveType()->value,
+                    'motif' => $leave->getReason(),
+                    'userName' => $user->getFirstName() . ' ' . $user->getLastName(),
+                ],
             ];
         }
 

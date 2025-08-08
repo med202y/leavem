@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Team;
+use App\Entity\Leave;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -14,6 +15,18 @@ class TeamRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Team::class);
+    }
+    public function findLeavesByTeamOrderedByRequestDate(Team $team)
+    {
+        return $this->getEntityManager()->createQueryBuilder()
+            ->select('l')
+            ->from(Leave::class, 'l')
+            ->join('l.user', 'u')
+            ->where('u.team = :team')
+            ->setParameter('team', $team)
+            ->orderBy('l.requestDate', 'DESC')
+            ->getQuery()
+            ->getResult();
     }
 
 //    /**

@@ -21,5 +21,6 @@ services:
         resource: '../src/'
         exclude:
             - '../src/Controller'
+            - '../src/Entity'
 
     # add more service definitions when explicit configuration is needed
