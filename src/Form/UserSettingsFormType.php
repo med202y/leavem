@@ -57,17 +57,16 @@ class UserSettingsFormType extends AbstractType
                 'attr' => ['class' => 'form-control']
             ])
             ->add('rolesArray', ChoiceType::class, array_merge([
-    'label'    => 'Rôle(s)',
-    'choices'  => $this->getRoleChoices(),
-    'multiple' => true,
-    'expanded' => true,
-    'required' => false,
-], $options['is_edit']
-      // no “data” on edit
-      ? []
-      // but default EMPLOYEE on create
-      : ['data' => [Role::EMPLOYEE]]))
-
+                'label'    => 'Rôle(s)',
+                'choices'  => $this->getRoleChoices(),
+                'multiple' => true,
+                'expanded' => true,
+                'required' => false,
+            ], $options['is_edit']
+                  // no "data" on edit
+                  ? []
+                  // but default EMPLOYEE on create
+                  : ['data' => [Role::EMPLOYEE]]))
             ->add('team', EntityType::class, [
                 'label' => 'Équipe',
                 'class' => Team::class,
@@ -77,19 +76,16 @@ class UserSettingsFormType extends AbstractType
                 'attr' => ['class' => 'form-control']
             ])
             ->add('leaveBalance', NumberType::class, [
-    'label'       => 'Solde de congé',
-    'scale'       => 1,
-    'empty_data'  => $options['is_edit']
-                      // if editing, default to the current entity value
-                      ? $builder->getData()->getLeaveBalance()
-                      // if creating, default to 25.0
-                      : 25.0,
-    'constraints' => [
-        new Assert\PositiveOrZero(['message' => 'Le solde doit être positif ou nul'])
-    ],
-    'attr' => ['class' => 'form-control', 'step' => '0.1']
-])
-
+                'label'       => 'Solde de congé',
+                'scale'       => 1,
+                'data'        => $options['is_edit'] 
+                    ? null // Let the entity data be used
+                    : 25.0, // Default for new users
+                'constraints' => [
+                    new Assert\PositiveOrZero(['message' => 'Le solde doit être positif ou nul'])
+                ],
+                'attr' => ['class' => 'form-control', 'step' => '0.1']
+            ])
             ->add('hireDate', DateType::class, [
                 'label' => 'Date d\'embauche',
                 'widget' => 'single_text',
@@ -126,6 +122,9 @@ class UserSettingsFormType extends AbstractType
         $resolver->setDefaults([
             'data_class' => User::class,
             'is_edit' => false, // Flag to differentiate between create and edit forms
+            'csrf_protection' => true,
+            'csrf_field_name' => '_token',
+            'csrf_token_id' => 'user_form', // Default, will be overridden in controller
         ]);
 
         $resolver->setAllowedTypes('is_edit', 'bool');

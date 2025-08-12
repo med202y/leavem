@@ -16,6 +16,7 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+
 #[IsGranted('ROLE_ADMIN')]
 class UserController extends AbstractController
 {
@@ -35,7 +36,12 @@ class UserController extends AbstractController
         
         // Handle user creation form
         $newUser = new User();
-        $createForm = $this->createForm(UserSettingsFormType::class, $newUser, ['is_edit' => false]);
+        $createForm = $this->createForm(UserSettingsFormType::class, $newUser, [
+            'is_edit' => false,
+            'csrf_protection' => true,
+            'csrf_field_name' => '_token',
+            'csrf_token_id' => 'user_create'
+        ]);
         $createForm->handleRequest($request);
 
         if ($createForm->isSubmitted() && $createForm->isValid()) {
@@ -45,9 +51,16 @@ class UserController extends AbstractController
         $users = $this->userRepository->findAll();
         $teams = $this->teamRepository->findAll();
         $editForms = [];
+        
         foreach ($users as $user) {
-        $editForms[$user->getId()] = $this->createForm(UserSettingsFormType::class, $user, ['is_edit' => true])->createView();
-    }
+            $editForm = $this->createForm(UserSettingsFormType::class, $user, [
+                'is_edit' => true,
+                'csrf_protection' => true,
+                'csrf_field_name' => '_token',
+                'csrf_token_id' => 'user_edit_' . $user->getId()
+            ]);
+            $editForms[$user->getId()] = $editForm->createView();
+        }
 
         return $this->render('admin/users.html.twig', [
             'users' => $users,
@@ -58,42 +71,57 @@ class UserController extends AbstractController
         ]);
     }
 
-   #[Route('/admin/users/{id}/edit', name: 'admin_users_edit', methods: ['POST'])]
-#[IsGranted('ROLE_ADMIN')]
-public function edit(int $id, Request $request): Response
-{
-    $user = $this->userRepository->find($id);
-
-    if (!$user) {
-        $this->addFlash('error', 'User not found.');
-        return $this->redirectToRoute('admin_index');
-    }
-
-    $currentUser = $this->getUser();
-    if ($user === $currentUser) {
-        $this->addFlash('error', 'You cannot modify your own account.');
-        return $this->redirectToRoute('admin_index');
-    }
-
-    $form = $this->createForm(UserSettingsFormType::class, $user, ['is_edit' => true]);
-    $form->handleRequest($request);
-
-    if ($form->isSubmitted() && $form->isValid()) {
-        return $this->handleUserUpdate($form, $user);
-    }
-
-    // If form is invalid, we need to return to the index page but show the modal
-    foreach ($form->getErrors(true) as $error) {
-        $this->addFlash('error', $error->getMessage());
-    }
-
-    return $this->redirectToRoute('admin_index');
-}
-
-    #[Route('/adminusers/{id}/delete', name: 'admin_users_delete', methods: ['POST'])]
+    #[Route('/admin/users/{id}/edit', name: 'admin_users_edit', methods: ['POST'])]
     #[IsGranted('ROLE_ADMIN')]
-    public function delete(int $id): Response
+    public function edit(int $id, Request $request): Response
     {
+        $user = $this->userRepository->find($id);
+
+        if (!$user) {
+            $this->addFlash('error', 'User not found.');
+            return $this->redirectToRoute('admin_index');
+        }
+
+        $currentUser = $this->getUser();
+        if ($user === $currentUser) {
+            $this->addFlash('error', 'You cannot modify your own account.');
+            return $this->redirectToRoute('admin_index');
+        }
+
+        // Create form with proper CSRF token ID
+        $form = $this->createForm(UserSettingsFormType::class, $user, [
+            'is_edit' => true,
+            'csrf_protection' => true,
+            'csrf_field_name' => '_token',
+            'csrf_token_id' => 'user_edit_' . $user->getId()
+        ]);
+        
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            return $this->handleUserUpdate($form, $user);
+        }
+
+        // If form is invalid, add specific error messages
+        if ($form->isSubmitted()) {
+            foreach ($form->getErrors(true) as $error) {
+                $this->addFlash('error', $error->getMessage());
+            }
+        }
+
+        return $this->redirectToRoute('admin_index');
+    }
+
+    #[Route('/admin/users/{id}/delete', name: 'admin_users_delete', methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN')]
+    public function delete(int $id, Request $request): Response
+    {
+        // Verify CSRF token
+        if (!$this->isCsrfTokenValid('delete_user_' . $id, $request->request->get('_token'))) {
+            $this->addFlash('error', 'Invalid CSRF token.');
+            return $this->redirectToRoute('admin_index');
+        }
+
         $user = $this->userRepository->find($id);
 
         if (!$user) {
@@ -113,16 +141,22 @@ public function edit(int $id, Request $request): Response
 
             $this->addFlash('success', 'Utilisateur supprimé avec succès.');
         } catch (\Exception $e) {
-            $this->addFlash('error', 'Erreur lors de la suppression');
+            $this->addFlash('error', 'Erreur lors de la suppression: ' . $e->getMessage());
         }
 
         return $this->redirectToRoute('admin_index');
     }
 
-    #[Route('/adminusers/{id}/toggle-status', name: 'admin_users_toggle_status', methods: ['POST'])]
+    #[Route('/admin/users/{id}/toggle-status', name: 'admin_users_toggle_status', methods: ['POST'])]
     #[IsGranted('ROLE_ADMIN')]
-    public function toggleStatus(int $id): Response
+    public function toggleStatus(int $id, Request $request): Response
     {
+        // Verify CSRF token
+        if (!$this->isCsrfTokenValid('toggle_status_' . $id, $request->request->get('_token'))) {
+            $this->addFlash('error', 'Invalid CSRF token.');
+            return $this->redirectToRoute('admin_index');
+        }
+
         $user = $this->userRepository->find($id);
 
         if (!$user) {
@@ -144,10 +178,16 @@ public function edit(int $id, Request $request): Response
         return $this->redirectToRoute('admin_index');
     }
 
-    #[Route('/adminusers/bulk-update-solde', name: 'admin_users_bulk_update_solde', methods: ['POST'])]
+    #[Route('/admin/users/bulk-update-solde', name: 'admin_users_bulk_update_solde', methods: ['POST'])]
     #[IsGranted('ROLE_ADMIN')]
     public function bulkUpdateSolde(Request $request): Response
     {
+        // Verify CSRF token
+        if (!$this->isCsrfTokenValid('bulk_update_solde', $request->request->get('_token'))) {
+            $this->addFlash('error', 'Invalid CSRF token.');
+            return $this->redirectToRoute('admin_index');
+        }
+
         $userIds = $request->request->all('user_ids');
         $newSolde = (float) $request->request->get('new_solde');
 
@@ -175,7 +215,7 @@ public function edit(int $id, Request $request): Response
 
             $this->addFlash('success', $updatedCount . ' utilisateur(s) mis à jour avec succès.');
         } catch (\Exception $e) {
-            $this->addFlash('error', 'Erreur lors de la mise à jour en lot: ' );
+            $this->addFlash('error', 'Erreur lors de la mise à jour en lot: ' . $e->getMessage());
         }
 
         return $this->redirectToRoute('admin_index');
@@ -231,8 +271,9 @@ public function edit(int $id, Request $request): Response
 
             $this->addFlash('success', 'User updated successfully.');
         } catch (\Exception $e) {
-            $this->addFlash('error', 'Error updating user: ');
+            $this->addFlash('error', 'Error updating user: ' . $e->getMessage());
         }
 
         return $this->redirectToRoute('admin_index');
-    }}
+    }
+}

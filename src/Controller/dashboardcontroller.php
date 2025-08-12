@@ -34,22 +34,39 @@ class DashboardController extends AbstractController
         $today = new \DateTimeImmutable('today');
         $updated = false;
         foreach ($leaves as $leave) {
-            if (
-                $leave->getStatus()->value === 'approuvée'
-                && $leave->getEndDate() < $today
-            ) {
-                $logger->info(sprintf(
-                    'Congé consommé automatiquement: ID %d, User %s, Dates %s - %s',
-                    $leave->getId(),
-                    $user->getUserIdentifier(),
-                    $leave->getStartDate()->format('Y-m-d'),
-                    $leave->getEndDate()->format('Y-m-d')
-                ));
-                $leave->setStatut(\App\Enum\RequestStatus::CONSOMME);
-                $em->persist($leave);
-                $updated = true;
-            }
+    $statusValue = $leave->getStatus()->value;
+    $startDate = $leave->getStartDate();
+    $endDate = $leave->getEndDate();
+
+    if ($statusValue === 'approuvée') {
+        // Leave is in the past -> consommée
+        if ($endDate < $today) {
+            $logger->info(sprintf(
+                'Congé consommé automatiquement: ID %d, User %s, Dates %s - %s',
+                $leave->getId(),
+                $user->getUserIdentifier(),
+                $startDate->format('Y-m-d'),
+                $endDate->format('Y-m-d')
+            ));
+            $leave->setStatus(\App\Enum\RequestStatus::CONSOMME);
+            $em->persist($leave);
+            $updated = true;
         }
+        // Leave is ongoing -> en cours
+        elseif ($startDate <= $today && $endDate >= $today) {
+            $logger->info(sprintf(
+                'Congé en cours automatiquement: ID %d, User %s, Dates %s - %s',
+                $leave->getId(),
+                $user->getUserIdentifier(),
+                $startDate->format('Y-m-d'),
+                $endDate->format('Y-m-d')
+            ));
+            $leave->setStatus(\App\Enum\RequestStatus::EN_COURS);
+            $em->persist($leave);
+            $updated = true;
+        }
+    }
+}
         if ($updated) {
             $em->flush();
             $logger->info('Statut des congés mis à jour pour l\'utilisateur: ' . $user->getUserIdentifier());

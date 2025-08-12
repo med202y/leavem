@@ -24,6 +24,13 @@
         .sidebar-transition {
             transition: transform 0.3s ease-in-out;
         }
+        /* Modal z-index fix */
+        .modal {
+            z-index: 1055;
+        }
+        .modal-backdrop {
+            z-index: 1050;
+        }
     </style>
 {% endblock %}
 
@@ -123,70 +130,21 @@
                                 <td class="px-4 py-3">{{ user.leaveBalance }}</td>
                                 <td class="px-4 py-3">{{ user.hireDate ? user.hireDate|date('Y-m-d') : '–' }}</td>
                                 <td class="px-4 py-3">
-                                  <button type="button" class="text-indigo-600 hover:underline text-sm mr-3" data-toggle="modal" data-target="#editUserModal{{ user.id }}">
-    Modifier
-</button>
+                                  <button type="button" class="text-indigo-600 hover:underline text-sm mr-3 edit-user-btn" 
+                                          data-user-id="{{ user.id }}" 
+                                          data-toggle="modal" 
+                                          data-target="#editUserModal{{ user.id }}">
+                                      Modifier
+                                  </button>
 
-                                    <button type="button" class="text-red-600 hover:underline text-sm" data-toggle="modal" data-target="#deleteUserModal{{ user.id }}">
+                                    <button type="button" class="text-red-600 hover:underline text-sm delete-user-btn" 
+                                            data-user-id="{{ user.id }}"
+                                            data-toggle="modal" 
+                                            data-target="#deleteUserModal{{ user.id }}">
                                         Supprimer
                                     </button>
                                 </td>
                             </tr>
-                            
-                            <!-- Delete User Modal -->
-                            <div class="modal fade" id="deleteUserModal{{ user.id }}" tabindex="-1" role="dialog" aria-labelledby="deleteUserModalLabel{{ user.id }}" aria-hidden="true">
-                                <div class="modal-dialog" role="document">
-                                    <form method="POST" action="{{ path('admin_users_delete', {'id': user.id}) }}">
-                                        <input type="hidden" name="_token" value="{{ csrf_token('delete_user_' ~ user.id) }}">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title" id="deleteUserModalLabel{{ user.id }}">Confirmer la suppression</h5>
-                                                <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
-                                                    <span aria-hidden="true">&times;</span>
-                                                </button>
-                                            </div>
-                                            <div class="modal-body">
-                                                Êtes-vous sûr de vouloir supprimer l'utilisateur <strong>{{ user.firstName }} {{ user.lastName }}</strong> ?
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
-                                                <button type="submit" class="btn btn-danger">Supprimer</button>
-                                            </div>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                            <!-- Edit User Modal -->
-<div class="modal fade" id="editUserModal{{ user.id }}" tabindex="-1" role="dialog" aria-labelledby="editUserModalLabel{{ user.id }}" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-            {{ form_start(editForms[user.id], {
-                'method': 'POST',
-                'action': path('admin_users_edit', {'id': user.id}),
-                'attr': {'class': 'needs-validation', 'novalidate': true}
-            }) }}
-                <div class="modal-header">
-                    <h5 class="modal-title" id="editUserModalLabel{{ user.id }}">Modifier l'utilisateur</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-
-                <div class="modal-body">
-                    {{ form_widget(editForms[user.id]) }}
-                </div>
-
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save mr-1"></i> Enregistrer les modifications
-                    </button>
-                </div>
-            {{ form_end(editForms[user.id]) }}
-        </div>
-    </div>
-</div>
-
                         {% endfor %}
                         </tbody>
                     </table>
@@ -197,7 +155,6 @@
         </div>
     </main>
 
-
     <!-- Create User Modal -->
     <div class="modal fade" id="createUserModal" tabindex="-1" role="dialog" aria-labelledby="createUserModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
@@ -205,7 +162,7 @@
                 {{ form_start(createForm, {
                     'method': 'POST',
                     'action': path('admin_index'),
-                    'attr': {'class': 'needs-validation', 'novalidate': true}
+                    'attr': {'class': 'needs-validation create-user-form', 'novalidate': true, 'id': 'createUserForm'}
                 }) }}
                     <div class="modal-header">
                         <h5 class="modal-title" id="createUserModalLabel">Ajouter un nouvel utilisateur</h5>
@@ -297,14 +254,12 @@
                             </div>
                         </div>
 
-                       
-
                         {{ form_rest(createForm) }}
                     </div>
 
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
-                        <button type="submit" class="btn btn-success">
+                        <button type="submit" class="btn btn-success create-user-submit">
                             <i class="fas fa-plus mr-1"></i>
                             Créer l'utilisateur
                         </button>
@@ -313,33 +268,164 @@
             </div>
         </div>
     </div>
+
+    <!-- Edit User Modals -->
+    {% for user in users %}
+        <div class="modal fade" id="editUserModal{{ user.id }}" tabindex="-1" role="dialog" aria-labelledby="editUserModalLabel{{ user.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    {{ form_start(editForms[user.id], {
+                        'method': 'POST',
+                        'action': path('admin_users_edit', {'id': user.id}),
+                        'attr': {'class': 'needs-validation edit-user-form', 'novalidate': true, 'id': 'editUserForm' ~ user.id}
+                    }) }}
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="editUserModalLabel{{ user.id }}">Modifier l'utilisateur</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+
+                        <div class="modal-body">
+                            {{ form_widget(editForms[user.id]) }}
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                            <button type="submit" class="btn btn-primary edit-user-submit" data-user-id="{{ user.id }}">
+                                <i class="fas fa-save mr-1"></i> Enregistrer les modifications
+                            </button>
+                        </div>
+                    {{ form_end(editForms[user.id]) }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete User Modal -->
+        <div class="modal fade" id="deleteUserModal{{ user.id }}" tabindex="-1" role="dialog" aria-labelledby="deleteUserModalLabel{{ user.id }}" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <form method="POST" action="{{ path('admin_users_delete', {'id': user.id}) }}" class="delete-user-form" data-user-id="{{ user.id }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete_user_' ~ user.id) }}">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="deleteUserModalLabel{{ user.id }}">Confirmer la suppression</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            Êtes-vous sûr de vouloir supprimer l'utilisateur <strong>{{ user.firstName }} {{ user.lastName }}</strong> ?
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                            <button type="submit" class="btn btn-danger delete-user-submit" data-user-id="{{ user.id }}">Supprimer</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    {% endfor %}
 {% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
     <script>
-        // Mobile menu toggle
-        const menuBtn = document.getElementById('mobile-menu-btn');
-        const sidebar = document.getElementById('sidebar');
-        
-        menuBtn?.addEventListener('click', () => {
-            sidebar.classList.toggle('-translate-x-full');
-        });
-
-        // Form validation feedback
-        document.addEventListener('DOMContentLoaded', function() {
-            // Add Bootstrap validation classes based on Symfony form errors
-            document.querySelectorAll('.form-control').forEach(function(element) {
-                const errorDiv = element.parentNode.querySelector('.form-error, .invalid-feedback');
-                if (errorDiv && errorDiv.textContent.trim()) {
-                    element.classList.add('is-invalid');
-                }
+        $(document).ready(function() {
+            // Mobile menu toggle
+            const menuBtn = document.getElementById('mobile-menu-btn');
+            const sidebar = document.getElementById('sidebar');
+            
+            menuBtn?.addEventListener('click', () => {
+                sidebar.classList.toggle('-translate-x-full');
             });
+
+            // Form validation feedback
+            function addFormValidationClasses() {
+                document.querySelectorAll('.form-control').forEach(function(element) {
+                    const errorDiv = element.parentNode.querySelector('.form-error, .invalid-feedback');
+                    if (errorDiv && errorDiv.textContent.trim()) {
+                        element.classList.add('is-invalid');
+                    } else {
+                        element.classList.remove('is-invalid');
+                    }
+                });
+            }
+
+            // Initial validation classes
+            addFormValidationClasses();
 
             // Auto-show modal if there are form errors
             {% if createForm.vars.submitted and not createForm.vars.valid %}
                 $('#createUserModal').modal('show');
             {% endif %}
+
+            // Handle create user form submission
+            $('.create-user-form').on('submit', function(e) {
+                const submitBtn = $(this).find('.create-user-submit');
+                submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i> Création en cours...');
+                
+                // Re-enable button after a delay if form doesn't redirect
+                setTimeout(function() {
+                    submitBtn.prop('disabled', false).html('<i class="fas fa-plus mr-1"></i> Créer l\'utilisateur');
+                }, 5000);
+            });
+
+            // Handle edit user form submission
+            $('.edit-user-form').on('submit', function(e) {
+                const userId = $(this).find('.edit-user-submit').data('user-id');
+                const submitBtn = $(this).find('.edit-user-submit');
+                submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i> Modification en cours...');
+                
+                // Re-enable button after a delay if form doesn't redirect
+                setTimeout(function() {
+                    submitBtn.prop('disabled', false).html('<i class="fas fa-save mr-1"></i> Enregistrer les modifications');
+                }, 5000);
+            });
+
+            // Handle delete user form submission
+            $('.delete-user-form').on('submit', function(e) {
+                const userId = $(this).data('user-id');
+                const submitBtn = $(this).find('.delete-user-submit');
+                submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i> Suppression...');
+                
+                // Re-enable button after a delay if form doesn't redirect
+                setTimeout(function() {
+                    submitBtn.prop('disabled', false).html('Supprimer');
+                }, 5000);
+            });
+
+            // Reset forms when modals are hidden
+            $('.modal').on('hidden.bs.modal', function() {
+                const form = $(this).find('form')[0];
+                if (form && !$(form).hasClass('delete-user-form')) {
+                    form.reset();
+                    $(form).find('.form-control').removeClass('is-invalid');
+                    $(form).find('.is-invalid').removeClass('is-invalid');
+                }
+                
+                // Reset submit buttons
+                $(this).find('[type="submit"]').prop('disabled', false);
+                $(this).find('.create-user-submit').html('<i class="fas fa-plus mr-1"></i> Créer l\'utilisateur');
+                $(this).find('.edit-user-submit').html('<i class="fas fa-save mr-1"></i> Enregistrer les modifications');
+                $(this).find('.delete-user-submit').html('Supprimer');
+            });
+
+            // Prevent double submission
+            $('form').on('submit', function() {
+                $(this).find('[type="submit"]').prop('disabled', true);
+            });
+
+            // Handle modal backdrop clicks properly
+            $('.modal').on('click', function(e) {
+                if (e.target === this) {
+                    $(this).modal('hide');
+                }
+            });
+
+            // Auto-dismiss alerts after 5 seconds
+            setTimeout(function() {
+                $('.alert').alert('close');
+            }, 5000);
         });
     </script>
 {% endblock %}
