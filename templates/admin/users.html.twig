@@ -51,9 +51,10 @@
                 <nav class="flex-1 p-4">
                     <ul class="space-y-1">
                         {% set adminMenu = [
-                            {'label': 'Utilisateurs', 'icon': '👤', 'url': path('admin_index')},
+                            {'label': 'Tableau de bord', 'icon': '📊', 'url': path('dashboard')},
                             {'label': 'Équipes', 'icon': '👥', 'url': path('team')},
-                            {'label': 'Tableau de bord', 'icon': '📊', 'url': path('dashboard')}
+                            {'label': 'Utilisateurs', 'icon': '👤', 'url': path('admin_index')},
+
                         ] %}
 
                         {% for item in adminMenu %}

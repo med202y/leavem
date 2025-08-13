@@ -1,0 +1,205 @@
+{# templates/team/admin_index.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des Équipes - Administration{% endblock %}
+
+{% block stylesheets %}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .team-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .team-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .member-avatar {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <!-- Bouton menu mobile -->
+    <button id="mobile-menu-btn"
+            class="md:hidden fixed top-4 left-4 z-50 bg-indigo-600 text-white p-3 rounded-lg shadow-md">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-72 bg-indigo-800 text-white shadow-md hidden md:block">
+        <div class="h-full flex flex-col justify-between">
+            <div>
+                <div class="p-6 text-2xl font-bold">
+                    <i class="fas fa-user-circle mr-2"></i> Administration
+                </div>
+                <nav class="flex-1 p-4">
+                    <ul class="space-y-1">
+                        {% set menu = [
+                            {'label': 'Tableau de bord', 'icon': '🏠', 'url': path('dashboard')},
+                            {'label': 'Calendrier', 'icon': '📅', 'url': path('app_calendar')},
+                            {'label': 'Demander un congé', 'icon': '📄', 'url': path('request_leave')},
+                            {'label': 'Équipes', 'icon': '👥', 'url': path('team')}
+                        ] %}
+
+                        {% for item in menu %}
+                            <li>
+                                <a href="{{ item.url }}" class="flex items-center gap-2 px-4 py-2 rounded hover:bg-white/10 transition-colors {% if app.request.get('_route') == item.url|split('/')|last %}bg-white/20{% endif %}">
+                                    <span class="text-lg">{{ item.icon }}</span>
+                                    <span class="text-sm font-medium">{{ item.label }}</span>
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                    <div class="pt-4">
+                        <p class="text-xs uppercase tracking-wide px-4 mb-2 opacity-60">Compte</p>
+                        <a href="{{ path('user_profile') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 text-white/80">
+                            <i class="fas fa-user-cog w-5"></i>
+                            <span>Paramètres du profil</span>
+                        </a>
+                        <a href="{{ path('app_logout') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 text-white/80">
+                            <i class="fas fa-sign-out-alt w-5"></i>
+                            <span>Déconnexion</span>
+                        </a>
+                    </div>
+                </nav>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Contenu principal -->
+    <main class="min-h-screen bg-gray-100 md:ml-72 transition-all">
+        <div class="p-6 max-w-7xl mx-auto">
+            {# En-tête #}
+            <div class="bg-white rounded-2xl p-6 shadow mb-6">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h1 class="text-3xl font-bold text-indigo-700 flex items-center gap-3">
+                            <i class="fas fa-users"></i>
+                            Gestion des Équipes
+                        </h1>
+                        <p class="text-gray-600 mt-2">Vue d'ensemble de toutes les équipes de l'organisation</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm text-gray-500">{{ "now"|date("l, F j, Y") }}</p>
+                        <p class="text-xs text-gray-400">{{ teams|length }} équipe(s) au total</p>
+                    </div>
+                </div>
+            </div>
+
+            {# Grille des équipes #}
+            {% if teams|length > 0 %}
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {% for team in teams %}
+                        <div class="team-card bg-white rounded-2xl shadow p-6">
+                            {# En-tête de l'équipe #}
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="flex-1">
+                                    <h3 class="text-xl font-bold text-gray-800">{{ team.name }}</h3>
+                                    {% if team.description %}
+                                        <p class="text-gray-600 text-sm mt-1">{{ team.description }}</p>
+                                    {% endif %}
+                                </div>
+                                <div class="flex items-center gap-1 bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full text-xs font-medium">
+                                    <i class="fas fa-users"></i>
+                                    {{ team.members|length }}
+                                </div>
+                            </div>
+
+                            {# Manager #}
+                            <div class="mb-4 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-100">
+                                <div class="flex items-center gap-3">
+                                    {% if team.manager %}
+                                        <div class="member-avatar rounded-full">
+                                            {{ team.manager.firstName|first|upper }}{{ team.manager.lastName|first|upper }}
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="font-semibold text-gray-800">
+                                                {{ team.manager.firstName }} {{ team.manager.lastName }}
+                                            </p>
+                                            <p class="text-xs text-blue-600 font-medium">
+                                                <i class="fas fa-crown mr-1"></i>Manager
+                                            </p>
+                                        </div>
+                                    {% else %}
+                                        <div class="member-avatar rounded-full bg-gray-400">
+                                            <i class="fas fa-user-slash"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="font-medium text-gray-500">Aucun manager assigné</p>
+                                            <p class="text-xs text-gray-400">
+                                                <i class="fas fa-exclamation-triangle mr-1"></i>Non assigné
+                                            </p>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            {# Membres de l'équipe #}
+                            <div>
+                                <h4 class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                                    <i class="fas fa-users"></i>
+                                    Membres ({{ team.members|length }})
+                                </h4>
+                                
+                                {% if team.members|length > 0 %}
+                                    <div class="space-y-2 max-h-48 overflow-y-auto">
+                                        {% for member in team.members %}
+                                            <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                                                <div class="member-avatar rounded-full">
+                                                    {{ member.firstName|first|upper }}{{ member.lastName|first|upper }}
+                                                </div>
+                                                <div class="flex-1 min-w-0">
+                                                    <p class="text-sm font-medium text-gray-800 truncate">
+                                                        {{ member.firstName }} {{ member.lastName }}
+                                                    </p>
+                                                    <p class="text-xs text-gray-500">
+                                                        {{ member.department.value ?? 'Non assigné' }}
+                                                    </p>
+                                                </div>
+                                                {% if member == team.manager %}
+                                                    <i class="fas fa-crown text-yellow-500 text-xs" title="Manager"></i>
+                                                {% endif %}
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <p class="text-center text-gray-500 text-sm py-4">
+                                        <i class="fas fa-user-slash mb-2 block text-lg"></i>
+                                        Aucun membre dans cette équipe
+                                    </p>
+                                {% endif %}
+                            </div>
+
+                            
+                            
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="bg-white rounded-2xl shadow p-12 text-center">
+                    <i class="fas fa-users text-6xl text-gray-300 mb-4"></i>
+                    <h3 class="text-xl font-semibold text-gray-600 mb-2">Aucune équipe trouvée</h3>
+                    <p class="text-gray-500">Il n'y a actuellement aucune équipe configurée dans le système.</p>
+                </div>
+            {% endif %}
+        </div>
+        
+    </main>
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        const menuBtn = document.getElementById('mobile-menu-btn');
+        const sidebar = document.getElementById('sidebar');
+        menuBtn?.addEventListener('click', () => sidebar?.classList.toggle('hidden'));
+    </script>
+{% endblock %}

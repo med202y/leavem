@@ -78,9 +78,10 @@ class UserSettingsFormType extends AbstractType
             ->add('leaveBalance', NumberType::class, [
                 'label'       => 'Solde de congé',
                 'scale'       => 1,
-                'data'        => $options['is_edit'] 
-                    ? null // Let the entity data be used
-                    : 25.0, // Default for new users
+                'data' => $options['is_edit']
+    ? $builder->getData()->getLeaveBalance() // Use current value from entity
+    : 25.0,
+
                 'constraints' => [
                     new Assert\PositiveOrZero(['message' => 'Le solde doit être positif ou nul'])
                 ],

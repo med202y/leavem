@@ -62,8 +62,8 @@ class RequestController extends AbstractController
             $logger->info(sprintf(
                 'Nouvelle demande de congé: User %s, Dates %s - %s',
                 $user->getUserIdentifier(),
-                $leave->getStartDate()->format('Y-m-d'), // Changed from getDateDebut
-                $leave->getEndDate()->format('Y-m-d') // Changed from getDateFin
+                $leave->getStartDate()->format('Y-m-d'), 
+                $leave->getEndDate()->format('Y-m-d') 
             ));
             $notificationRepository->createLeaveModifiedNotifications($leave, $user); 
 

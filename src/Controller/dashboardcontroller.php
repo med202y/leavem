@@ -14,10 +14,11 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Psr\Log\LoggerInterface;
 
+#[IsGranted('ROLE_EMPLOYEE')]
 class DashboardController extends AbstractController
 {
     #[Route('/dashboard', name: 'dashboard')]
-    #[IsGranted('ROLE_EMPLOYEE')]
+    
     public function dashboard(EntityManagerInterface $em, LoggerInterface $logger): Response
     {
         $user = $this->getUser();
@@ -74,7 +75,7 @@ class DashboardController extends AbstractController
 
         // --- Get Notifications ---
         $notifications = $em->getRepository(Notification::class)
-            ->findBy(['recipient' => $user], ['id' => 'DESC']);
+            ->findBy(['recipient' => $user], ['id' => 'DESC'],7);
 
         // --- Solde de congés ---
         $leaveBalance = $user->getLeaveBalance() ?? 0;

@@ -44,12 +44,14 @@
             border-color: #0d6efd;
             box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
         }
-        .status-en_attente { background-color: #fef3c7; color: #92400e; }
-        .status-approuvée { background-color: #d1fae5; color: #065f46; }
-        .status-rejetée { background-color: #fee2e2; color: #991b1b; }
-        .status-annulée { background-color: #f3f4f6; color: #374151; }
-        .status-consommée { background-color: #e0e7ff; color: #3730a3; }
-        .status-annulation-en-attente { background-color: #fed7aa; color: #9a3412; }
+        
+        /* Bootstrap color classes for status badges */
+        .status-badge.bg-warning { background-color: #fef3c7; color: #92400e; }
+        .status-badge.bg-success { background-color: #d1fae5; color: #065f46; }
+        .status-badge.bg-danger { background-color: #fee2e2; color: #991b1b; }
+        .status-badge.bg-secondary { background-color: #f3f4f6; color: #374151; }
+        .status-badge.bg-info { background-color: #e0e7ff; color: #3730a3; }
+        .status-badge.bg-primary { background-color: #dbeafe; color: #1e40af; }
 
         .legend {
             display: flex;
@@ -157,7 +159,7 @@
                 </h5>
                 <div class="d-flex flex-wrap gap-2 mb-3">
                     {% for status in statuses %}
-                        <label class="status-badge status-{{ status.value|replace({' ': '-'}) }} {% if status.selected %}selected{% endif %}">
+                        <label class="status-badge bg-{{ status.color|default('secondary') }} {% if status.selected %}selected{% endif %}">
                             <input type="checkbox"
                                    class="status-filter d-none"
                                    value="{{ status.value }}"
@@ -180,32 +182,25 @@
                 </div>
             </div>
 
-            <!-- Légende des couleurs -->
+            <!-- Dynamic legend based on status colors -->
             <div class="legend">
-                <div class="legend-item">
-                    <div class="legend-color" style="background-color: #fbbf24;"></div>
-                    <span>En attente</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color" style="background-color: #10b981;"></div>
-                    <span>Approuvée</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color" style="background-color: #ef4444;"></div>
-                    <span>Rejetée</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color" style="background-color: #6b7280;"></div>
-                    <span>Annulée</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color" style="background-color: #8b5cf6;"></div>
-                    <span>Consommée</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color" style="background-color: #f97316;"></div>
-                    <span>Annulation en attente</span>
-                </div>
+                {% set legend_colors = {
+                    'warning': '#fbbf24',
+                    'success': '#10b981',
+                    'danger': '#ef4444',
+                    'secondary': '#6b7280',
+                    'info': '#8b5cf6',
+                    'primary': '#3b82f6'
+                } %}
+                
+                {% for status in statuses %}
+                    {% set color_class = status.color|default('secondary') %}
+                    {% set hex_color = legend_colors[color_class]|default('#008080') %}
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: {{ hex_color }};"></div>
+                        <span>{{ status.label }}</span>
+                    </div>
+                {% endfor %}
             </div>
 
             <div class="card shadow-sm calendar-card">

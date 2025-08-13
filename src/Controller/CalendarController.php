@@ -42,6 +42,7 @@ class CalendarController extends AbstractController
             fn(RequestStatus $status) => [
                 'value' => $status->value,
                 'label' => $status->label(),
+                'color' => $status->color(),
                 'selected' => in_array($status->value, $selectedStatuses, true)
             ],
             RequestStatus::cases()
@@ -77,14 +78,6 @@ class CalendarController extends AbstractController
     private function buildEvents(array $leaves): array
     {
         $events = [];
-        $statusColors = [
-            RequestStatus::EN_ATTENTE->value => '#fbbf24',
-            RequestStatus::ACCEPTE->value => '#10b981',
-            RequestStatus::REFUSE->value => '#ef4444',
-            RequestStatus::ANNULEE->value => '#6b7280',
-            RequestStatus::CONSOMME->value => '#8b5cf6',
-            RequestStatus::ANNULATIONENATTENTE->value => '#f97316',
-        ];
 
         foreach ($leaves as $leave) {
             $user = $leave->getUser();
@@ -96,7 +89,7 @@ class CalendarController extends AbstractController
                 'start' => $leave->getStartDate()->format('Y-m-d'),
                 // FullCalendar end date is exclusive, donc on ajoute un jour
                 'end' => $leave->getEndDate()->modify('+1 day')->format('Y-m-d'),
-                'color' => $statusColors[$status->value] ?? '#008080',
+                'color' => $this->getStatusHexColor($status),
                 'extendedProps' => [
                     'status' => $status->value,
                     'statusLabel' => $status->label(),
@@ -108,5 +101,21 @@ class CalendarController extends AbstractController
         }
 
         return $events;
+    }
+
+    /**
+     * Convert Bootstrap color classes to hex colors for FullCalendar
+     */
+    private function getStatusHexColor(RequestStatus $status): string
+    {
+        return match ($status->color()) {
+            'warning' => '#fbbf24',
+            'success' => '#10b981',
+            'danger' => '#ef4444',
+            'secondary' => '#6b7280',
+            'info' => '#8b5cf6',
+            'primary' => '#3b82f6',
+            default => '#008080',
+        };
     }
 }

@@ -2,29 +2,30 @@
 
 namespace App\Controller\Profile;
 
-use App\Entity\Notification;
 use App\Entity\User;
 use App\Repository\NotificationRepository;
 use App\Form\UserProfileType;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Doctrine\ORM\EntityManagerInterface;
+ #[IsGranted('ROLE_EMPLOYEE')]
 
 class ProfileController extends AbstractController
 {
     #[Route('/user_profile', name: 'user_profile')]
-    #[IsGranted('ROLE_EMPLOYEE')]
+   
     public function user_profile(
         Request $request,
-        EntityManagerInterface $em,
         UserPasswordHasherInterface $passwordHasher,
-        NotificationRepository $notificationRepository
+        NotificationRepository $notificationRepository,
+        EntityManagerInterface $em,
     ): Response
     {
+        /** @var User $user */
         $user = $this->getUser();
 
         // Création et gestion du formulaire
@@ -32,10 +33,10 @@ class ProfileController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Gestion du changement de mot de passe
-            $oldPassword = $request->request->get('old_password');
-            $newPassword = $request->request->get('new_password');
-            $confirmPassword = $request->request->get('confirm_password');
+            // Récupération des valeurs depuis le formulaire
+            $oldPassword = $form->get('oldPassword')->getData();
+            $newPassword = $form->get('plainPassword')->getData();
+            $confirmPassword = $form->get('confirmPassword')->getData();
 
             // Si l'utilisateur veut changer son mot de passe
             if (!empty($newPassword)) {
@@ -69,7 +70,11 @@ class ProfileController extends AbstractController
                 // Hasher et sauvegarder le nouveau mot de passe
                 $hashedPassword = $passwordHasher->hashPassword($user, $newPassword);
                 $user->setPassword($hashedPassword);
+                 $em->persist($user);
+                 $em->flush();
             }
+
+            // Notifier de la mise à jour
             $notificationRepository->profileUpdateNotification($user);
 
             $this->addFlash('success', 'Profil mis à jour avec succès');

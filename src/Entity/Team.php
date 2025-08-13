@@ -21,8 +21,7 @@ class Team
 
     #[ORM\Column(length: 255)]
     private ?string $description = null;
-
-    // Fixed: Changed inversedBy to 'managedTeams' to match the User entity property
+    
     #[ORM\ManyToOne(inversedBy: 'managedTeams')]
     #[ORM\JoinColumn(name: 'manager_id', referencedColumnName: 'id', nullable: true)]
     private ?User $manager = null;

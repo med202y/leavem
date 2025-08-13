@@ -6,13 +6,11 @@ use App\Entity\Leave;
 use App\Entity\Notification;
 use App\Entity\User;
 use App\Enum\RequestStatus;
-
 use App\Repository\NotificationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Routing\Attribute\Route;
@@ -36,10 +34,8 @@ class TeamLeavesController extends AbstractController
         $cases = RequestStatus::cases();
         $statuses = array_map(fn($c) => $c->value, $cases);
 
-       
-
         return $this->render('team/leaves.html.twig', [
-            'leaves' => $leaves,  // Changed from conges to leaves
+            'leaves' => $leaves,
             'statuses' => $statuses,
             'statusColors' => RequestStatus::colorMap(),
         ]);
@@ -59,9 +55,10 @@ class TeamLeavesController extends AbstractController
             
             if (!in_array($action, $validActions, true)) {
                 return $this->json([
-                    'status' => 'error',
-                    'message' => 'Action invalide'
-                ], 400);
+                    'title' => 'Action non autorisée',
+                    'detail' => 'L\'action demandée n\'est pas valide',
+                    'type' => 'https://tools.ietf.org/html/rfc7231#section-6.5.1'
+                ], Response::HTTP_BAD_REQUEST);
             }
 
             $user = $leave->getUser();
@@ -72,9 +69,10 @@ class TeamLeavesController extends AbstractController
             if ($action === 'approve_cancellation') {
                 if ($leave->getStatus() !== RequestStatus::ANNULATIONENATTENTE) {
                     return $this->json([
-                        'status' => 'error',
-                        'message' => 'Seules les demandes en attente d\'annulation peuvent être approuvées'
-                    ], 400);
+                        'title' => 'Statut invalide',
+                        'detail' => 'Seules les demandes en attente d\'annulation peuvent être approuvées',
+                        'type' => 'https://tools.ietf.org/html/rfc7231#section-6.5.1'
+                    ], Response::HTTP_BAD_REQUEST);
                 }
 
                 $leave
@@ -88,7 +86,6 @@ class TeamLeavesController extends AbstractController
                     $user->setLeaveBalance($user->getLeaveBalance() + $days);
                 }
 
-                $message = 'Annulation de congé approuvée avec succès';
                 $notificationRepo->createAndPersistNotification(
                     $user,
                     'Annulation de congé approuvée',
@@ -99,9 +96,10 @@ class TeamLeavesController extends AbstractController
             } elseif ($action === 'reject_cancellation') {
                 if ($leave->getStatus() !== RequestStatus::ANNULATIONENATTENTE) {
                     return $this->json([
-                        'status' => 'error',
-                        'message' => 'Seules les demandes en attente d\'annulation peuvent être rejetées'
-                    ], 400);
+                        'title' => 'Statut invalide',
+                        'detail' => 'Seules les demandes en attente d\'annulation peuvent être rejetées',
+                        'type' => 'https://tools.ietf.org/html/rfc7231#section-6.5.1'
+                    ], Response::HTTP_BAD_REQUEST);
                 }
 
                 $leave
@@ -109,7 +107,6 @@ class TeamLeavesController extends AbstractController
                     ->setProcessDate(new \DateTime())
                     ->setProcessedBy($manager->getFirstName().' '.$manager->getLastName());
 
-                $message = 'Annulation de congé rejetée avec succès';
                 $notificationRepo->createAndPersistNotification(
                     $user,
                     'Annulation de congé refusée',
@@ -120,9 +117,10 @@ class TeamLeavesController extends AbstractController
             } else {
                 if ($leave->getStatus() !== RequestStatus::EN_ATTENTE) {
                     return $this->json([
-                        'status' => 'error',
-                        'message' => 'Seules les demandes en attente peuvent être traitées'
-                    ], 400);
+                        'title' => 'Statut invalide',
+                        'detail' => 'Seules les demandes en attente peuvent être traitées',
+                        'type' => 'https://tools.ietf.org/html/rfc7231#section-6.5.1'
+                    ], Response::HTTP_BAD_REQUEST);
                 }
 
                 $newStatus = $action === 'accept' ? RequestStatus::ACCEPTE : RequestStatus::REFUSE;
@@ -133,7 +131,6 @@ class TeamLeavesController extends AbstractController
 
                 if ($newStatus === RequestStatus::REFUSE) {
                     $leave->setRefusalReason($request->request->get('reason'));
-                    $message = 'Demande de congé refusée avec succès';
                     $notificationTitle = 'Demande de congé refusée';
                 } else {
                     // Deduct from leave balance if annual leave
@@ -141,7 +138,6 @@ class TeamLeavesController extends AbstractController
                         $days = $leave->getStartDate()->diff($leave->getEndDate())->days + 1;
                         $user->setLeaveBalance($user->getLeaveBalance() - $days);
                     }
-                    $message = 'Demande de congé acceptée avec succès';
                     $notificationTitle = 'Demande de congé acceptée';
                 }
 
@@ -162,15 +158,24 @@ class TeamLeavesController extends AbstractController
             $em->flush();
             
             return $this->json([
-                'status' => 'ok',
-                'message' => $message
-            ]);
+                'data' => [
+                    'id' => $leave->getId(),
+                    'status' => $leave->getStatus()->value,
+                    'processed_by' => $leave->getProcessedBy(),
+                    'process_date' => $leave->getProcessDate()?->format('Y-m-d H:i:s'),
+                ],
+                'meta' => [
+                    'message' => 'Action effectuée avec succès',
+                    'action' => $action
+                ]
+            ], Response::HTTP_OK);
 
         } catch (\Exception $e) {
             return $this->json([
-                'status' => 'error', 
-                'message' => 'Une erreur est survenue: '.$e->getMessage()
-            ], 500);
+                'title' => 'Erreur serveur',
+                'detail' => 'Une erreur inattendue est survenue: '.$e->getMessage(),
+                'type' => 'https://tools.ietf.org/html/rfc7231#section-6.6.1'
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 }
