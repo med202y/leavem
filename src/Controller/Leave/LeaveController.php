@@ -19,10 +19,10 @@ use DateTime;
 class LeaveController extends AbstractController
 {
     #[Route('/my-leaves', name: 'my_leaves')]
-    
+
     public function myLeaves(
-        LeaveRepository $leaveRepository, 
-        Request $request, 
+        LeaveRepository $leaveRepository,
+        Request $request,
         PaginatorInterface $paginator
     ): Response {
         $user = $this->getUser();
@@ -41,81 +41,98 @@ class LeaveController extends AbstractController
         ]);
     }
 
-    #[Route('/edit-leave/{id}', name: 'edit_leave', methods: ['POST'])]
-    public function editLeave(
-        Request $request,
-        Leave $leave,
-        EntityManagerInterface $em,
-        NotificationRepository $notificationRepo
-    ): Response {
-        $user = $this->getUser();
+     #[Route('/edit-leave/{id}', name: 'edit_leave', methods: ['POST'])]
+     public function editLeave(
+         Request $request,
+         Leave $leave,
+         EntityManagerInterface $em,
+         NotificationRepository $notificationRepo
+     ): Response {
+         $user = $this->getUser();
 
-        // Security checks
-        if (!$this->isLeaveEditable($leave, $user)) {
-            $this->addFlash('error', 'Cette demande ne peut pas être modifiée');
-            return $this->redirectToRoute('my_leaves');
-        }
+         // Security checks
+         if (!$this->isLeaveEditable($leave, $user)) {
+             return $this->json([
+                 'success' => false,
+                 'message' => 'Cette demande ne peut pas être modifiée'
+             ], 403);
+         }
 
-        try {
-            $data = json_decode($request->getContent(), true);
-            $startDate = new DateTime($data['startDate'] ?? '');
-            $endDate = new DateTime($data['endDate'] ?? '');
+         try {
+             $data = json_decode($request->getContent(), true);
+             $startDate = new DateTime($data['startDate'] ?? '');
+             $endDate = new DateTime($data['endDate'] ?? '');
 
-            $this->validateLeaveDates($startDate, $endDate);
-            
-            $leave
-                ->setStartDate($startDate)
-                ->setEndDate($endDate)
-                ->setRequestDate(new DateTime()); // Update request date
+             $this->validateLeaveDates($startDate, $endDate);
 
-            $notificationRepo->createLeaveModifiedNotification($leave, $user);
-            $em->flush();
+             $leave
+                 ->setStartDate($startDate)
+                 ->setEndDate($endDate)
+                 ->setRequestDate(new DateTime());
 
-            $this->addFlash('success', 'Congé modifié avec succès');
-        } catch (\InvalidArgumentException $e) {
-            $this->addFlash('error', $e->getMessage());
-        } catch (\Exception $e) {
-            $this->addFlash('error', 'Erreur lors de la modification');
-        }
-        // Redirect to the same page to see the updated leave
-        return $this->redirectToRoute('my_leaves');
-    }
+             $notificationRepo->createLeaveModifiedNotifications($leave, $user);
+             $em->flush();
 
-    #[Route('/cancel-leave/{id}', name: 'cancel_leave', methods: ['POST'])]
-    public function cancelLeave(
-        Leave $leave,
-        EntityManagerInterface $em,
-        NotificationRepository $notificationRepo
-    ): Response {
-        $user = $this->getUser();
+             return $this->json([
+                 'success' => true,
+                 'message' => 'Congé modifié avec succès'
+             ]);
 
-        if (!$this->isLeaveCancellable($leave, $user)) {
-            $this->addFlash('error', 'Cette demande ne peut pas être annulée');
-            return $this->redirectToRoute('my_leaves');
-        }
+         } catch (\InvalidArgumentException $e) {
+             return $this->json([
+                 'success' => false,
+                 'message' => $e->getMessage()
+             ], 400);
+         } catch (\Exception $e) {
+             return $this->json([
+                 'success' => false,
+                 'message' => 'Erreur lors de la modification'
+             ], 500);
+         }
+     }
 
-        try {
-            if ($leave->getStatus() === RequestStatus::ACCEPTE) {
-                $leave->setStatus(RequestStatus::ANNULATIONENATTENTE);
-                $message = 'Demande d\'annulation envoyée';
-            } else {
-                $leave->setStatus(RequestStatus::ANNULEE);
-                $message = 'Congé annulé avec succès';
-                $notificationRepo->createLeaveCancellationNotification($leave, $user);
-            }
+     #[Route('/cancel-leave/{id}', name: 'cancel_leave', methods: ['POST'])]
+     public function cancelLeave(
+         Leave $leave,
+         EntityManagerInterface $em,
+         NotificationRepository $notificationRepo
+     ): Response {
+         $user = $this->getUser();
 
-            $em->flush();
-            $this->addFlash('success', $message);
-        } catch (\Exception $e) {
-            $this->addFlash('error', 'Erreur lors de l\'annulation');
-        }
+         if (!$this->isLeaveCancellable($leave, $user)) {
+             return $this->json([
+                 'success' => false,
+                 'message' => 'Cette demande ne peut pas être annulée'
+             ], 403);
+         }
 
-        return $this->redirectToRoute('my_leaves');
-    }
+         try {
+             if ($leave->getStatus() === RequestStatus::ACCEPTE) {
+                 $leave->setStatus(RequestStatus::ANNULATIONENATTENTE);
+                 $message = 'Demande d\'annulation envoyée';
+             } else {
+                 $leave->setStatus(RequestStatus::ANNULEE);
+                 $message = 'Congé annulé avec succès';
+                 $notificationRepo->createLeaveCancellationNotifications($leave, $user);
+             }
 
+             $em->flush();
+
+             return $this->json([
+                 'success' => true,
+                 'message' => $message
+             ]);
+
+         } catch (\Exception $e) {
+             return $this->json([
+                 'success' => false,
+                 'message' => 'Erreur lors de l\'annulation'
+             ], 500);
+         }
+     }
     private function isLeaveEditable(Leave $leave, User $user): bool
     {
-        return $leave->getUser()->getId() === $user->getId() 
+        return $leave->getUser()->getId() === $user->getId()
             && in_array($leave->getStatus(), [
                 RequestStatus::EN_ATTENTE,
                 RequestStatus::ACCEPTE

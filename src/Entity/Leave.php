@@ -16,7 +16,7 @@ class Leave
     #[ORM\Column(type: 'integer')]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'leaves')]
     #[ORM\JoinColumn(nullable: false)]
     private User $user;
 

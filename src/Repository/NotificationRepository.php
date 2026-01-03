@@ -19,7 +19,7 @@ class NotificationRepository extends ServiceEntityRepository
     public function createLeaveModifiedNotifications(Leave $leave, User $user): void
     {
         $em = $this->getEntityManager();
-        
+
         // Create notification for employee
         $notifEmp = new Notification();
         $notifEmp->setTitle('Demande de congé modifiée');
@@ -42,12 +42,12 @@ class NotificationRepository extends ServiceEntityRepository
             $em->persist($notifMan);
         }
 
-        $em->flush();
+
     }
     public function createLeaveCancellationNotifications(Leave $leave, User $user): void
     {
         $em = $this->getEntityManager();
-        
+
         $notifEmp = new Notification();
                 $notifEmp->setTitle('Demande d\'annulation envoyée');
                 $notifEmp->setMessage("Votre demande d'annulation du congé du " .
@@ -68,15 +68,15 @@ class NotificationRepository extends ServiceEntityRepository
 
                 $em->persist($notifEmp);
                 $em->flush();
-               
-        }   
+
+        }
         public function createRequestLeaveNotification(Leave $leave, User $user): void
         {
             $em = $this->getEntityManager();
                         // Notification for the user
             $notification = new Notification();
             $notification->setTitle('Nouvelle demande de congé');
-            $notification->setMessage('Votre demande de congé du ' . 
+            $notification->setMessage('Votre demande de congé du ' .
                 $leave->getStartDate()->format('d/m/Y') . ' au ' . // Changed from getDateDebut
                 $leave->getEndDate()->format('d/m/Y') . ' a été enregistrée.'); // Changed from getDateFin
             $notification->setRecipient($user);
@@ -88,8 +88,8 @@ class NotificationRepository extends ServiceEntityRepository
                 $notifManager = new Notification();
                 $notifManager->setTitle('Nouvelle demande de congé à valider');
                 $notifManager->setMessage(
-                    $user->getFirstName() . ' ' . $user->getLastName() . 
-                    ' a soumis une nouvelle demande de congé du ' . 
+                    $user->getFirstName() . ' ' . $user->getLastName() .
+                    ' a soumis une nouvelle demande de congé du ' .
                     $leave->getStartDate()->format('d/m/Y') . ' au ' . // Changed from getDateDebut
                     $leave->getEndDate()->format('d/m/Y') . '.' // Changed from getDateFin
                 );
@@ -113,7 +113,7 @@ class NotificationRepository extends ServiceEntityRepository
             $em->persist($user);
             $em->flush();
         }
-        
+
     public function createAndPersistNotification(
         User $recipient,
         string $title,
@@ -124,11 +124,11 @@ class NotificationRepository extends ServiceEntityRepository
         $notification->setTitle($title);
         $notification->setMessage($message);
         $notification->setRecipient($recipient);
-        
+
         if ($persist) {
             $this->getEntityManager()->persist($notification);
         }
-        
+
         return $notification;
     }
 //    /**
