@@ -35,41 +35,7 @@
 {% endblock %}
 
 {% block body %}
-    <!-- Mobile Menu Button -->
-    <button id="mobile-menu-btn"
-            class="md:hidden fixed top-4 left-4 z-50 bg-indigo-600 text-white p-3 rounded-lg shadow-md">
-        <i class="fas fa-bars"></i>
-    </button>
-
-    <!-- Sidebar -->
-    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-72 bg-indigo-800 text-white shadow-md sidebar-transition transform -translate-x-full md:translate-x-0">
-        <div class="h-full flex flex-col justify-between">
-            <div>
-                <div class="p-6 text-2xl font-bold">
-                    <i class="fas fa-user-shield mr-2"></i> Administration
-                </div>
-                <nav class="flex-1 p-4">
-                    <ul class="space-y-1">
-                        {% set adminMenu = [
-                            {'label': 'Tableau de bord', 'icon': '📊', 'url': path('dashboard')},
-                            {'label': 'Équipes', 'icon': '👥', 'url': path('team')},
-                            {'label': 'Utilisateurs', 'icon': '👤', 'url': path('admin_index')},
-
-                        ] %}
-
-                        {% for item in adminMenu %}
-                            <li>
-                                <a href="{{ item.url }}" class="flex items-center gap-2 px-4 py-2 rounded hover:bg-white/10 transition-colors">
-                                    <span class="text-lg">{{ item.icon }}</span>
-                                    <span class="text-sm font-medium">{{ item.label }}</span>
-                                </a>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                </nav>
-            </div>
-        </div>
-    </aside>
+    {% include 'partials/_sidebar.html.twig' %}
 
     <!-- Main Content -->
     <main class="min-h-screen bg-gray-100 md:ml-72">
@@ -131,16 +97,16 @@
                                 <td class="px-4 py-3">{{ user.leaveBalance }}</td>
                                 <td class="px-4 py-3">{{ user.hireDate ? user.hireDate|date('Y-m-d') : '–' }}</td>
                                 <td class="px-4 py-3">
-                                  <button type="button" class="text-indigo-600 hover:underline text-sm mr-3 edit-user-btn" 
-                                          data-user-id="{{ user.id }}" 
-                                          data-toggle="modal" 
+                                  <button type="button" class="text-indigo-600 hover:underline text-sm mr-3 edit-user-btn"
+                                          data-user-id="{{ user.id }}"
+                                          data-toggle="modal"
                                           data-target="#editUserModal{{ user.id }}">
                                       Modifier
                                   </button>
 
-                                    <button type="button" class="text-red-600 hover:underline text-sm delete-user-btn" 
+                                    <button type="button" class="text-red-600 hover:underline text-sm delete-user-btn"
                                             data-user-id="{{ user.id }}"
-                                            data-toggle="modal" 
+                                            data-toggle="modal"
                                             data-target="#deleteUserModal{{ user.id }}">
                                         Supprimer
                                     </button>
@@ -335,7 +301,7 @@
             // Mobile menu toggle
             const menuBtn = document.getElementById('mobile-menu-btn');
             const sidebar = document.getElementById('sidebar');
-            
+
             menuBtn?.addEventListener('click', () => {
                 sidebar.classList.toggle('-translate-x-full');
             });
@@ -364,7 +330,7 @@
             $('.create-user-form').on('submit', function(e) {
                 const submitBtn = $(this).find('.create-user-submit');
                 submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i> Création en cours...');
-                
+
                 // Re-enable button after a delay if form doesn't redirect
                 setTimeout(function() {
                     submitBtn.prop('disabled', false).html('<i class="fas fa-plus mr-1"></i> Créer l\'utilisateur');
@@ -376,7 +342,7 @@
                 const userId = $(this).find('.edit-user-submit').data('user-id');
                 const submitBtn = $(this).find('.edit-user-submit');
                 submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i> Modification en cours...');
-                
+
                 // Re-enable button after a delay if form doesn't redirect
                 setTimeout(function() {
                     submitBtn.prop('disabled', false).html('<i class="fas fa-save mr-1"></i> Enregistrer les modifications');
@@ -388,7 +354,7 @@
                 const userId = $(this).data('user-id');
                 const submitBtn = $(this).find('.delete-user-submit');
                 submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i> Suppression...');
-                
+
                 // Re-enable button after a delay if form doesn't redirect
                 setTimeout(function() {
                     submitBtn.prop('disabled', false).html('Supprimer');
@@ -403,7 +369,7 @@
                     $(form).find('.form-control').removeClass('is-invalid');
                     $(form).find('.is-invalid').removeClass('is-invalid');
                 }
-                
+
                 // Reset submit buttons
                 $(this).find('[type="submit"]').prop('disabled', false);
                 $(this).find('.create-user-submit').html('<i class="fas fa-plus mr-1"></i> Créer l\'utilisateur');

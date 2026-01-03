@@ -25,50 +25,7 @@
 {% endblock %}
 
 {% block body %}
-    <!-- Mobile menu button -->
-    <button id="mobile-menu-btn" class="md:hidden fixed top-4 left-4 z-50 bg-indigo-600 text-white p-3 rounded-lg shadow-md">
-        <i class="fas fa-bars"></i>
-    </button>
-
-    <!-- Sidebar -->
-    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-72 bg-indigo-800 text-white shadow-md hidden md:block">
-        <div class="h-full flex flex-col justify-between">
-            <div>
-                <div class="p-6 text-2xl font-bold">
-                    <i class="fas fa-user-circle mr-2"></i> User Space
-                </div>
-                <nav class="flex-1 p-4">
-                    <ul class="space-y-1">
-                        {% set menu = [
-                            {'label': 'Dashboard', 'icon': '🏠', 'url': path('dashboard')},
-                            {'label': 'Request Leave', 'icon': '📄', 'url': path('request_leave')},
-                            {'label': 'Team', 'icon': '👥', 'url': path('team')}
-                        ] %}
-
-                        {% for item in menu %}
-                            <li>
-                                <a href="{{ item.url }}" class="flex items-center gap-2 px-4 py-2 rounded hover:bg-white/10 transition-colors">
-                                    <span class="text-lg">{{ item.icon }}</span>
-                                    <span class="text-sm font-medium">{{ item.label }}</span>
-                                </a>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                    <div class="pt-4">
-                        <p class="text-xs uppercase tracking-wide px-4 mb-2 opacity-60">Account</p>
-                        <a href="{{ path('user_profile') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 text-white/80">
-                            <i class="fas fa-user-cog w-5"></i>
-                            <span>Profile Settings</span>
-                        </a>
-                        <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 text-white/80">
-                            <i class="fas fa-sign-out-alt w-5"></i>
-                            <span>Logout</span>
-                        </a>
-                    </div>
-                </nav>
-            </div>
-        </div>
-    </aside>
+    {% include 'partials/_sidebar.html.twig' %}
 
     <!-- Main content -->
     <main class="min-h-screen bg-gray-100 md:ml-72 transition-all">
@@ -103,7 +60,7 @@
                     'class': 'space-y-6'
                 }
             }) }}
-            
+
                 <!-- Basic Information Section -->
                 <div class="form-section">
                     <h2 class="text-xl font-semibold text-gray-800 mb-4 border-b pb-2 flex items-center">
@@ -188,7 +145,7 @@
                         <i class="fas fa-save mr-2"></i> Submit Request
                     </button>
                 </div>
-                
+
             {{ form_end(form) }}
         </div>
     </main>
@@ -213,7 +170,7 @@
                         e.target.value = '';
                         return;
                     }
-                    
+
                     // Check file type
                     const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
                     if (!allowedTypes.includes(file.type)) {
@@ -221,7 +178,7 @@
                         e.target.value = '';
                         return;
                     }
-                    
+
                     console.log('Selected file:', file.name);
                 }
             });
@@ -231,7 +188,7 @@
         const form = document.querySelector('form');
         const startDateInput = document.getElementById('leave_startDate');
         const endDateInput = document.getElementById('leave_endDate');
-        
+
         if (form && startDateInput && endDateInput) {
             // Real-time validation
             function validateDates() {
@@ -240,14 +197,14 @@
                     const endDate = new Date(endDateInput.value);
                     const today = new Date();
                     today.setHours(0, 0, 0, 0);
-                    
+
                     // Check that start date is not in the past
                     if (startDate < today) {
                         startDateInput.setCustomValidity('Start date cannot be in the past');
                     } else {
                         startDateInput.setCustomValidity('');
                     }
-                    
+
                     // Check that end date is after start date
                     if (startDate > endDate) {
                         endDateInput.setCustomValidity('End date must be after start date');
@@ -256,14 +213,14 @@
                     }
                 }
             }
-            
+
             startDateInput.addEventListener('change', validateDates);
             endDateInput.addEventListener('change', validateDates);
-            
+
             // Final validation on submission
             form.addEventListener('submit', function(e) {
                 validateDates();
-                
+
                 if (!startDateInput.checkValidity() || !endDateInput.checkValidity()) {
                     e.preventDefault();
                     alert('Please correct the errors in the dates before submitting the form.');

@@ -9,48 +9,8 @@
 {% endblock %}
 
 {% block body %}
-    <!-- Bouton menu mobile -->
-    <button id="mobile-menu-btn" class="md:hidden fixed top-4 left-4 z-50 bg-indigo-600 text-white p-3 rounded-lg shadow-md">
-        <i class="fas fa-bars"></i>
-    </button>
+    {% include 'partials/_sidebar.html.twig' %}
 
-    <!-- Barre latérale -->
-    <aside id="sidebar" class="sidebar fixed top-0 left-0 h-full w-72 z-50 bg-gradient-to-br from-indigo-600 to-purple-700 text-white transform transition-transform duration-300 md:translate-x-0 -translate-x-full md:block">
-        <div class="flex flex-col h-full">
-            <div class="p-6 text-2xl font-bold">
-                <i class="fas fa-user-circle mr-2"></i> Espace Utilisateur
-            </div>
-            <nav class="flex-1 p-4">
-                <ul class="space-y-1">
-                    {% set menu = [
-                        {'label': 'Tableau de bord', 'icon': '🏠', 'url': path('dashboard')},
-                        {'label': 'Demander un congé', 'icon': '📄', 'url': path('request_leave')},
-                        {'label': 'Équipe', 'icon': '👥', 'url': path('team')}
-                    ] %}
-
-                    {% for item in menu %}
-                        <li>
-                            <a href="{{ item.url }}" class="flex items-center gap-2 px-4 py-2 rounded hover:bg-white/10 transition-colors">
-                                <span class="text-lg">{{ item.icon }}</span>
-                                <span class="text-sm font-medium">{{ item.label }}</span>
-                            </a>
-                        </li>
-                    {% endfor %}
-                </ul>
-                <div class="pt-4">
-                    <p class="text-xs uppercase tracking-wide px-4 mb-2 opacity-60">Compte</p>
-                    <a href="{{ path('user_profile') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 text-white/80">
-                        <i class="fas fa-user-cog w-5"></i>
-                        <span>Paramètres du profil</span>
-                    </a>
-                    <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 text-white/80">
-                        <i class="fas fa-sign-out-alt w-5"></i>
-                        <span>Déconnexion</span>
-                    </a>
-                </div>
-            </nav>
-        </div>
-    </aside>
 
     <!-- Contenu principal -->
     <main class="min-h-screen bg-gray-100 md:ml-72 transition-all">

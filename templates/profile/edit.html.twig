@@ -8,47 +8,9 @@
 {% endblock %}
 
 {% block body %}
-    <div class="flex min-h-screen bg-gray-100">
-        <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-72 bg-indigo-800 text-white shadow-md hidden md:block">
-            <div class="h-full flex flex-col justify-between">
-                <div>
-                    <div class="p-6 text-2xl font-bold">
-                        <i class="fas fa-user-circle mr-2"></i> Espace Utilisateur
-                    </div>
-                    <nav class="flex-1 p-4">
-                        <ul class="space-y-1">
-                            {% set menu = [
-                                {'label': 'Tableau de bord', 'icon': '🏠', 'url': path('dashboard')},
-                                {'label': 'Demander un congé', 'icon': '📄', 'url': path('request_leave')},
-                                {'label': 'Équipe', 'icon': '👥', 'url': path('team')}
-                            ] %}
+    {% include 'partials/_sidebar.html.twig' %}
 
-                            {% for item in menu %}
-                                <li>
-                                    <a href="{{ item.url }}" class="flex items-center gap-2 px-4 py-2 rounded hover:bg-white/10 transition-colors">
-                                        <span class="text-lg">{{ item.icon }}</span>
-                                        <span class="text-sm font-medium">{{ item.label }}</span>
-                                    </a>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                        <div class="pt-4">
-                            <p class="text-xs uppercase tracking-wide px-4 mb-2 opacity-60">Compte</p>
-                            <a href="{{ path('user_profile') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 text-white/80">
-                                <i class="fas fa-user-cog w-5"></i>
-                                <span>Paramètres du profil</span>
-                            </a>
-                            <a href="{{ path('app_logout') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 text-white/80">
-                                <i class="fas fa-sign-out-alt w-5"></i>
-                                <span>Déconnexion</span>
-                            </a>
-                        </div>
-                    </nav>
-                </div>
-            </div>
-        </aside>
-
-        <main class="flex-1 p-6 md:ml-72">
+    <main class="flex-1 p-6 md:ml-72">
             <div class="max-w-7xl mx-auto">
                 <!-- Flash Messages -->
                 {% for flash_error in app.flashes('error') %}
