@@ -23,6 +23,8 @@ security:
                 failure_handler: App\Security\LoginFailureHandler
             logout:
                 path: app_logout
+                target: app_login
+                enable_csrf: true
                 # where to redirect after logout
                 # target: app_any_route
 
