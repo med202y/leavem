@@ -1,0 +1,159 @@
+{# templates/team/admin_index.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des Équipes - Administration{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .team-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .team-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .member-avatar {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    {% include 'partials/_sidebar.html.twig' %}
+
+    <!-- Contenu principal -->
+    <main class="main-content with-sidebar">
+        <div class="page-container">
+            {# En-tête #}
+            <div class="card mb-6">
+                <div class="card-header-admin">
+                    <div>
+                        <h1 class="section-title">
+                            <i class="fas fa-users"></i>
+                            Gestion des Équipes
+                        </h1>
+                        <p class="section-subtitle">Vue d'ensemble de toutes les équipes de l'organisation</p>
+                    </div>
+                    <div class="section-info">
+                        <p class="section-info-date">{{ "now"|date("l, F j, Y") }}</p>
+                        <p class="section-info-count">{{ teams|length }} équipe(s) au total</p>
+                    </div>
+                </div>
+            </div>
+
+            {# Grille des équipes #}
+            {% if teams|length > 0 %}
+                <div class="team-grid">
+                    {% for team in teams %}
+                        <div class="team-card">
+                            {# En-tête de l'équipe #}
+                            <div class="team-card-header">
+                                <div class="flex-1">
+                                    <h3 class="team-card-title">{{ team.name }}</h3>
+                                    {% if team.description %}
+                                        <p class="team-card-description">{{ team.description }}</p>
+                                    {% endif %}
+                                </div>
+                                <div class="team-member-badge">
+                                    <i class="fas fa-users"></i>
+                                    {{ team.members|length }}
+                                </div>
+                            </div>
+
+                            {# Manager #}
+                            <div class="team-manager-section">
+                                <div class="manager-content">
+                                    {% if team.manager %}
+                                        <div class="member-avatar">
+                                            {{ team.manager.firstName|first|upper }}{{ team.manager.lastName|first|upper }}
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="manager-name">
+                                                {{ team.manager.firstName }} {{ team.manager.lastName }}
+                                            </p>
+                                            <p class="manager-badge">
+                                                <i class="fas fa-crown mr-1"></i>Manager
+                                            </p>
+                                        </div>
+                                    {% else %}
+                                        <div class="member-avatar member-avatar-empty">
+                                            <i class="fas fa-user-slash"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="manager-name-empty">Aucun manager assigné</p>
+                                            <p class="manager-empty-status">
+                                                <i class="fas fa-exclamation-triangle mr-1"></i>Non assigné
+                                            </p>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            {# Membres de l'équipe #}
+                            <div>
+                                <h4 class="team-members-title">
+                                    <i class="fas fa-users"></i>
+                                    Membres ({{ team.members|length }})
+                                </h4>
+                                
+                                {% if team.members|length > 0 %}
+                                    <div class="team-members-list">
+                                        {% for member in team.members %}
+                                            <div class="team-member-item">
+                                                <div class="member-avatar">
+                                                    {{ member.firstName|first|upper }}{{ member.lastName|first|upper }}
+                                                </div>
+                                                <div class="member-info">
+                                                    <p class="member-name">
+                                                        {{ member.firstName }} {{ member.lastName }}
+                                                    </p>
+                                                    <p class="member-department">
+                                                        {{ member.department.value ?? 'Non assigné' }}
+                                                    </p>
+                                                </div>
+                                                {% if member == team.manager %}
+                                                    <i class="fas fa-crown text-yellow-500 text-xs" title="Manager"></i>
+                                                {% endif %}
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <p class="team-members-empty">
+                                        <i class="fas fa-user-slash"></i>
+                                        Aucun membre dans cette équipe
+                                    </p>
+                                {% endif %}
+                            </div>
+
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="no-teams-container">
+                    <i class="fas fa-users"></i>
+                    <h3 class="no-teams-title">Aucune équipe trouvée</h3>
+                    <p class="no-teams-message">Il n'y a actuellement aucune équipe configurée dans le système.</p>
+                </div>
+            {% endif %}
+        </div>
+        
+    </main>
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        const menuBtn = document.getElementById('mobile-menu-btn');
+        const sidebar = document.getElementById('sidebar');
+        menuBtn?.addEventListener('click', () => sidebar?.classList.toggle('hidden'));
+    </script>
+{% endblock %}

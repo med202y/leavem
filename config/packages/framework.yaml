@@ -1,0 +1,26 @@
+# see https://symfony.com/doc/current/reference/configuration/framework.html
+framework:
+    secret: "%env(APP_SECRET)%"
+    csrf_protection: true
+    # Note that the session will be started ONLY if you read or write from it.
+    session:
+        handler_id: session.handler.native
+        save_path: '%kernel.project_dir%/var/sessions'
+        cookie_secure: auto
+        cookie_samesite: lax
+        cookie_httponly: true
+        cookie_lifetime: 0
+        gc_probability: 1
+        gc_divisor: 100
+        name: PHPSESSID
+
+    #esi: true
+    #fragments: true
+
+when@test:
+    framework:
+        test: true
+        session:
+            storage_factory_id: session.storage.factory.mock_file
+    session:
+        handler_id: null

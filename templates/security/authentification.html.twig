@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Connexion</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f3f4f6;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        .auth-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .auth-card {
+            width: 100%;
+            max-width: 28rem;
+            background-color: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        .auth-logo {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+        .auth-logo img {
+            height: 4rem;
+            width: auto;
+        }
+        .auth-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-align: center;
+            color: #1f2937;
+            margin-bottom: 1.5rem;
+        }
+        .auth-error {
+            background-color: #fee2e2;
+            color: #991b1b;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .auth-form {
+            margin: 0;
+        }
+        .auth-form-group {
+            margin-bottom: 1rem;
+        }
+        .auth-form-group label {
+            display: block;
+            color: #374151;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        .auth-form-group input {
+            width: 100%;
+            padding: 0.5rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            transition: all 0.15s;
+        }
+        .auth-form-group input:focus {
+            outline: none;
+            ring: 2px;
+            ring-color: #3b82f6;
+            border-color: transparent;
+        }
+        .auth-submit {
+            width: 100%;
+            background-color: #2563eb;
+            color: white;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .auth-submit:hover {
+            background-color: #1d4ed8;
+        }
+    </style>
+</head>
+<body>
+<div class="auth-container">
+    <div class="auth-card">
+
+        <!-- Logo -->
+        <div class="auth-logo">
+            <img src="{{ asset('images/logo.png') }}" alt="Logo">
+        </div>
+
+        <h2 class="auth-title">Connexion à votre compte</h2>
+
+        {% for message in app.flashes('error') %}
+            <div class="auth-error">
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        <form method="post" action="{{ path('custom_login') }}" class="auth-form">
+            <div class="auth-form-group">
+                <label for="inputEmail">Email</label>
+                <input type="email" name="email" id="inputEmail" required autofocus value="{{ last_email|default('') }}">
+            </div>
+
+            <div class="auth-form-group">
+                <label for="inputPassword">Mot de passe</label>
+                <input type="password" name="password" id="inputPassword" required>
+            </div>
+
+            <button type="submit" class="auth-submit">Se connecter</button>
+        </form>
+    </div>
+</div>
+</body>
+</html>
+

@@ -1,0 +1,70 @@
+{# templates/history.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Historique des notifications - {{ user.firstName }} {{ user.lastName }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block body %}
+    {% include 'partials/_sidebar.html.twig' %}
+
+
+    <!-- Contenu principal -->
+    <main class="main-content with-sidebar">
+        <div class="page-container">
+            {# En-tête #}
+            <div class="section-header">
+                <h1 class="section-title">Historique des notifications</h1>
+                <p class="text-sm text-gray-500">{{ "now"|date("l, F j, Y") }}</p>
+            </div>
+
+            {# Tableau d'historique #}
+            <div class="table-wrapper">
+                {% if notifications|length > 0 %}
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full table-auto">
+                            <thead class="table-header-row">
+                            <tr>
+                                <th class="table-header-cell">Date</th>
+                                <th class="table-header-cell">Titre</th>
+                                <th class="table-header-cell">Message</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for notification in notifications %}
+                                <tr class="table-body-row">
+                                    <td class="table-body-cell text-sm text-gray-600">
+                                        {{ notification.createdAt|date('d/m/Y H:i') }}
+                                    </td>
+                                    <td class="table-body-cell font-medium text-gray-800">
+                                        {{ notification.title }}
+                                    </td>
+                                    <td class="table-body-cell text-gray-700">
+                                        {{ notification.message }}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {# Pagination si nécessaire #}
+
+                {% else %}
+                    <p class="text-center text-gray-500">Aucune notification dans l'historique.</p>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        const menuBtn = document.getElementById('mobile-menu-btn');
+        const sidebar = document.getElementById('sidebar');
+        menuBtn?.addEventListener('click', () => sidebar?.classList.toggle('-translate-x-full'));
+    </script>
+{% endblock %}

@@ -1,0 +1,105 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Tableau de bord - {{ user.firstName }} {{ user.lastName }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block body %}
+    {% include 'partials/_sidebar.html.twig' %}
+
+
+    <!-- Contenu principal -->
+    <main class="main-content with-sidebar">
+        <div class="page-container">
+            <!-- Carte de bienvenue -->
+            <div class="welcome-card">
+                <div class="card-header">
+                    <div>
+                        <h1 class="welcome-message">Bon retour, {{ user.firstName }} !</h1>
+                        <p class="welcome-subtext">Voici ce qui se passe aujourd'hui dans la gestion de vos congés.</p>
+                    </div>
+                    <div class="welcome-info">
+                        <p class="welcome-date">{{ "now"|date("l, F j, Y")|trans }}</p>
+                        <p class="welcome-email">{{ user.email }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistiques -->
+            <div class="action-grid mb-6">
+                {% for stat in dashboardStats %}
+                    <div class="stat-card">
+                        <div class="stat-card-content">
+                            <div class="stat-card-text">
+                                <p class="stat-card-label">{{ stat.label }}</p>
+                                <p class="stat-card-value text-{{ stat.color }}-600">{{ stat.value }}</p>
+                                <p class="stat-card-unit">{{ stat.unit }}</p>
+                            </div>
+                            <div class="stat-card-icon bg-{{ stat.color }}-500">
+                                <i class="fas fa-{{ stat.icon }}"></i>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- Actions rapides -->
+            <div class="card card-actions mb-6">
+                <h2 class="card-section-title">
+                    <i class="fas fa-bolt"></i> Actions rapides
+                </h2>
+                <div class="action-grid">
+                    {% set actions = [
+                        {'label': 'Demander un congé', 'icon': 'plus', 'url': path('request_leave')},
+                        {'label': 'Voir l\'historique', 'icon': 'history', 'url': path('notifications_history')},
+                        {'label': 'Mettre à jour le profil', 'icon': 'user-cog', 'url': path('user_profile')},
+                        {'label': 'Voir l\'équipe', 'icon': 'users', 'url': path('team')}
+                    ] %}
+
+                    {% for action in actions %}
+                        <a href="{{ action.url }}" class="action-card">
+                            <i class="fas fa-{{ action.icon }}"></i> 
+                            <span>{{ action.label }}</span>
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Activité récente -->
+            <div class="card card-activity">
+                <h2 class="card-section-title">
+                    <i class="fas fa-bell"></i> Activité récente
+                </h2>
+                <div class="space-y-4">
+                    {% for notification in notifications %}
+                        <div class="notification-item">
+                            <div class="notification-icon">
+                                <i class="fas fa-paper-plane"></i>
+                            </div>
+                            <div class="notification-content">
+                                <p class="notification-title">{{ notification.title }}</p>
+                                <p class="notification-message">{{ notification.message }}</p>
+                                {% if notification.createdAt %}
+                                    <p class="notification-date">{{ notification.createdAt|date('d/m/Y H:i') }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% else %}
+                        <p class="text-gray-500 no-activity-message">Aucune activité récente.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        const menuBtn = document.getElementById('mobile-menu-btn');
+        const sidebar = document.getElementById('sidebar');
+        menuBtn?.addEventListener('click', () => sidebar?.classList.toggle('-translate-x-full'));
+    </script>
+{% endblock %}

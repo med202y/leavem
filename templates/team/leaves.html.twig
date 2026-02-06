@@ -1,0 +1,522 @@
+{# templates/conge/my_leaves.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Demandes de Congé{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Modal animations */
+        .modal-overlay {
+            animation: fadeIn 0.3s ease-out;
+        }
+        .modal-content {
+            animation: slideUp 0.3s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideUp {
+            from { transform: translateY(1rem); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .modal-overlay.hide {
+            animation: fadeOut 0.3s ease-out;
+        }
+        .modal-content.hide {
+            animation: slideDown 0.3s ease-out;
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+        @keyframes slideDown {
+            from { transform: translateY(0); opacity: 1; }
+            to { transform: translateY(1rem); opacity: 0; }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    {% include 'partials/_sidebar.html.twig' %}
+
+    <main class="main-content with-sidebar">
+        <div class="page-container">
+            <!-- En-tête -->
+            <div class="leaves-header">
+                <div class="leaves-title-section">
+                    <h1 class="section-title">
+                        <a href="{{ path('dashboard') }}" class="leaves-back-link">
+                            <i class="fas fa-arrow-left"></i>
+                        </a>
+                        <span>Mes Demandes de Congé</span>
+                    </h1>
+                </div>
+                <a href="{{ path('request_leave') }}" class="btn btn-primary">
+                    <i class="fas fa-plus-circle"></i> Nouvelle Demande
+                </a>
+            </div>
+
+            <!-- Filtres par statut -->
+            <div class="leaves-filters">
+                <button class="status-filter" data-status="all">Tous</button>
+                {% for status in statuses %}
+                    {% set color = statusColors[status] %}
+                    <button class="status-filter conge-status-{{ color }}" data-status="{{ status }}">
+                        {{ status|replace({'_': ' '})|title }}
+                    </button>
+                {% endfor %}
+            </div>
+
+            {% if leaves is empty %}
+                <div class="leaves-empty">
+                    <i class="fas fa-info-circle"></i>
+                    Vous n'avez soumis aucune demande de congé pour le moment.
+                </div>
+            {% else %}
+                <div class="leaves-grid">
+                    {% for leave in leaves %}
+                        <div class="conge-card" data-status="{{ leave.status.value }}">
+                            <header class="conge-header">
+                                <span class="conge-status-badge conge-status-{{ statusColors[leave.status.value] ?? 'secondary' }}">
+                                    {{ leave.status.value|replace({'_': ' '})|title }}
+                                </span>
+                                <span class="conge-id">#{{ leave.id }}</span>
+                            </header>
+
+                            <div class="conge-body">
+                                <h2 class="conge-body-title">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    {{ leave.leaveType.value|title }}
+                                </h2>
+
+                                <div class="conge-date-range">
+                                    <div class="conge-date-section">
+                                        <span class="conge-date-label">Du</span>
+                                        <span class="conge-date-value">{{ leave.startDate|date('d M Y') }}</span>
+                                    </div>
+                                    <i class="fas fa-arrow-right conge-arrow"></i>
+                                    <div class="conge-date-section">
+                                        <span class="conge-date-label">Au</span>
+                                        <span class="conge-date-value">{{ leave.endDate|date('d M Y') }}</span>
+                                    </div>
+                                </div>
+
+                                <div class="conge-info-row">
+                                    <span class="conge-info-label">Durée</span>
+                                    <span class="conge-info-value">{{ leave.endDate.diff(leave.startDate).days + 1 }} jours</span>
+                                </div>
+
+                                {% if leave.reason %}
+                                    <div class="conge-info-row">
+                                        <span class="conge-info-label">Motif</span>
+                                        <p>{{ leave.reason }}</p>
+                                    </div>
+                                {% endif %}
+
+                                <div class="conge-info-row">
+                                    <span class="conge-info-label">Demandé le</span>
+                                    <span class="conge-info-value">{{ leave.requestDate|date('d M Y H:i') }}</span>
+                                </div>
+                                <div class="conge-info-row">
+                                    <span class="conge-info-label">Demandé par</span>
+                                    <span class="conge-info-value">
+                                        {{ leave.user.firstName }} {{ leave.user.lastName }}
+                                    </span>
+                                </div>
+                                {% if leave.processDate %}
+                                    <div class="conge-info-row">
+                                        <span class="conge-info-label">Traité le</span>
+                                        <span class="conge-info-value">{{ leave.processDate|date('d M Y H:i') }}</span>
+                                    </div>
+                                {% endif %}
+
+                                {% if leave.proof %}
+                                    <div class="conge-info-row">
+                                        <span class="conge-info-label">Justificatif</span>
+                                        <a href="{{ asset('images/' ~ leave.proof) }}" class="btn btn-sm btn-outline-primary" download>
+                                            <i class="fas fa-download"></i> Télécharger
+                                        </a>
+                                    </div>
+                                {% endif %}
+
+                                {% if leave.refusalReason %}
+                                    <div class="conge-info-row">
+                                        <span class="conge-info-label">Raison du refus</span>
+                                        <p class="text-red-600">{{ leave.refusalReason }}</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <footer class="conge-footer">
+                                <div>
+                                    {% if leave.processedBy %}
+                                        <small class="text-gray-500">Traité par : {{ leave.processedBy }}</small>
+                                    {% endif %}
+                                </div>
+                                <div class="conge-actions">
+                                    {% if leave.status.value == 'en_attente' %}
+                                        <button class="action-btn accept-btn" data-id="{{ leave.id }}" data-action="accept">
+                                            <i class="fas fa-check"></i> Accepter
+                                        </button>
+                                        <button class="action-btn refuse-btn" data-id="{{ leave.id }}" data-action="refuse">
+                                            <i class="fas fa-times"></i> Refuser
+                                        </button>
+                                    {% elseif leave.status.value == 'annulation en attente' %}
+                                        <button class="action-btn approve-cancellation-btn" data-id="{{ leave.id }}" data-action="approve_cancellation">
+                                            <i class="fas fa-check"></i> Approuver l'annulation
+                                        </button>
+                                        <button class="action-btn reject-cancellation-btn" data-id="{{ leave.id }}" data-action="reject_cancellation">
+                                            <i class="fas fa-times"></i> Rejeter l'annulation
+                                        </button>
+                                    {% endif %}
+
+                                </div>
+                            </footer>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmationModal" class="confirmation-modal hidden">
+        <div class="confirmation-modal-content">
+            <div class="confirmation-modal-body">
+                <!-- Modal Header -->
+                <div class="confirmation-modal-header">
+                    <div class="confirmation-modal-title-section">
+                        <div id="confirmationIcon" class="confirmation-modal-icon">
+                            <!-- Icon will be inserted by JavaScript -->
+                        </div>
+                        <h3 id="confirmationTitle" class="confirmation-modal-title"></h3>
+                    </div>
+                    <button id="closeModal" class="confirmation-modal-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="confirmation-modal-details">
+                    <p id="confirmationMessage" class="confirmation-modal-message"></p>
+                    <div class="confirmation-modal-info-box">
+                        <div class="confirmation-modal-info-grid">
+                            <div class="confirmation-modal-info-label">Employé:</div>
+                            <div id="confirmUser" class="confirmation-modal-info-value"></div>
+                            <div class="confirmation-modal-info-label">Type:</div>
+                            <div id="confirmType" class="confirmation-modal-info-value"></div>
+                            <div class="confirmation-modal-info-label">Période:</div>
+                            <div id="confirmDates" class="confirmation-modal-info-value"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reason input for refusal -->
+                <div id="reasonSection" class="confirmation-modal-reason-section hidden">
+                    <label for="refusalReason" class="confirmation-modal-reason-label">
+                        Raison du refus (optionnel)
+                    </label>
+                    <textarea
+                        id="refusalReason"
+                        rows="3"
+                        class="confirmation-modal-reason-input"
+                        placeholder="Expliquez pourquoi cette demande est refusée..."></textarea>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="confirmation-modal-footer">
+                    <button id="cancelAction" class="btn btn-secondary">
+                        <i class="fas fa-times"></i>
+                        Annuler
+                    </button>
+                    <button id="confirmAction" class="confirmation-modal-confirm-btn">
+                        <!-- Content will be set by JavaScript -->
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success/Error Modal -->
+    <div id="alertModal" class="alert-modal hidden">
+        <div class="alert-modal-content">
+            <div class="alert-modal-body">
+                <div id="alertIcon" class="alert-modal-icon">
+                    <!-- Icon will be inserted by JavaScript -->
+                </div>
+                <h3 id="alertTitle" class="alert-modal-title"></h3>
+                <p id="alertMessage" class="alert-modal-message"></p>
+                <button id="alertOk" class="btn btn-primary alert-modal-ok-btn">
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            let currentLeaveId = null;
+            let currentAction = null;
+
+            // Modal elements
+            const confirmationModal = document.getElementById('confirmationModal');
+            const alertModal = document.getElementById('alertModal');
+
+            // Status filtering
+            document.querySelectorAll('.status-filter').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const status = btn.dataset.status;
+                    document.querySelectorAll('.status-filter').forEach(b => b.classList.remove('border', 'font-bold'));
+                    btn.classList.add('border', 'font-bold');
+
+                    document.querySelectorAll('.conge-card').forEach(card => {
+                        card.style.display = (status === 'all' || card.dataset.status === status) ? 'block' : 'none';
+                    });
+                });
+            });
+
+            // Show confirmation modal
+            function showConfirmationModal(action, leaveData) {
+                currentAction = action;
+                currentLeaveId = leaveData.id;
+
+                let title = '';
+                let message = '';
+                let iconHtml = '';
+                let iconBg = '';
+                let btnText = '';
+                let btnClass = '';
+                let showReason = false;
+
+                switch (action) {
+                    case 'accept':
+                        title = 'Accepter la demande';
+                        message = 'Êtes-vous sûr de vouloir accepter cette demande de congé ?';
+                        iconHtml = '<i class="fas fa-check text-white"></i>';
+                        iconBg = 'bg-green-500';
+                        btnText = '<i class="fas fa-check mr-2"></i>Accepter';
+                        btnClass = 'bg-green-600 hover:bg-green-700';
+                        break;
+                    case 'refuse':
+                        title = 'Refuser la demande';
+                        message = 'Êtes-vous sûr de vouloir refuser cette demande de congé ?';
+                        iconHtml = '<i class="fas fa-times text-white"></i>';
+                        iconBg = 'bg-red-500';
+                        btnText = '<i class="fas fa-times mr-2"></i>Refuser';
+                        btnClass = 'bg-red-600 hover:bg-red-700';
+                        showReason = true;
+                        break;
+                    case 'approve_cancellation':
+                        title = 'Approuver l\'annulation';
+                        message = 'Êtes-vous sûr de vouloir approuver cette demande d\'annulation ?';
+                        iconHtml = '<i class="fas fa-check text-white"></i>';
+                        iconBg = 'bg-green-500';
+                        btnText = '<i class="fas fa-check mr-2"></i>Approuver';
+                        btnClass = 'bg-green-600 hover:bg-green-700';
+                        break;
+                    case 'reject_cancellation':
+                        title = 'Rejeter l\'annulation';
+                        message = 'Êtes-vous sûr de vouloir rejeter cette demande d\'annulation ?';
+                        iconHtml = '<i class="fas fa-times text-white"></i>';
+                        iconBg = 'bg-red-500';
+                        btnText = '<i class="fas fa-times mr-2"></i>Rejeter';
+                        btnClass = 'bg-red-600 hover:bg-red-700';
+                        break;
+                }
+
+                // Set modal content
+                document.getElementById('confirmationTitle').textContent = title;
+                document.getElementById('confirmationMessage').textContent = message;
+                document.getElementById('confirmUser').textContent = leaveData.user;
+                document.getElementById('confirmType').textContent = leaveData.type;
+                document.getElementById('confirmDates').textContent = leaveData.dates;
+
+                // Set icon and button style
+                const icon = document.getElementById('confirmationIcon');
+                const confirmBtn = document.getElementById('confirmAction');
+                const reasonSection = document.getElementById('reasonSection');
+
+                icon.innerHTML = iconHtml;
+                icon.className = `w-10 h-10 rounded-full flex items-center justify-center ${iconBg}`;
+                confirmBtn.innerHTML = btnText;
+                confirmBtn.className = `flex-1 px-4 py-2 text-white rounded-lg transition transform hover:scale-105 ${btnClass}`;
+
+                if (showReason) {
+                    reasonSection.classList.remove('hidden');
+                } else {
+                    reasonSection.classList.add('hidden');
+                }
+
+                confirmationModal.classList.remove('hidden');
+            }
+
+            // Show alert modal
+            function showAlert(title, message, type = 'success') {
+                const icon = document.getElementById('alertIcon');
+                const titleEl = document.getElementById('alertTitle');
+                const messageEl = document.getElementById('alertMessage');
+
+                titleEl.textContent = title;
+                messageEl.textContent = message;
+
+                if (type === 'success') {
+                    icon.innerHTML = '<i class="fas fa-check text-white text-2xl"></i>';
+                    icon.className = 'w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-green-500';
+                } else {
+                    icon.innerHTML = '<i class="fas fa-exclamation-triangle text-white text-2xl"></i>';
+                    icon.className = 'w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-red-500';
+                }
+
+                alertModal.classList.remove('hidden');
+            }
+
+            // Hide modal with animation
+            function hideModal(modal) {
+                const overlay = modal.querySelector('.modal-overlay') || modal;
+                const content = modal.querySelector('.modal-content');
+
+                overlay.classList.add('hide');
+                if (content) content.classList.add('hide');
+
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                    overlay.classList.remove('hide');
+                    if (content) content.classList.remove('hide');
+                }, 300);
+            }
+
+            // Close modal handlers
+            document.getElementById('closeModal').addEventListener('click', () => {
+                hideModal(confirmationModal);
+            });
+
+            document.getElementById('cancelAction').addEventListener('click', () => {
+                hideModal(confirmationModal);
+            });
+
+            document.getElementById('alertOk').addEventListener('click', () => {
+                hideModal(alertModal);
+                if (currentAction) {
+                    setTimeout(() => location.reload(), 500);
+                }
+            });
+
+            // Close modals when clicking outside
+            [confirmationModal, alertModal].forEach(modal => {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        hideModal(modal);
+                    }
+                });
+            });
+
+            // ESC key to close modals
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    if (!confirmationModal.classList.contains('hidden')) {
+                        hideModal(confirmationModal);
+                    }
+                    if (!alertModal.classList.contains('hidden')) {
+                        hideModal(alertModal);
+                    }
+                }
+            });
+
+            // Handle action buttons
+            document.querySelectorAll('.action-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    const leaveData = {
+                        id: button.dataset.id,
+                        action: button.dataset.action,
+                        user: button.dataset.user,
+                        type: button.dataset.type,
+                        dates: button.dataset.dates
+                    };
+
+                    showConfirmationModal(leaveData.action, leaveData);
+                });
+            });
+
+            // Confirm action handler - UPDATED FOR MODERN RESPONSES
+            document.getElementById('confirmAction').addEventListener('click', () => {
+                const confirmBtn = document.getElementById('confirmAction');
+                const reason = document.getElementById('refusalReason').value;
+
+                // Show loading state
+                confirmBtn.disabled = true;
+                confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Traitement...';
+
+                // Prepare request body
+                const formData = new URLSearchParams({ action: currentAction });
+                if (currentAction === 'refuse' && reason.trim()) {
+                    formData.append('reason', reason.trim());
+                }
+
+                fetch(`/manager_leaves/update/${currentLeaveId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: formData
+                })
+                .then(async response => {
+                    const contentType = response.headers.get('content-type');
+                    
+                    if (!contentType || !contentType.includes('application/json')) {
+                        throw new Error('Réponse non-JSON reçue');
+                    }
+
+                    const data = await response.json();
+                    
+                    if (!response.ok) {
+                        // Handle error responses (4xx, 5xx)
+                        const errorTitle = data.title || 'Erreur';
+                        const errorMessage = data.detail || 'Une erreur est survenue';
+                        throw new Error(`${errorTitle}: ${errorMessage}`);
+                    }
+
+                    // Success case
+                    hideModal(confirmationModal);
+                    showAlert(
+                        'Succès', 
+                        data.meta?.message || 'Action effectuée avec succès', 
+                        'success'
+                    );
+                    
+                    // Optionally update UI without full page reload
+                    const card = document.querySelector(`.conge-card[data-id="${currentLeaveId}"]`);
+                    if (card && data.data?.status) {
+                        card.dataset.status = data.data.status;
+                        // Update status display in card if needed
+                        const statusElement = card.querySelector('.status-badge');
+                        if (statusElement) {
+                            statusElement.textContent = data.data.status.replace('_', ' ');
+                        }
+                    }
+                })
+                .catch(err => {
+                    hideModal(confirmationModal);
+                    showAlert(
+                        'Erreur', 
+                        err.message || 'Une erreur est survenue lors du traitement', 
+                        'error'
+                    );
+                })
+                .finally(() => {
+                    // Reset button state
+                    confirmBtn.disabled = false;
+                    const isAccept = currentAction === 'accept';
+                    confirmBtn.innerHTML = isAccept
+                        ? '<i class="fas fa-check mr-2"></i>Accepter'
+                        : '<i class="fas fa-times mr-2"></i>Refuser';
+                });
+            });
+        });
+    </script>
+{% endblock %}

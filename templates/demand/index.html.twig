@@ -1,0 +1,218 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Leave Management - {{ user.firstName }} {{ user.lastName }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block body %}
+    {% include 'partials/_sidebar.html.twig' %}
+
+    <!-- Main content -->
+    <main class="main-content with-sidebar">
+        <div class="page-container">
+            <!-- Header -->
+            <div class="section-header">
+                <div>
+                    <h1 class="section-title">Leave Request Form</h1>
+                    <p class="section-subtitle">Fill in the employee's leave information</p>
+                </div>
+                <div class="demand-header-date">
+                    <p class="text-sm text-gray-500">{{ "now"|date("l, F j, Y") }}</p>
+                </div>
+            </div>
+
+            <!-- Flash messages -->
+            {% for label, messages in app.flashes %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ label == 'success' ? 'success' : label == 'error' ? 'danger' : 'info' }} mb-4">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endfor %}
+
+            <!-- Form -->
+            {{ form_start(form, {
+                'attr': {
+                    'enctype': 'multipart/form-data',
+                    'novalidate': 'novalidate',
+                    'class': 'space-y-6'
+                }
+            }) }}
+
+                <!-- Basic Information Section -->
+                <div class="form-section">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4 border-b pb-2 flex items-center">
+                        <i class="fas fa-user mr-2 text-indigo-600"></i>Employee Information
+                    </h2>
+                    <div class="form-columns">
+                        <!-- Column 1 -->
+                        <div class="form-column">
+                            <div class="form-group">
+                                <label class="form-label">Last Name</label>
+                                <p class="info-display">{{ user.lastName }}</p>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">First Name</label>
+                                <p class="info-display">{{ user.firstName }}</p>
+                            </div>
+                        </div>
+                        <!-- Column 2 -->
+                        <div class="form-column">
+                            <div class="form-group">
+                                <label class="form-label">Position / Department</label>
+                                <p class="info-display">{{ user.department.value }}</p>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Leave Balance (available days)</label>
+                                <p class="info-display">{{ user.leaveBalance }} days</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Leave Management Section -->
+                <div class="form-section">
+                    <h2 class="form-section-title">
+                        <i class="fas fa-calendar-alt"></i>Leave Management
+                    </h2>
+                    <div class="form-columns">
+                        <!-- Column 1 -->
+                        <div class="form-column">
+                            <div class="form-group">
+                                {{ form_label(form.leaveType, null, {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.leaveType, {'attr': {'class': 'form-input'}}) }}
+                                {{ form_errors(form.leaveType) }}
+                            </div>
+                            <div class="form-group">
+                                {{ form_label(form.startDate, null, {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.startDate, {'attr': {'class': 'form-input'}}) }}
+                                {{ form_errors(form.startDate) }}
+                            </div>
+                            <div class="form-group">
+                                {{ form_label(form.endDate, null, {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.endDate, {'attr': {'class': 'form-input'}}) }}
+                                {{ form_errors(form.endDate) }}
+                            </div>
+                        </div>
+                        <!-- Column 2 -->
+                        <div class="form-column">
+                            <div class="form-group">
+                                {{ form_label(form.reason, null, {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.reason, {'attr': {'class': 'form-input', 'rows': 4, 'placeholder': 'Briefly describe the reason for your request...'}}) }}
+                                {{ form_errors(form.reason) }}
+                            </div>
+                            <div class="form-group">
+                                {{ form_label(form.proof, null, {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.proof, {'attr': {'class': 'form-input', 'accept': '.pdf,.jpg,.jpeg,.png,.gif'}}) }}
+                                {{ form_errors(form.proof) }}
+                                <p class="form-help-text">Accepted formats: PDF, JPG, PNG, GIF (max. 5MB)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CSRF Token and hidden fields -->
+                {{ form_rest(form) }}
+
+                <!-- Submission buttons -->
+                <div class="form-buttons">
+                    <button type="reset" class="action-btn btn-secondary">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                    <button type="submit" class="action-btn btn-primary">
+                        <i class="fas fa-save"></i> Submit Request
+                    </button>
+                </div>
+
+            {{ form_end(form) }}
+        </div>
+    </main>
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        // Mobile menu
+        const menuBtn = document.getElementById('mobile-menu-btn');
+        const sidebar = document.getElementById('sidebar');
+        menuBtn?.addEventListener('click', () => sidebar?.classList.toggle('hidden'));
+
+        // File proof handling
+        const proofInput = document.querySelector('input[type="file"]');
+        if (proofInput) {
+            proofInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    // Check file size (5MB max)
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert('File is too large. Maximum size: 5MB');
+                        e.target.value = '';
+                        return;
+                    }
+
+                    // Check file type
+                    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                    if (!allowedTypes.includes(file.type)) {
+                        alert('Unsupported file type. Please use PDF, JPG, PNG or GIF.');
+                        e.target.value = '';
+                        return;
+                    }
+
+                    console.log('Selected file:', file.name);
+                }
+            });
+        }
+
+        // Date validation
+        const form = document.querySelector('form');
+        const startDateInput = document.getElementById('leave_startDate');
+        const endDateInput = document.getElementById('leave_endDate');
+
+        if (form && startDateInput && endDateInput) {
+            // Real-time validation
+            function validateDates() {
+                if (startDateInput.value && endDateInput.value) {
+                    const startDate = new Date(startDateInput.value);
+                    const endDate = new Date(endDateInput.value);
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+
+                    // Check that start date is not in the past
+                    if (startDate < today) {
+                        startDateInput.setCustomValidity('Start date cannot be in the past');
+                    } else {
+                        startDateInput.setCustomValidity('');
+                    }
+
+                    // Check that end date is after start date
+                    if (startDate > endDate) {
+                        endDateInput.setCustomValidity('End date must be after start date');
+                    } else {
+                        endDateInput.setCustomValidity('');
+                    }
+                }
+            }
+
+            startDateInput.addEventListener('change', validateDates);
+            endDateInput.addEventListener('change', validateDates);
+
+            // Final validation on submission
+            form.addEventListener('submit', function(e) {
+                validateDates();
+
+                if (!startDateInput.checkValidity() || !endDateInput.checkValidity()) {
+                    e.preventDefault();
+                    alert('Please correct the errors in the dates before submitting the form.');
+                }
+            });
+        }
+
+        // Auto-focus on first form field
+        const firstInput = document.querySelector('.form-input');
+        if (firstInput) {
+            firstInput.focus();
+        }
+    </script>
+{% endblock %}
