@@ -3,73 +3,74 @@
 {% block title %}Profil - {{ user.firstName }} {{ user.lastName }}{% endblock %}
 
 {% block stylesheets %}
-    {{ parent() }}
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ asset('css/sidebar-styles.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/profile-styles.css') }}" rel="stylesheet">
 {% endblock %}
 
 {% block body %}
     {% include 'partials/_sidebar.html.twig' %}
 
-    <main class="main-content with-sidebar">
-        <div class="page-container">
+    <main class="profile-main-content">
+        <div class="profile-container">
             <!-- Flash Messages -->
             {% for flash_error in app.flashes('error') %}
-                <div class="alert alert-danger mb-4">
+                <div class="flash-message-error">
                     {{ flash_error }}
                 </div>
             {% endfor %}
 
             {% for flash_success in app.flashes('success') %}
-                <div class="alert alert-success mb-4">
+                <div class="flash-message-success">
                     {{ flash_success }}
                 </div>
             {% endfor %}
 
-            <div class="card mb-6">
-                <h2 class="profile-page-title">Mon profil</h2>
+            <div class="profile-card">
+                <h2 class="profile-title">Mon profil</h2>
 
-                {{ form_start(form, {'attr': {'class': 'profile-form'}}) }}
-                <div class="profile-form-row">
+                {{ form_start(form, {'attr': {'class': 'profile-form-container'}}) }}
+                <div class="profile-grid">
                     <!-- Informations de contact -->
                     <div class="profile-section">
                         <h3 class="profile-section-title">Détails de contact</h3>
-                        <div class="profile-form-group">
+                        <div class="profile-section-content">
                             <div>
-                                <label class="form-label">Prénom</label>
-                                <p class="profile-info">{{ user.firstName }}</p>
+                                <label class="profile-field-label">Prénom</label>
+                                <p class="profile-field-value">{{ user.firstName }}</p>
                             </div>
                             <div>
-                                <label class="form-label">Nom</label>
-                                <p class="profile-info">{{ user.lastName }}</p>
+                                <label class="profile-field-label">Nom</label>
+                                <p class="profile-field-value">{{ user.lastName }}</p>
                             </div>
                             <div>
-                                <label class="form-label">Département</label>
-                                <p class="profile-info">{{ user.department.value }}</p>
+                                <label class="profile-field-label">Département</label>
+                                <p class="profile-field-value">{{ user.department.value }}</p>
                             </div>
                             <div>
-                                <label class="form-label">Email</label>
-                                <p class="profile-info">{{ user.email }}</p>
+                                <label class="profile-field-label">Email</label>
+                                <p class="profile-field-value">{{ user.email }}</p>
                             </div>
                         </div>
                     </div>
 
                     <!-- Changement de mot de passe -->
-                    <div class="password-change-section">
+                    <div class="profile-section">
                         <h3 class="profile-section-title">Changer le mot de passe</h3>
-                        <div class="password-form-group">
+                        <div class="profile-section-content">
                             <div>
-                                <label class="form-label">Ancien mot de passe</label>
-                                <input type="password" name="old_password" class="form-control">
+                                <label class="profile-field-label">Ancien mot de passe</label>
+                                <input type="password" name="old_password" class="profile-password-input">
                             </div>
                             <div>
-                                <label class="form-label">Nouveau mot de passe</label>
-                                <input type="password" name="new_password" class="form-control">
+                                <label class="profile-field-label">Nouveau mot de passe</label>
+                                <input type="password" name="new_password" class="profile-password-input">
                             </div>
                             <div>
-                                <label class="form-label">Confirmer mot de passe</label>
-                                <input type="password" name="confirm_password" class="form-control">
+                                <label class="profile-field-label">Confirmer mot de passe</label>
+                                <input type="password" name="confirm_password" class="profile-password-input">
                             </div>
-                            <div class="password-help-text">
+                            <div class="profile-password-requirements">
                                 <p>• Le mot de passe doit contenir au moins 6 caractères</p>
                                 <p>• Laissez vide si vous ne souhaitez pas changer le mot de passe</p>
                             </div>
@@ -78,13 +79,13 @@
                 </div>
 
                 {# Hidden form fields #}
-                <div style="display: none;">
+                <div class="profile-hidden-fields">
                     {{ form_rest(form) }}
                 </div>
 
-                <div class="card-footer">
-                    <button type="button" class="btn btn-danger">Supprimer le profil</button>
-                    <button type="submit" class="btn btn-primary">Mettre à jour</button>
+                <div class="profile-actions">
+                    <button type="button" class="profile-btn profile-btn-delete">Supprimer le profil</button>
+                    <button type="submit" class="profile-btn profile-btn-submit">Mettre à jour</button>
                 </div>
                 {{ form_end(form) }}
             </div>

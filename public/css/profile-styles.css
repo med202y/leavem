@@ -1,0 +1,196 @@
+/* User Profile Page Styles */
+
+/* Main Content Layout */
+.profile-main-content {
+    flex: 1;
+    padding: 1.5rem;
+}
+
+@media (min-width: 768px) {
+    .profile-main-content {
+        margin-left: 18rem;
+    }
+}
+
+.profile-container {
+    max-width: 80rem;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Flash Messages */
+.flash-message-error {
+    background-color: #fee2e2;
+    border: 1px solid #fca5a5;
+    color: #991b1b;
+    padding: 0.75rem 1rem;
+    border-radius: 0.375rem;
+    margin-bottom: 1rem;
+}
+
+.flash-message-success {
+    background-color: #d1fae5;
+    border: 1px solid #6ee7b7;
+    color: #065f46;
+    padding: 0.75rem 1rem;
+    border-radius: 0.375rem;
+    margin-bottom: 1rem;
+}
+
+/* Profile Card */
+.profile-card {
+    background-color: white;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    margin-bottom: 1.5rem;
+}
+
+.profile-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #4f46e5;
+    margin-bottom: 1rem;
+}
+
+/* Form Container */
+.profile-form-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+}
+
+/* Grid Layout */
+.profile-grid {
+    display: grid;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+    gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+    .profile-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* Section Cards */
+.profile-section {
+    background-color: #f9fafb;
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+}
+
+.profile-section-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.profile-section-content {
+    display: grid;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+/* Form Fields */
+.profile-field-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+}
+
+.profile-field-value {
+    font-weight: 600;
+    color: #374151;
+}
+
+/* Password Input Fields */
+.profile-password-input {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    transition: all 0.15s;
+}
+
+.profile-password-input:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+/* Password Requirements */
+.profile-password-requirements {
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+.profile-password-requirements p {
+    margin: 0.25rem 0;
+}
+
+/* Hidden Form Fields */
+.profile-hidden-fields {
+    display: none;
+}
+
+/* Action Buttons */
+.profile-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.profile-btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    border: none;
+    cursor: pointer;
+}
+
+.profile-btn-delete {
+    background-color: #dc2626;
+    color: white;
+}
+
+.profile-btn-delete:hover {
+    background-color: #b91c1c;
+}
+
+.profile-btn-submit {
+    background-color: #4f46e5;
+    color: white;
+}
+
+.profile-btn-submit:hover {
+    background-color: #4338ca;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .profile-main-content {
+        padding: 1rem;
+    }
+
+    .profile-card {
+        padding: 1rem;
+    }
+
+    .profile-title {
+        font-size: 1.25rem;
+    }
+
+    .profile-actions {
+        flex-direction: column;
+    }
+
+    .profile-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}

@@ -1,0 +1,189 @@
+/* Team Page Styles */
+
+/* Main Content Layout */
+.main-content {
+    min-height: 100vh;
+    background-color: #f3f4f6;
+}
+
+.main-content.with-sidebar {
+    margin-left: 0;
+    transition: margin-left 0.3s;
+}
+
+@media (min-width: 768px) {
+    .main-content.with-sidebar {
+        margin-left: 18rem;
+    }
+}
+
+.page-container {
+    padding: 1.5rem;
+    max-width: 80rem;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Team Header Card */
+.team-header-card {
+    background-color: white;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    margin-bottom: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.team-page-title {
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: #4f46e5;
+    margin: 0 0 0.5rem 0;
+}
+
+.team-page-description {
+    color: #6b7280;
+    margin: 0;
+}
+
+.team-header-date {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin: 0;
+}
+
+/* Table Card */
+.table-card {
+    background-color: white;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+/* Table Wrapper */
+.table-wrapper {
+    overflow-x: auto;
+}
+
+/* Team Table */
+.team-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table-header-row {
+    background-color: #e0e7ff;
+    border-bottom: 2px solid #c7d2fe;
+}
+
+.table-header-cell {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #1f2937;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.table-body-row {
+    border-bottom: 1px solid #e5e7eb;
+    transition: background-color 0.15s;
+}
+
+.table-body-row:hover {
+    background-color: #f9fafb;
+}
+
+.table-body-cell {
+    padding: 1rem;
+    font-size: 0.875rem;
+    color: #1f2937;
+}
+
+/* Empty State */
+.table-empty-message {
+    text-align: center;
+    color: #6b7280;
+    padding: 2rem 1rem;
+    margin: 0;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .page-container {
+        padding: 1rem;
+    }
+
+    .team-header-card {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .team-page-title {
+        font-size: 1.5rem;
+    }
+
+    .table-card {
+        padding: 1rem;
+    }
+
+    .table-header-cell,
+    .table-body-cell {
+        padding: 0.5rem;
+        font-size: 0.8rem;
+    }
+
+    /* Stack table cells on very small screens */
+    @media (max-width: 640px) {
+        .team-table,
+        .table-header-row,
+        .table-body-row {
+            display: block;
+        }
+
+        .table-header-row {
+            display: none;
+        }
+
+        .table-body-row {
+            margin-bottom: 1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+        }
+
+        .table-body-cell {
+            display: block;
+            text-align: right;
+            padding: 0.5rem;
+            position: relative;
+            padding-left: 50%;
+        }
+
+        .table-body-cell::before {
+            content: attr(data-label);
+            position: absolute;
+            left: 0.5rem;
+            font-weight: 600;
+            color: #4b5563;
+            text-align: left;
+        }
+
+        .table-body-cell:nth-child(1)::before {
+            content: "Nom";
+        }
+
+        .table-body-cell:nth-child(2)::before {
+            content: "Prénom";
+        }
+
+        .table-body-cell:nth-child(3)::before {
+            content: "Département";
+        }
+    }
+}

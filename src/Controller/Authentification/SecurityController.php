@@ -5,15 +5,17 @@ namespace App\Controller\Authentification;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 class SecurityController extends AbstractController
 {
     #[Route(path: '/', name: 'app_login')]
-    public function login(AuthenticationUtils $authenticationUtils): Response
+    public function login(AuthenticationUtils $authenticationUtils, TokenStorageInterface $tokenStorage): Response
     {
         if ($this->getUser()) {
-            return $this->redirectToRoute('dashboard');
+            $tokenStorage->setToken(null);
+            return $this->redirectToRoute('app_login');
         }
 
         // get the login error if there is one

@@ -1,0 +1,225 @@
+/* Mobile Menu Button */
+.mobile-menu-btn {
+    display: none;
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    z-index: 50;
+    background-color: #4f46e5;
+    color: white;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    border: none;
+    cursor: pointer;
+}
+
+@media (max-width: 767px) {
+    .mobile-menu-btn {
+        display: block;
+    }
+}
+
+/* Sidebar */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 18rem;
+    z-index: 50;
+    background: linear-gradient(to bottom right, #4f46e5, #7c3aed);
+    color: white;
+    transform: translateX(-100%);
+    transition: transform 0.3s;
+}
+
+@media (min-width: 768px) {
+    .sidebar {
+        display: block;
+        transform: translateX(0);
+    }
+}
+
+.sidebar-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+/* Sidebar Logo */
+.sidebar-logo {
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-logo-content {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.sidebar-logo-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sidebar-logo-icon i {
+    font-size: 1.25rem;
+}
+
+.sidebar-logo-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.sidebar-logo-subtitle {
+    font-size: 0.875rem;
+    opacity: 0.7;
+}
+
+/* Sidebar User Info */
+.sidebar-user {
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-user-content {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.sidebar-user-avatar {
+    width: 3rem;
+    height: 3rem;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.125rem;
+}
+
+.sidebar-user-name {
+    font-weight: 600;
+}
+
+.sidebar-user-role {
+    font-size: 0.875rem;
+    opacity: 0.7;
+}
+
+.sidebar-user-department {
+    font-size: 0.75rem;
+    opacity: 0.6;
+}
+
+/* Sidebar Navigation */
+.sidebar-nav {
+    flex: 1;
+    padding: 1rem;
+    overflow-y: auto;
+}
+
+.sidebar-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-menu > li {
+    margin-bottom: 0.25rem;
+}
+
+.sidebar-menu-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    transition: background-color 0.2s;
+    text-decoration: none;
+    color: white;
+}
+
+.sidebar-menu-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-menu-icon {
+    font-size: 1.125rem;
+}
+
+.sidebar-menu-text {
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+/* Sidebar Sections */
+.sidebar-section {
+    padding-top: 1rem;
+}
+
+.sidebar-section-title {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0 1rem;
+    margin-bottom: 0.5rem;
+    opacity: 0.6;
+}
+
+.sidebar-section-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    transition: background-color 0.2s;
+    text-decoration: none;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.sidebar-section-link:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.sidebar-section-link i {
+    width: 1.25rem;
+}
+
+/* Logout Button */
+.sidebar-logout-form {
+    width: 100%;
+}
+
+.sidebar-logout-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    transition: background-color 0.2s;
+    color: #fecaca;
+    font-weight: 600;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+}
+
+.sidebar-logout-btn:hover {
+    background-color: rgba(239, 68, 68, 0.2);
+}
+
+.sidebar-logout-btn i {
+    width: 1.25rem;
+}

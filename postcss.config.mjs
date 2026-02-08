@@ -1,5 +1,5 @@
 export default {
     plugins: {
-        "@tailwindcss/postcss": {},
+        // Keep PostCSS plugins minimal now that Tailwind is removed
     },
 };

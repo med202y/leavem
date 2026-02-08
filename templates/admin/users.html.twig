@@ -7,30 +7,10 @@
     {{ parent() }}
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{ asset('css/sidebar-styles.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/admin-users-styles.css') }}" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
-    <style>
-        /* Custom styles for form validation errors */
-        .form-error {
-            color: #dc3545;
-            font-size: 0.875rem;
-            margin-top: 0.25rem;
-        }
-        .form-control.is-invalid {
-            border-color: #dc3545;
-        }
-        /* Sidebar animation */
-        .sidebar-transition {
-            transition: transform 0.3s ease-in-out;
-        }
-        /* Modal z-index fix */
-        .modal {
-            z-index: 1055;
-        }
-        .modal-backdrop {
-            z-index: 1050;
-        }
-    </style>
 {% endblock %}
 
 {% block body %}
@@ -96,12 +76,12 @@
                                 <td class="table-body-cell">{{ user.leaveBalance }}</td>
                                 <td class="table-body-cell">{{ user.hireDate ? user.hireDate|date('Y-m-d') : '–' }}</td>
                                 <td class="table-body-cell">
-                                  <button type="button" class="action-link edit-user-btn"
-                                          data-user-id="{{ user.id }}"
-                                          data-toggle="modal"
-                                          data-target="#editUserModal{{ user.id }}">
-                                      Modifier
-                                  </button>
+                                    <button type="button" class="action-link edit-user-btn"
+                                            data-user-id="{{ user.id }}"
+                                            data-toggle="modal"
+                                            data-target="#editUserModal{{ user.id }}">
+                                        Modifier
+                                    </button>
 
                                     <button type="button" class="action-link delete delete-user-btn"
                                             data-user-id="{{ user.id }}"
@@ -130,106 +110,106 @@
                     'action': path('admin_index'),
                     'attr': {'class': 'needs-validation create-user-form', 'novalidate': true, 'id': 'createUserForm'}
                 }) }}
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="createUserModalLabel">Ajouter un nouvel utilisateur</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createUserModalLabel">Ajouter un nouvel utilisateur</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form_label(createForm.lastName, 'Nom', {'label_attr': {'class': 'font-weight-bold'}}) }}
+                                <span class="text-danger">*</span>
+                                {{ form_widget(createForm.lastName, {'attr': {'class': 'form-control'}}) }}
+                                {{ form_errors(createForm.lastName) }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form_label(createForm.firstName, 'Prénom', {'label_attr': {'class': 'font-weight-bold'}}) }}
+                                <span class="text-danger">*</span>
+                                {{ form_widget(createForm.firstName, {'attr': {'class': 'form-control'}}) }}
+                                {{ form_errors(createForm.firstName) }}
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="modal-body">
+                    <div class="form-group">
+                        {{ form_label(createForm.email, 'Email', {'label_attr': {'class': 'font-weight-bold'}}) }}
+                        <span class="text-danger">*</span>
+                        {{ form_widget(createForm.email, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(createForm.email) }}
+                    </div>
+
+                    <div class="form-group">
+                        {{ form_label(createForm.plainPassword, 'Mot de passe', {'label_attr': {'class': 'font-weight-bold'}}) }}
+                        <span class="text-danger">*</span>
+                        {{ form_widget(createForm.plainPassword, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(createForm.plainPassword) }}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form_label(createForm.department, 'Département', {'label_attr': {'class': 'font-weight-bold'}}) }}
+                                {{ form_widget(createForm.department, {'attr': {'class': 'form-control'}}) }}
+                                {{ form_errors(createForm.department) }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form_label(createForm.team, 'Équipe', {'label_attr': {'class': 'font-weight-bold'}}) }}
+                                {{ form_widget(createForm.team, {'attr': {'class': 'form-control'}}) }}
+                                {{ form_errors(createForm.team) }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        {{ form_label(createForm.rolesArray, 'Rôle(s)', {'label_attr': {'class': 'font-weight-bold'}}) }}
                         <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    {{ form_label(createForm.lastName, 'Nom', {'label_attr': {'class': 'font-weight-bold'}}) }}
-                                    <span class="text-danger">*</span>
-                                    {{ form_widget(createForm.lastName, {'attr': {'class': 'form-control'}}) }}
-                                    {{ form_errors(createForm.lastName) }}
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    {{ form_label(createForm.firstName, 'Prénom', {'label_attr': {'class': 'font-weight-bold'}}) }}
-                                    <span class="text-danger">*</span>
-                                    {{ form_widget(createForm.firstName, {'attr': {'class': 'form-control'}}) }}
-                                    {{ form_errors(createForm.firstName) }}
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            {{ form_label(createForm.email, 'Email', {'label_attr': {'class': 'font-weight-bold'}}) }}
-                            <span class="text-danger">*</span>
-                            {{ form_widget(createForm.email, {'attr': {'class': 'form-control'}}) }}
-                            {{ form_errors(createForm.email) }}
-                        </div>
-
-                        <div class="form-group">
-                            {{ form_label(createForm.plainPassword, 'Mot de passe', {'label_attr': {'class': 'font-weight-bold'}}) }}
-                            <span class="text-danger">*</span>
-                            {{ form_widget(createForm.plainPassword, {'attr': {'class': 'form-control'}}) }}
-                            {{ form_errors(createForm.plainPassword) }}
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    {{ form_label(createForm.department, 'Département', {'label_attr': {'class': 'font-weight-bold'}}) }}
-                                    {{ form_widget(createForm.department, {'attr': {'class': 'form-control'}}) }}
-                                    {{ form_errors(createForm.department) }}
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    {{ form_label(createForm.team, 'Équipe', {'label_attr': {'class': 'font-weight-bold'}}) }}
-                                    {{ form_widget(createForm.team, {'attr': {'class': 'form-control'}}) }}
-                                    {{ form_errors(createForm.team) }}
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            {{ form_label(createForm.rolesArray, 'Rôle(s)', {'label_attr': {'class': 'font-weight-bold'}}) }}
-                            <div class="row">
-                                {% for choice in createForm.rolesArray %}
-                                    <div class="col-md-6">
-                                        <div class="form-check">
-                                            {{ form_widget(choice, {'attr': {'class': 'form-check-input'}}) }}
-                                            {{ form_label(choice, null, {'label_attr': {'class': 'form-check-label'}}) }}
-                                        </div>
+                            {% for choice in createForm.rolesArray %}
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        {{ form_widget(choice, {'attr': {'class': 'form-check-input'}}) }}
+                                        {{ form_label(choice, null, {'label_attr': {'class': 'form-check-label'}}) }}
                                     </div>
-                                {% endfor %}
-                            </div>
-                            {{ form_errors(createForm.rolesArray) }}
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    {{ form_label(createForm.leaveBalance, 'Solde de congé', {'label_attr': {'class': 'font-weight-bold'}}) }}
-                                    {{ form_widget(createForm.leaveBalance, {'attr': {'class': 'form-control', 'step': '0.1'}}) }}
-                                    {{ form_errors(createForm.leaveBalance) }}
                                 </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    {{ form_label(createForm.hireDate, 'Date d\'embauche', {'label_attr': {'class': 'font-weight-bold'}}) }}
-                                    {{ form_widget(createForm.hireDate, {'attr': {'class': 'form-control'}}) }}
-                                    {{ form_errors(createForm.hireDate) }}
-                                </div>
-                            </div>
+                            {% endfor %}
                         </div>
-
-                        {{ form_rest(createForm) }}
+                        {{ form_errors(createForm.rolesArray) }}
                     </div>
 
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
-                        <button type="submit" class="btn btn-success create-user-submit">
-                            <i class="fas fa-plus mr-1"></i>
-                            Créer l'utilisateur
-                        </button>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form_label(createForm.leaveBalance, 'Solde de congé', {'label_attr': {'class': 'font-weight-bold'}}) }}
+                                {{ form_widget(createForm.leaveBalance, {'attr': {'class': 'form-control', 'step': '0.1'}}) }}
+                                {{ form_errors(createForm.leaveBalance) }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form_label(createForm.hireDate, 'Date d\'embauche', {'label_attr': {'class': 'font-weight-bold'}}) }}
+                                {{ form_widget(createForm.hireDate, {'attr': {'class': 'form-control'}}) }}
+                                {{ form_errors(createForm.hireDate) }}
+                            </div>
+                        </div>
                     </div>
+
+                    {{ form_rest(createForm) }}
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-success create-user-submit">
+                        <i class="fas fa-plus mr-1"></i>
+                        Créer l'utilisateur
+                    </button>
+                </div>
                 {{ form_end(createForm) }}
             </div>
         </div>
@@ -245,23 +225,23 @@
                         'action': path('admin_users_edit', {'id': user.id}),
                         'attr': {'class': 'needs-validation edit-user-form', 'novalidate': true, 'id': 'editUserForm' ~ user.id}
                     }) }}
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="editUserModalLabel{{ user.id }}">Modifier l'utilisateur</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editUserModalLabel{{ user.id }}">Modifier l'utilisateur</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
 
-                        <div class="modal-body">
-                            {{ form_widget(editForms[user.id]) }}
-                        </div>
+                    <div class="modal-body">
+                        {{ form_widget(editForms[user.id]) }}
+                    </div>
 
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
-                            <button type="submit" class="btn btn-primary edit-user-submit" data-user-id="{{ user.id }}">
-                                <i class="fas fa-save mr-1"></i> Enregistrer les modifications
-                            </button>
-                        </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary edit-user-submit" data-user-id="{{ user.id }}">
+                            <i class="fas fa-save mr-1"></i> Enregistrer les modifications
+                        </button>
+                    </div>
                     {{ form_end(editForms[user.id]) }}
                 </div>
             </div>
@@ -322,7 +302,7 @@
 
             // Auto-show modal if there are form errors
             {% if createForm.vars.submitted and not createForm.vars.valid %}
-                $('#createUserModal').modal('show');
+            $('#createUserModal').modal('show');
             {% endif %}
 
             // Handle create user form submission

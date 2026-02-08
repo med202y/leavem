@@ -1,0 +1,298 @@
+/* My Leaves Page Styles */
+
+/* Main Container */
+.my-leaves-container {
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+}
+
+/* Header Section */
+.my-leaves-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.my-leaves-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+}
+
+.my-leaves-title a {
+    text-decoration: none;
+    color: #212529;
+}
+
+/* Status Filter Section */
+.status-filter-section {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.badge {
+    min-width: 100px;
+}
+
+.status-filter {
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.status-filter.active {
+    font-weight: bold;
+}
+
+/* Leave Cards Grid */
+.leaves-grid {
+    display: grid;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+    gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+    .leaves-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+.conge-card {
+    transition: transform 0.2s;
+}
+
+.conge-card:hover {
+    transform: translateY(-5px);
+}
+
+/* Card Styles */
+.leave-card {
+    height: 100%;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.leave-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.leave-card-title {
+    margin-bottom: 1rem;
+}
+
+.leave-date-section {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.leave-date-item {
+    flex: 1;
+}
+
+.leave-date-arrow {
+    text-align: center;
+    flex: 0 0 auto;
+    padding: 0 0.5rem;
+}
+
+.leave-info-label {
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+.leave-info-value {
+    font-weight: 700;
+}
+
+.leave-reason-section,
+.leave-rejection-section,
+.leave-proof-section,
+.leave-request-date-section,
+.leave-process-date-section {
+    margin-bottom: 0.5rem;
+}
+
+.leave-rejection-text {
+    color: #dc3545;
+}
+
+.leave-card-footer {
+    background-color: transparent;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.leave-footer-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Modal Styles */
+.modal-footer {
+    border-top: 1px solid #dee2e6 !important;
+    padding: 1rem !important;
+    display: flex !important;
+    justify-content: space-between !important;
+}
+
+.modal-footer .btn {
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    margin: 0 5px !important;
+}
+
+/* Alert Modal Specific */
+.alert-modal-content {
+    text-align: center;
+}
+
+.alert-modal-icon {
+    margin-bottom: 1rem;
+}
+
+.alert-modal-footer {
+    justify-content: center !important;
+}
+
+/* Pagination */
+.pagination-wrapper {
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: center;
+}
+
+/* Utility Classes */
+.d-flex {
+    display: flex;
+}
+
+.justify-content-between {
+    justify-content: space-between;
+}
+
+.justify-content-center {
+    justify-content: center;
+}
+
+.align-items-center {
+    align-items: center;
+}
+
+.flex-wrap {
+    flex-wrap: wrap;
+}
+
+.gap-2 {
+    gap: 0.5rem;
+}
+
+.mb-2 {
+    margin-bottom: 0.5rem;
+}
+
+.mb-3 {
+    margin-bottom: 1rem;
+}
+
+.mb-4 {
+    margin-bottom: 1.5rem;
+}
+
+.mt-3 {
+    margin-top: 1rem;
+}
+
+.mt-4 {
+    margin-top: 1.5rem;
+}
+
+.me-2 {
+    margin-right: 0.5rem;
+}
+
+.me-3 {
+    margin-right: 1rem;
+}
+
+.ms-2 {
+    margin-left: 0.5rem;
+}
+
+.text-decoration-none {
+    text-decoration: none;
+}
+
+.text-dark {
+    color: #212529;
+}
+
+.text-muted {
+    color: #6c757d;
+}
+
+.text-danger {
+    color: #dc3545;
+}
+
+.text-warning {
+    color: #ffc107;
+}
+
+.text-white {
+    color: white;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.fw-bold {
+    font-weight: 700;
+}
+
+.bg-transparent {
+    background-color: transparent;
+}
+
+.bg-danger {
+    background-color: #dc3545;
+}
+
+.bg-success {
+    background-color: #198754;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .my-leaves-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .leave-date-section {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .leave-date-arrow {
+        display: none;
+    }
+
+    .leave-footer-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .leave-footer-actions .btn {
+        width: 100%;
+    }
+}

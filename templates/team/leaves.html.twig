@@ -1,178 +1,173 @@
-{# templates/conge/my_leaves.html.twig #}
+{# templates/conge/manager_leaves.html.twig #}
 {% extends 'base.html.twig' %}
 
 {% block title %}Mes Demandes de Congé{% endblock %}
 
 {% block stylesheets %}
-    {{ parent() }}
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        /* Modal animations */
-        .modal-overlay {
-            animation: fadeIn 0.3s ease-out;
-        }
-        .modal-content {
-            animation: slideUp 0.3s ease-out;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        @keyframes slideUp {
-            from { transform: translateY(1rem); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        .modal-overlay.hide {
-            animation: fadeOut 0.3s ease-out;
-        }
-        .modal-content.hide {
-            animation: slideDown 0.3s ease-out;
-        }
-        @keyframes fadeOut {
-            from { opacity: 1; }
-            to { opacity: 0; }
-        }
-        @keyframes slideDown {
-            from { transform: translateY(0); opacity: 1; }
-            to { transform: translateY(1rem); opacity: 0; }
-        }
-    </style>
+    <link href="{{ asset('css/manager-leaves-styles.css') }}" rel="stylesheet">
 {% endblock %}
 
 {% block body %}
-    {% include 'partials/_sidebar.html.twig' %}
-
-    <main class="main-content with-sidebar">
-        <div class="page-container">
+    <div class="manager-leaves-container">
+        <div class="manager-leaves-content">
             <!-- En-tête -->
-            <div class="leaves-header">
-                <div class="leaves-title-section">
-                    <h1 class="section-title">
-                        <a href="{{ path('dashboard') }}" class="leaves-back-link">
-                            <i class="fas fa-arrow-left"></i>
-                        </a>
-                        <span>Mes Demandes de Congé</span>
-                    </h1>
-                </div>
-                <a href="{{ path('request_leave') }}" class="btn btn-primary">
+            <div class="manager-leaves-header">
+                <h1 class="manager-leaves-title">
+                    <a href="{{ path('dashboard') }}">
+                        <i class="fas fa-arrow-left"></i>
+                    </a>
+                    <span>Mes Demandes de Congé</span>
+                </h1>
+                <a href="{{ path('request_leave') }}" class="new-request-btn">
                     <i class="fas fa-plus-circle"></i> Nouvelle Demande
                 </a>
             </div>
 
             <!-- Filtres par statut -->
-            <div class="leaves-filters">
-                <button class="status-filter" data-status="all">Tous</button>
+            <div class="status-filters">
+                <button class="status-filter active" data-status="all">Tous</button>
                 {% for status in statuses %}
                     {% set color = statusColors[status] %}
-                    <button class="status-filter conge-status-{{ color }}" data-status="{{ status }}">
+                    <button class="status-filter {% if color == 'success' %}bg-green-100
+                        {% elseif color == 'danger' %}bg-red-100
+                        {% elseif color == 'warning' %}bg-yellow-100
+                        {% elseif color == 'secondary' %}bg-gray-100
+                        {% elseif color == 'info' %}bg-blue-100
+                        {% endif %}"
+                            data-status="{{ status }}">
                         {{ status|replace({'_': ' '})|title }}
                     </button>
                 {% endfor %}
             </div>
 
             {% if leaves is empty %}
-                <div class="leaves-empty">
+                <div class="empty-state">
                     <i class="fas fa-info-circle"></i>
                     Vous n'avez soumis aucune demande de congé pour le moment.
                 </div>
             {% else %}
-                <div class="leaves-grid">
+                <div class="leaves-cards-grid">
                     {% for leave in leaves %}
                         <div class="conge-card" data-status="{{ leave.status.value }}">
-                            <header class="conge-header">
-                                <span class="conge-status-badge conge-status-{{ statusColors[leave.status.value] ?? 'secondary' }}">
+                            <header class="card-header-section">
+                                <span class="status-badge {% if statusColors[leave.status.value] == 'success' %}bg-green-100 text-green-800
+                                    {% elseif statusColors[leave.status.value] == 'danger' %}bg-red-100 text-red-800
+                                    {% elseif statusColors[leave.status.value] == 'warning' %}bg-yellow-100 text-yellow-800
+                                    {% elseif statusColors[leave.status.value] == 'secondary' %}bg-gray-100 text-gray-800
+                                    {% elseif statusColors[leave.status.value] == 'info' %}bg-blue-100 text-blue-800
+                                    {% endif %}">
                                     {{ leave.status.value|replace({'_': ' '})|title }}
                                 </span>
-                                <span class="conge-id">#{{ leave.id }}</span>
+                                <span class="card-id">#{{ leave.id }}</span>
                             </header>
 
-                            <div class="conge-body">
-                                <h2 class="conge-body-title">
+                            <div class="card-body-section">
+                                <h2 class="card-title">
                                     <i class="fas fa-calendar-alt"></i>
                                     {{ leave.leaveType.value|title }}
                                 </h2>
 
-                                <div class="conge-date-range">
-                                    <div class="conge-date-section">
-                                        <span class="conge-date-label">Du</span>
-                                        <span class="conge-date-value">{{ leave.startDate|date('d M Y') }}</span>
+                                <div class="date-range">
+                                    <div class="date-item">
+                                        <small>Du</small>
+                                        <span class="font-medium">{{ leave.startDate|date('d M Y') }}</span>
                                     </div>
-                                    <i class="fas fa-arrow-right conge-arrow"></i>
-                                    <div class="conge-date-section">
-                                        <span class="conge-date-label">Au</span>
-                                        <span class="conge-date-value">{{ leave.endDate|date('d M Y') }}</span>
+                                    <i class="fas fa-arrow-right date-arrow"></i>
+                                    <div class="date-item">
+                                        <small>Au</small>
+                                        <span class="font-medium">{{ leave.endDate|date('d M Y') }}</span>
                                     </div>
                                 </div>
 
-                                <div class="conge-info-row">
-                                    <span class="conge-info-label">Durée</span>
-                                    <span class="conge-info-value">{{ leave.endDate.diff(leave.startDate).days + 1 }} jours</span>
+                                <div class="info-row">
+                                    <small>Durée</small>
+                                    <span class="font-medium">{{ leave.endDate.diff(leave.startDate).days + 1 }} jours</span>
                                 </div>
 
                                 {% if leave.reason %}
-                                    <div class="conge-info-row">
-                                        <span class="conge-info-label">Motif</span>
+                                    <div class="info-row">
+                                        <small>Motif</small>
                                         <p>{{ leave.reason }}</p>
                                     </div>
                                 {% endif %}
 
-                                <div class="conge-info-row">
-                                    <span class="conge-info-label">Demandé le</span>
-                                    <span class="conge-info-value">{{ leave.requestDate|date('d M Y H:i') }}</span>
+                                <div class="info-row">
+                                    <small>Demandé le</small>
+                                    <span>{{ leave.requestDate|date('d M Y H:i') }}</span>
                                 </div>
-                                <div class="conge-info-row">
-                                    <span class="conge-info-label">Demandé par</span>
-                                    <span class="conge-info-value">
+                                <div class="info-row">
+                                    <small>Demandé par</small>
+                                    <span class="font-medium">
                                         {{ leave.user.firstName }} {{ leave.user.lastName }}
                                     </span>
                                 </div>
                                 {% if leave.processDate %}
-                                    <div class="conge-info-row">
-                                        <span class="conge-info-label">Traité le</span>
-                                        <span class="conge-info-value">{{ leave.processDate|date('d M Y H:i') }}</span>
+                                    <div class="info-row">
+                                        <small>Traité le</small>
+                                        <span>{{ leave.processDate|date('d M Y H:i') }}</span>
                                     </div>
                                 {% endif %}
 
                                 {% if leave.proof %}
-                                    <div class="conge-info-row">
-                                        <span class="conge-info-label">Justificatif</span>
-                                        <a href="{{ asset('images/' ~ leave.proof) }}" class="btn btn-sm btn-outline-primary" download>
+                                    <div class="info-row">
+                                        <small>Justificatif</small>
+                                        <a href="{{ asset('images/' ~ leave.proof) }}" class="btn-outline-primary" download>
                                             <i class="fas fa-download"></i> Télécharger
                                         </a>
                                     </div>
                                 {% endif %}
 
                                 {% if leave.refusalReason %}
-                                    <div class="conge-info-row">
-                                        <span class="conge-info-label">Raison du refus</span>
+                                    <div class="info-row">
+                                        <small>Raison du refus</small>
                                         <p class="text-red-600">{{ leave.refusalReason }}</p>
                                     </div>
                                 {% endif %}
                             </div>
 
-                            <footer class="conge-footer">
+                            <footer class="card-footer-section">
                                 <div>
                                     {% if leave.processedBy %}
-                                        <small class="text-gray-500">Traité par : {{ leave.processedBy }}</small>
+                                        <small>Traité par : {{ leave.processedBy }}</small>
                                     {% endif %}
                                 </div>
-                                <div class="conge-actions">
+                                <div class="action-buttons">
                                     {% if leave.status.value == 'en_attente' %}
-                                        <button class="action-btn accept-btn" data-id="{{ leave.id }}" data-action="accept">
+                                        <button class="action-btn accept-btn"
+                                                data-id="{{ leave.id }}"
+                                                data-action="accept"
+                                                data-user="{{ leave.user.firstName }} {{ leave.user.lastName }}"
+                                                data-type="{{ leave.leaveType.value|title }}"
+                                                data-dates="{{ leave.startDate|date('d M Y') }} - {{ leave.endDate|date('d M Y') }}">
                                             <i class="fas fa-check"></i> Accepter
                                         </button>
-                                        <button class="action-btn refuse-btn" data-id="{{ leave.id }}" data-action="refuse">
+                                        <button class="action-btn refuse-btn"
+                                                data-id="{{ leave.id }}"
+                                                data-action="refuse"
+                                                data-user="{{ leave.user.firstName }} {{ leave.user.lastName }}"
+                                                data-type="{{ leave.leaveType.value|title }}"
+                                                data-dates="{{ leave.startDate|date('d M Y') }} - {{ leave.endDate|date('d M Y') }}">
                                             <i class="fas fa-times"></i> Refuser
                                         </button>
                                     {% elseif leave.status.value == 'annulation en attente' %}
-                                        <button class="action-btn approve-cancellation-btn" data-id="{{ leave.id }}" data-action="approve_cancellation">
+                                        <button class="action-btn approve-cancellation-btn"
+                                                data-id="{{ leave.id }}"
+                                                data-action="approve_cancellation"
+                                                data-user="{{ leave.user.firstName }} {{ leave.user.lastName }}"
+                                                data-type="{{ leave.leaveType.value|title }}"
+                                                data-dates="{{ leave.startDate|date('d M Y') }} - {{ leave.endDate|date('d M Y') }}">
                                             <i class="fas fa-check"></i> Approuver l'annulation
                                         </button>
-                                        <button class="action-btn reject-cancellation-btn" data-id="{{ leave.id }}" data-action="reject_cancellation">
+                                        <button class="action-btn reject-cancellation-btn"
+                                                data-id="{{ leave.id }}"
+                                                data-action="reject_cancellation"
+                                                data-user="{{ leave.user.firstName }} {{ leave.user.lastName }}"
+                                                data-type="{{ leave.leaveType.value|title }}"
+                                                data-dates="{{ leave.startDate|date('d M Y') }} - {{ leave.endDate|date('d M Y') }}">
                                             <i class="fas fa-times"></i> Rejeter l'annulation
                                         </button>
                                     {% endif %}
-
                                 </div>
                             </footer>
                         </div>
@@ -183,75 +178,63 @@
     </div>
 
     <!-- Confirmation Modal -->
-    <div id="confirmationModal" class="confirmation-modal hidden">
-        <div class="confirmation-modal-content">
-            <div class="confirmation-modal-body">
+    <div id="confirmationModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
                 <!-- Modal Header -->
-                <div class="confirmation-modal-header">
-                    <div class="confirmation-modal-title-section">
-                        <div id="confirmationIcon" class="confirmation-modal-icon">
-                            <!-- Icon will be inserted by JavaScript -->
-                        </div>
-                        <h3 id="confirmationTitle" class="confirmation-modal-title"></h3>
+                <div class="modal-header-content">
+                    <div class="modal-icon-wrapper">
+                        <div id="confirmationIcon" class="modal-icon"></div>
+                        <h3 id="confirmationTitle" class="modal-title"></h3>
                     </div>
-                    <button id="closeModal" class="confirmation-modal-close">
+                    <button id="closeModal" class="modal-close">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
 
                 <!-- Modal Body -->
-                <div class="confirmation-modal-details">
-                    <p id="confirmationMessage" class="confirmation-modal-message"></p>
-                    <div class="confirmation-modal-info-box">
-                        <div class="confirmation-modal-info-grid">
-                            <div class="confirmation-modal-info-label">Employé:</div>
-                            <div id="confirmUser" class="confirmation-modal-info-value"></div>
-                            <div class="confirmation-modal-info-label">Type:</div>
-                            <div id="confirmType" class="confirmation-modal-info-value"></div>
-                            <div class="confirmation-modal-info-label">Période:</div>
-                            <div id="confirmDates" class="confirmation-modal-info-value"></div>
+                <div class="modal-body">
+                    <p id="confirmationMessage" class="modal-message"></p>
+                    <div class="modal-details">
+                        <div class="modal-details-grid">
+                            <div class="modal-details-label">Employé:</div>
+                            <div id="confirmUser" class="modal-details-value"></div>
+                            <div class="modal-details-label">Type:</div>
+                            <div id="confirmType" class="modal-details-value"></div>
+                            <div class="modal-details-label">Période:</div>
+                            <div id="confirmDates" class="modal-details-value"></div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Reason input for refusal -->
-                <div id="reasonSection" class="confirmation-modal-reason-section hidden">
-                    <label for="refusalReason" class="confirmation-modal-reason-label">
+                <div id="reasonSection" class="modal-reason-section hidden">
+                    <label for="refusalReason" class="modal-reason-label">
                         Raison du refus (optionnel)
                     </label>
-                    <textarea
-                        id="refusalReason"
-                        rows="3"
-                        class="confirmation-modal-reason-input"
-                        placeholder="Expliquez pourquoi cette demande est refusée..."></textarea>
+                    <textarea id="refusalReason" rows="3" class="modal-reason-input"
+                              placeholder="Expliquez pourquoi cette demande est refusée..."></textarea>
                 </div>
 
                 <!-- Modal Footer -->
-                <div class="confirmation-modal-footer">
-                    <button id="cancelAction" class="btn btn-secondary">
-                        <i class="fas fa-times"></i>
-                        Annuler
+                <div class="modal-footer">
+                    <button id="cancelAction" class="modal-btn modal-btn-cancel">
+                        <i class="fas fa-times"></i> Annuler
                     </button>
-                    <button id="confirmAction" class="confirmation-modal-confirm-btn">
-                        <!-- Content will be set by JavaScript -->
-                    </button>
+                    <button id="confirmAction" class="modal-btn modal-btn-confirm"></button>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Success/Error Modal -->
-    <div id="alertModal" class="alert-modal hidden">
-        <div class="alert-modal-content">
-            <div class="alert-modal-body">
-                <div id="alertIcon" class="alert-modal-icon">
-                    <!-- Icon will be inserted by JavaScript -->
-                </div>
-                <h3 id="alertTitle" class="alert-modal-title"></h3>
-                <p id="alertMessage" class="alert-modal-message"></p>
-                <button id="alertOk" class="btn btn-primary alert-modal-ok-btn">
-                    OK
-                </button>
+    <div id="alertModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="alert-modal-content">
+                <div id="alertIcon" class="alert-icon"></div>
+                <h3 id="alertTitle" class="alert-title"></h3>
+                <p id="alertMessage" class="alert-message"></p>
+                <button id="alertOk" class="alert-btn">OK</button>
             </div>
         </div>
     </div>
@@ -271,8 +254,8 @@
             document.querySelectorAll('.status-filter').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const status = btn.dataset.status;
-                    document.querySelectorAll('.status-filter').forEach(b => b.classList.remove('border', 'font-bold'));
-                    btn.classList.add('border', 'font-bold');
+                    document.querySelectorAll('.status-filter').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
 
                     document.querySelectorAll('.conge-card').forEach(card => {
                         card.style.display = (status === 'all' || card.dataset.status === status) ? 'block' : 'none';
@@ -342,9 +325,9 @@
                 const reasonSection = document.getElementById('reasonSection');
 
                 icon.innerHTML = iconHtml;
-                icon.className = `w-10 h-10 rounded-full flex items-center justify-center ${iconBg}`;
+                icon.className = `modal-icon ${iconBg}`;
                 confirmBtn.innerHTML = btnText;
-                confirmBtn.className = `flex-1 px-4 py-2 text-white rounded-lg transition transform hover:scale-105 ${btnClass}`;
+                confirmBtn.className = `modal-btn modal-btn-confirm ${btnClass}`;
 
                 if (showReason) {
                     reasonSection.classList.remove('hidden');
@@ -366,10 +349,10 @@
 
                 if (type === 'success') {
                     icon.innerHTML = '<i class="fas fa-check text-white text-2xl"></i>';
-                    icon.className = 'w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-green-500';
+                    icon.style.backgroundColor = '#10b981';
                 } else {
                     icon.innerHTML = '<i class="fas fa-exclamation-triangle text-white text-2xl"></i>';
-                    icon.className = 'w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-red-500';
+                    icon.style.backgroundColor = '#ef4444';
                 }
 
                 alertModal.classList.remove('hidden');
@@ -377,53 +360,33 @@
 
             // Hide modal with animation
             function hideModal(modal) {
-                const overlay = modal.querySelector('.modal-overlay') || modal;
-                const content = modal.querySelector('.modal-content');
-
-                overlay.classList.add('hide');
-                if (content) content.classList.add('hide');
-
+                modal.classList.add('hide');
                 setTimeout(() => {
                     modal.classList.add('hidden');
-                    overlay.classList.remove('hide');
-                    if (content) content.classList.remove('hide');
+                    modal.classList.remove('hide');
                 }, 300);
             }
 
             // Close modal handlers
-            document.getElementById('closeModal').addEventListener('click', () => {
-                hideModal(confirmationModal);
-            });
-
-            document.getElementById('cancelAction').addEventListener('click', () => {
-                hideModal(confirmationModal);
-            });
-
+            document.getElementById('closeModal').addEventListener('click', () => hideModal(confirmationModal));
+            document.getElementById('cancelAction').addEventListener('click', () => hideModal(confirmationModal));
             document.getElementById('alertOk').addEventListener('click', () => {
                 hideModal(alertModal);
-                if (currentAction) {
-                    setTimeout(() => location.reload(), 500);
-                }
+                if (currentAction) setTimeout(() => location.reload(), 500);
             });
 
             // Close modals when clicking outside
             [confirmationModal, alertModal].forEach(modal => {
                 modal.addEventListener('click', (e) => {
-                    if (e.target === modal) {
-                        hideModal(modal);
-                    }
+                    if (e.target === modal) hideModal(modal);
                 });
             });
 
             // ESC key to close modals
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') {
-                    if (!confirmationModal.classList.contains('hidden')) {
-                        hideModal(confirmationModal);
-                    }
-                    if (!alertModal.classList.contains('hidden')) {
-                        hideModal(alertModal);
-                    }
+                    if (!confirmationModal.classList.contains('hidden')) hideModal(confirmationModal);
+                    if (!alertModal.classList.contains('hidden')) hideModal(alertModal);
                 }
             });
 
@@ -437,21 +400,18 @@
                         type: button.dataset.type,
                         dates: button.dataset.dates
                     };
-
                     showConfirmationModal(leaveData.action, leaveData);
                 });
             });
 
-            // Confirm action handler - UPDATED FOR MODERN RESPONSES
+            // Confirm action handler
             document.getElementById('confirmAction').addEventListener('click', () => {
                 const confirmBtn = document.getElementById('confirmAction');
                 const reason = document.getElementById('refusalReason').value;
 
-                // Show loading state
                 confirmBtn.disabled = true;
                 confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Traitement...';
 
-                // Prepare request body
                 const formData = new URLSearchParams({ action: currentAction });
                 if (currentAction === 'refuse' && reason.trim()) {
                     formData.append('reason', reason.trim());
@@ -465,57 +425,29 @@
                     },
                     body: formData
                 })
-                .then(async response => {
-                    const contentType = response.headers.get('content-type');
-                    
-                    if (!contentType || !contentType.includes('application/json')) {
-                        throw new Error('Réponse non-JSON reçue');
-                    }
-
-                    const data = await response.json();
-                    
-                    if (!response.ok) {
-                        // Handle error responses (4xx, 5xx)
-                        const errorTitle = data.title || 'Erreur';
-                        const errorMessage = data.detail || 'Une erreur est survenue';
-                        throw new Error(`${errorTitle}: ${errorMessage}`);
-                    }
-
-                    // Success case
-                    hideModal(confirmationModal);
-                    showAlert(
-                        'Succès', 
-                        data.meta?.message || 'Action effectuée avec succès', 
-                        'success'
-                    );
-                    
-                    // Optionally update UI without full page reload
-                    const card = document.querySelector(`.conge-card[data-id="${currentLeaveId}"]`);
-                    if (card && data.data?.status) {
-                        card.dataset.status = data.data.status;
-                        // Update status display in card if needed
-                        const statusElement = card.querySelector('.status-badge');
-                        if (statusElement) {
-                            statusElement.textContent = data.data.status.replace('_', ' ');
+                    .then(async response => {
+                        const contentType = response.headers.get('content-type');
+                        if (!contentType || !contentType.includes('application/json')) {
+                            throw new Error('Réponse non-JSON reçue');
                         }
-                    }
-                })
-                .catch(err => {
-                    hideModal(confirmationModal);
-                    showAlert(
-                        'Erreur', 
-                        err.message || 'Une erreur est survenue lors du traitement', 
-                        'error'
-                    );
-                })
-                .finally(() => {
-                    // Reset button state
-                    confirmBtn.disabled = false;
-                    const isAccept = currentAction === 'accept';
-                    confirmBtn.innerHTML = isAccept
-                        ? '<i class="fas fa-check mr-2"></i>Accepter'
-                        : '<i class="fas fa-times mr-2"></i>Refuser';
-                });
+                        const data = await response.json();
+                        if (!response.ok) {
+                            const errorTitle = data.title || 'Erreur';
+                            const errorMessage = data.detail || 'Une erreur est survenue';
+                            throw new Error(`${errorTitle}: ${errorMessage}`);
+                        }
+                        hideModal(confirmationModal);
+                        showAlert('Succès', data.meta?.message || 'Action effectuée avec succès', 'success');
+                    })
+                    .catch(err => {
+                        hideModal(confirmationModal);
+                        showAlert('Erreur', err.message || 'Une erreur est survenue lors du traitement', 'error');
+                    })
+                    .finally(() => {
+                        confirmBtn.disabled = false;
+                        const isAccept = currentAction === 'accept';
+                        confirmBtn.innerHTML = isAccept ? '<i class="fas fa-check mr-2"></i>Accepter' : '<i class="fas fa-times mr-2"></i>Refuser';
+                    });
             });
         });
     </script>

@@ -1,0 +1,215 @@
+/* Calendar Page Styles */
+
+/* Header Section */
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.calendar-page-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: #4f46e5;
+}
+
+/* Filter Section */
+.filter-section {
+    background: #f8f9fa;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.filter-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+/* Status Badge Styles */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.status-badge.selected {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+/* Bootstrap color classes for status badges */
+.status-badge.bg-warning {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.status-badge.bg-success {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.status-badge.bg-danger {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+.status-badge.bg-secondary {
+    background-color: #f3f4f6;
+    color: #374151;
+}
+
+.status-badge.bg-info {
+    background-color: #e0e7ff;
+    color: #3730a3;
+}
+
+.status-badge.bg-primary {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+/* Legend Styles */
+.legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.legend-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+}
+
+/* Calendar Card */
+.calendar-card {
+    transition: transform 0.2s;
+}
+
+.calendar-card:hover {
+    transform: translateY(-3px);
+}
+
+/* FullCalendar Customization */
+.fc .fc-toolbar-title {
+    font-size: 1.25rem;
+}
+
+/* Status Filter */
+.status-filter {
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.status-filter:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Custom Tooltip */
+.custom-tooltip {
+    position: absolute;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    pointer-events: none;
+    z-index: 1000;
+    max-width: 250px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Utility Classes */
+.flex {
+    display: flex;
+}
+
+.flex-wrap {
+    flex-wrap: wrap;
+}
+
+.justify-between {
+    justify-content: space-between;
+}
+
+.items-center {
+    align-items: center;
+}
+
+.gap-2 {
+    gap: 0.5rem;
+}
+
+.mb-3 {
+    margin-bottom: 0.75rem;
+}
+
+.mb-6 {
+    margin-bottom: 1.5rem;
+}
+
+.d-flex {
+    display: flex;
+}
+
+.d-none {
+    display: none;
+}
+
+.text-decoration-none {
+    text-decoration: none;
+}
+
+.text-dark {
+    color: #212529;
+}
+
+.ms-2 {
+    margin-left: 0.5rem;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .calendar-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .calendar-page-title {
+        font-size: 1.5rem;
+    }
+
+    .filter-controls {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .status-badge {
+        width: 100%;
+        justify-content: center;
+    }
+}

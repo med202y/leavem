@@ -4,45 +4,45 @@
 {% block title %}Historique des notifications - {{ user.firstName }} {{ user.lastName }}{% endblock %}
 
 {% block stylesheets %}
-    {{ parent() }}
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ asset('css/sidebar-styles.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/history-styles.css') }}" rel="stylesheet">
 {% endblock %}
 
 {% block body %}
     {% include 'partials/_sidebar.html.twig' %}
 
-
     <!-- Contenu principal -->
-    <main class="main-content with-sidebar">
-        <div class="page-container">
+    <main class="history-main-content">
+        <div class="history-page-container">
             {# En-tête #}
-            <div class="section-header">
-                <h1 class="section-title">Historique des notifications</h1>
-                <p class="text-sm text-gray-500">{{ "now"|date("l, F j, Y") }}</p>
+            <div class="history-header">
+                <h1 class="history-page-title">Historique des notifications</h1>
+                <p class="history-date-text">{{ "now"|date("l, F j, Y") }}</p>
             </div>
 
             {# Tableau d'historique #}
-            <div class="table-wrapper">
+            <div class="history-table-container">
                 {% if notifications|length > 0 %}
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full table-auto">
-                            <thead class="table-header-row">
+                    <div class="history-table-wrapper">
+                        <table class="history-table">
+                            <thead class="history-table-header">
                             <tr>
-                                <th class="table-header-cell">Date</th>
-                                <th class="table-header-cell">Titre</th>
-                                <th class="table-header-cell">Message</th>
+                                <th>Date</th>
+                                <th>Titre</th>
+                                <th>Message</th>
                             </tr>
                             </thead>
-                            <tbody>
+                            <tbody class="history-table-body">
                             {% for notification in notifications %}
-                                <tr class="table-body-row">
-                                    <td class="table-body-cell text-sm text-gray-600">
+                                <tr>
+                                    <td class="history-table-cell history-date-cell" data-label="Date">
                                         {{ notification.createdAt|date('d/m/Y H:i') }}
                                     </td>
-                                    <td class="table-body-cell font-medium text-gray-800">
+                                    <td class="history-table-cell history-title-cell" data-label="Titre">
                                         {{ notification.title }}
                                     </td>
-                                    <td class="table-body-cell text-gray-700">
+                                    <td class="history-table-cell history-message-cell" data-label="Message">
                                         {{ notification.message }}
                                     </td>
                                 </tr>
@@ -50,11 +50,9 @@
                             </tbody>
                         </table>
                     </div>
-
                     {# Pagination si nécessaire #}
-
                 {% else %}
-                    <p class="text-center text-gray-500">Aucune notification dans l'historique.</p>
+                    <p class="history-empty-state">Aucune notification dans l'historique.</p>
                 {% endif %}
             </div>
         </div>

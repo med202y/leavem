@@ -1,11 +1,13 @@
 {# templates/team.html.twig #}
 {% extends 'base.html.twig' %}
 
-{% block title %}Équipe – {{ team ? team.name : 'Pas d’équipe' }}{% endblock %}
+{% block title %}Équipe – {{ team ? team.name : 'Pas d'équipe' }}{% endblock %}
 
 {% block stylesheets %}
-    {{ parent() }}
+{{ parent() }}
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ asset('css/sidebar-styles.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/team-styles.css') }}" rel="stylesheet">
 {% endblock %}
 
 {% block body %}
@@ -34,36 +36,36 @@
                     <div class="table-wrapper">
                         <table class="team-table">
                             <thead>
-                                <tr class="table-header-row">
-                                    <th class="table-header-cell">Nom</th>
-                                    <th class="table-header-cell">Prénom</th>
-                                    <th class="table-header-cell">Département</th>
-                                </tr>
+                            <tr class="table-header-row">
+                                <th class="table-header-cell">Nom</th>
+                                <th class="table-header-cell">Prénom</th>
+                                <th class="table-header-cell">Département</th>
+                            </tr>
                             </thead>
                             <tbody>
-                                {% for member in members %}
-                                    <tr class="table-body-row">
-                                        <td class="table-body-cell">
-                                            {{ member.lastName }}
-                                        </td>
-                                        <td class="table-body-cell">
-                                            {{ member.firstName }}
-                                        </td>
-                                        <td class="table-body-cell">
-                                            {{ member.department.value ?? '–' }}
-                                        </td>
-                                    </tr>
-                                {% endfor %}
+                            {% for member in members %}
+                                <tr class="table-body-row">
+                                    <td class="table-body-cell">
+                                        {{ member.lastName }}
+                                    </td>
+                                    <td class="table-body-cell">
+                                        {{ member.firstName }}
+                                    </td>
+                                    <td class="table-body-cell">
+                                        {{ member.department.value ?? '–' }}
+                                    </td>
+                                </tr>
+                            {% endfor %}
                             </tbody>
                         </table>
                     </div>
                 {% else %}
                     <p class="table-empty-message">
-                        Vous n’appartenez à aucune équipe ou elle est vide.
+                        Vous n'appartenez à aucune équipe ou elle est vide.
                     </p>
                 {% endif %}
             </div>
-            
+
         </div>
     </main>
 {% endblock %}
