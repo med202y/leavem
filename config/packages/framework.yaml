@@ -10,6 +10,7 @@ framework:
         cookie_samesite: lax
         cookie_httponly: true
         cookie_lifetime: 0
+        gc_maxlifetime: 7200
         gc_probability: 1
         gc_divisor: 100
         name: PHPSESSID
