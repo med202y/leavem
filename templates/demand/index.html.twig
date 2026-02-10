@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Leave Management - {{ user.firstName }} {{ user.lastName }}{% endblock %}
+{% block title %}Gestion des Congés - {{ user.firstName }} {{ user.lastName }}{% endblock %}
 
 {% block stylesheets %}
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -18,8 +18,8 @@
             <div class="leave-header-card">
                 <div class="leave-header-content">
                     <div>
-                        <h1 class="leave-page-title">Leave Request Form</h1>
-                        <p class="leave-page-subtitle">Fill in the employee's leave information</p>
+                        <h1 class="leave-page-title">Demande de Congé</h1>
+                        <p class="leave-page-subtitle">Remplissez les informations de congé de l'employé</p>
                     </div>
                     <div class="leave-header-date">
                         <p class="leave-date-text">{{ "now"|date("l, F j, Y") }}</p>
@@ -48,29 +48,29 @@
             <!-- Basic Information Section -->
             <div class="form-section">
                 <h2 class="section-title">
-                    <i class="fas fa-user"></i>Employee Information
+                    <i class="fas fa-user"></i>Informations de l'Employé
                 </h2>
                 <div class="form-grid">
                     <!-- Column 1 -->
                     <div class="form-column">
                         <div>
-                            <label class="form-label">Last Name</label>
+                            <label class="form-label">Nom</label>
                             <p class="info-display">{{ user.lastName }}</p>
                         </div>
                         <div>
-                            <label class="form-label">First Name</label>
+                            <label class="form-label">Prénom</label>
                             <p class="info-display">{{ user.firstName }}</p>
                         </div>
                     </div>
                     <!-- Column 2 -->
                     <div class="form-column">
                         <div>
-                            <label class="form-label">Position / Department</label>
+                            <label class="form-label">Poste / Département</label>
                             <p class="info-display">{{ user.department.value }}</p>
                         </div>
                         <div>
-                            <label class="form-label">Leave Balance (available days)</label>
-                            <p class="info-display">{{ user.leaveBalance }} days</p>
+                            <label class="form-label">Solde de Congés (jours disponibles)</label>
+                            <p class="info-display">{{ user.leaveBalance }} jours</p>
                         </div>
                     </div>
                 </div>
@@ -79,7 +79,7 @@
             <!-- Leave Management Section -->
             <div class="form-section">
                 <h2 class="section-title">
-                    <i class="fas fa-calendar-alt"></i>Leave Management
+                    <i class="fas fa-calendar-alt"></i>Gestion des Congés
                 </h2>
                 <div class="form-grid">
                     <!-- Column 1 -->
@@ -104,14 +104,14 @@
                     <div class="form-column">
                         <div>
                             {{ form_label(form.reason, null, {'label_attr': {'class': 'form-label'}}) }}
-                            {{ form_widget(form.reason, {'attr': {'class': 'form-input', 'rows': 4, 'placeholder': 'Briefly describe the reason for your request...'}}) }}
+                            {{ form_widget(form.reason, {'attr': {'class': 'form-input', 'rows': 4, 'placeholder': 'Décrivez brièvement la raison de votre demande...'}}) }}
                             {{ form_errors(form.reason) }}
                         </div>
                         <div>
                             {{ form_label(form.proof, null, {'label_attr': {'class': 'form-label'}}) }}
                             {{ form_widget(form.proof, {'attr': {'class': 'form-input', 'accept': '.pdf,.jpg,.jpeg,.png,.gif'}}) }}
                             {{ form_errors(form.proof) }}
-                            <p class="helper-text">Accepted formats: PDF, JPG, PNG, GIF (max. 5MB)</p>
+                            <p class="helper-text">Formats acceptés : PDF, JPG, PNG, GIF (max. 5 Mo)</p>
                         </div>
                     </div>
                 </div>
@@ -123,10 +123,10 @@
             <!-- Submission buttons -->
             <div class="action-buttons">
                 <button type="reset" class="action-btn btn-cancel">
-                    <i class="fas fa-times"></i> Cancel
+                    <i class="fas fa-times"></i> Annuler
                 </button>
                 <button type="submit" class="action-btn btn-submit">
-                    <i class="fas fa-save"></i> Submit Request
+                    <i class="fas fa-save"></i> Soumettre la Demande
                 </button>
             </div>
 

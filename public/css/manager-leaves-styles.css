@@ -1,5 +1,7 @@
 /* Manager Leaves Page Styles */
-
+* {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
 /* Main Container */
 .manager-leaves-container {
     min-height: 100vh;
@@ -484,7 +486,7 @@
     width: 100%;
     border: 1px solid #d1d5db;
     border-radius: 0.5rem;
-    padding: 0.5rem 0.75rem;
+    padding: 0.5rem 0.075rem;
     resize: vertical;
 }
 
@@ -520,7 +522,7 @@
 }
 
 .modal-btn-confirm {
-    color: white;
+
     transform: scale(1);
 }
 

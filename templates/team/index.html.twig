@@ -1,11 +1,16 @@
 {# templates/team.html.twig #}
 {% extends 'base.html.twig' %}
 
-{% block title %}Équipe – {{ team ? team.name : 'Pas d'équipe' }}{% endblock %}
+{% block title %}
+    {% if team is defined and team %}
+        Équipe – {{ team.name }}
+    {% else %}
+        Équipe – Pas d'équipe
+    {% endif %}
+{% endblock %}
 
 {% block stylesheets %}
 {{ parent() }}
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="{{ asset('css/sidebar-styles.css') }}" rel="stylesheet">
     <link href="{{ asset('css/team-styles.css') }}" rel="stylesheet">
 {% endblock %}
@@ -69,7 +74,6 @@
         </div>
     </main>
 {% endblock %}
-
 {% block javascripts %}
     <script>
         const menuBtn = document.getElementById('mobile-menu-btn');
@@ -77,3 +81,4 @@
         menuBtn?.addEventListener('click', () => sidebar?.classList.toggle('-translate-x-full'));
     </script>
 {% endblock %}
+

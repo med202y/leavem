@@ -34,7 +34,7 @@ class UserController extends AbstractController
         LeaveRepository $LeaveRepository,
         #[CurrentUser] User $currentUser,
     ): Response {
-        
+
         // Handle user creation form
         $newUser = new User();
         $createForm = $this->createForm(UserSettingsFormType::class, $newUser, [
@@ -52,7 +52,7 @@ class UserController extends AbstractController
         $users = $this->userRepository->findAll();
         $teams = $this->teamRepository->findAll();
         $editForms = [];
-        
+
         foreach ($users as $user) {
             $editForm = $this->createForm(UserSettingsFormType::class, $user, [
                 'is_edit' => true,
@@ -96,7 +96,7 @@ class UserController extends AbstractController
             'csrf_field_name' => '_token',
             'csrf_token_id' => 'user_edit_' . $user->getId()
         ]);
-        
+
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -223,84 +223,72 @@ class UserController extends AbstractController
     }
 
     private function handleUserCreation($form, User $user): Response
-{
-    try {
-        $existingUser = $this->userRepository->findOneBy(['email' => $user->getEmail()]);
-        if ($existingUser) {
-            $this->addFlash('error', 'A user with this email already exists.');
-            return $this->redirectToRoute('admin_index');
-        }
-
-        $plainPassword = $form->get('plainPassword')->getData();
-        if ($plainPassword) {
-            $hashedPassword = $this->passwordHasher->hashPassword($user, $plainPassword);
-            $user->setPassword($hashedPassword);
-        }
-        $originalTeam = $this->userRepository->find($user->getId())?->getTeam();
-
-        // ✅ If user is MANAGER and has a team, assign them as that team's manager
-        if (in_array(Role::MANAGER, $user->getRolesArray(), true) && $user->getTeam()) {
-            if ($originalTeam && $originalTeam !== $user->getTeam() && $originalTeam->getManager() === $user) {
-                $originalTeam->setManager(null);
-                $this->entityManager->persist($originalTeam);
+    {
+        try {
+            $existingUser = $this->userRepository->findOneBy(['email' => $user->getEmail()]);
+            if ($existingUser) {
+                $this->addFlash('error', 'A user with this email already exists.');
+                return $this->redirectToRoute('admin_index');
             }
-            $user->getTeam()->setManager($user);
-            $this->entityManager->persist($user->getTeam()); 
-        }else {
-            // Remove as manager if role removed or no team
-            if ($originalTeam && $originalTeam->getManager() === $user) {
-                $originalTeam->setManager(null);
-                $this->entityManager->persist($originalTeam);
+
+            $plainPassword = $form->get('plainPassword')->getData();
+            if ($plainPassword) {
+                $hashedPassword = $this->passwordHasher->hashPassword($user, $plainPassword);
+                $user->setPassword($hashedPassword);
             }
-        }
 
-        $this->entityManager->persist($user);
-        $this->entityManager->flush();
-
-        $this->addFlash('success', 'User created successfully.');
-    } catch (\Exception $e) {
-        $this->addFlash('error', 'Error creating user: ' . $e->getMessage());
-    }
-
-    return $this->redirectToRoute('admin_index');
-}
-
-private function handleUserUpdate($form, User $user): Response
-{
-    try {
-        $email = $user->getEmail();
-        $existingUser = $this->userRepository->findOneBy(['email' => $email]);
-        if ($existingUser && $existingUser->getId() !== $user->getId()) {
-            $this->addFlash('error', 'This email is already used by another user.');
-            return $this->redirectToRoute('admin_index');
-        }
-
-        $plainPassword = $form->get('plainPassword')->getData();
-        if ($plainPassword) {
-            $hashedPassword = $this->passwordHasher->hashPassword($user, $plainPassword);
-            $user->setPassword($hashedPassword);
-        }
-
-        // ✅ Assign team manager role if conditions met
-        if (in_array(Role::MANAGER, $user->getRolesArray(), true) && $user->getTeam()) {
-            $user->getTeam()->setManager($user);
-            $this->entityManager->persist($user->getTeam());
-        } else {
-            // Optionally, if user is no longer a manager, clear the team manager
-            if ($user->getTeam() && $user->getTeam()->getManager() === $user) {
-                $user->getTeam()->setManager(null);
+            // ✅ If user is MANAGER and has a team, assign them as that team's manager
+            if (in_array(Role::MANAGER, $user->getRolesArray(), true) && $user->getTeam()) {
+                $user->getTeam()->setManager($user);
                 $this->entityManager->persist($user->getTeam());
             }
+
+            $this->entityManager->persist($user);
+            $this->entityManager->flush();
+
+            $this->addFlash('success', 'User created successfully.');
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Error creating user: ' . $e->getMessage());
         }
 
-        $this->entityManager->flush();
-
-        $this->addFlash('success', 'User updated successfully.');
-    } catch (\Exception $e) {
-        $this->addFlash('error', 'Error updating user: ' . $e->getMessage());
+        return $this->redirectToRoute('admin_index');
     }
 
-    return $this->redirectToRoute('admin_index');
-}
+    private function handleUserUpdate($form, User $user): Response
+    {
+        try {
+            $email = $user->getEmail();
+            $existingUser = $this->userRepository->findOneBy(['email' => $email]);
+            if ($existingUser && $existingUser->getId() !== $user->getId()) {
+                $this->addFlash('error', 'This email is already used by another user.');
+                return $this->redirectToRoute('admin_index');
+            }
 
+            $plainPassword = $form->get('plainPassword')->getData();
+            if ($plainPassword) {
+                $hashedPassword = $this->passwordHasher->hashPassword($user, $plainPassword);
+                $user->setPassword($hashedPassword);
+            }
+
+            // ✅ Assign team manager role if conditions met
+            if (in_array(Role::MANAGER, $user->getRolesArray(), true) && $user->getTeam()) {
+                $user->getTeam()->setManager($user);
+                $this->entityManager->persist($user->getTeam());
+            } else {
+                // Optionally, if user is no longer a manager, clear the team manager
+                if ($user->getTeam() && $user->getTeam()->getManager() === $user) {
+                    $user->getTeam()->setManager(null);
+                    $this->entityManager->persist($user->getTeam());
+                }
+            }
+
+            $this->entityManager->flush();
+
+            $this->addFlash('success', 'User updated successfully.');
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Error updating user: ' . $e->getMessage());
+        }
+
+        return $this->redirectToRoute('admin_index');
+    }
 }

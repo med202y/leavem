@@ -98,138 +98,160 @@
 {% block javascripts %}
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        let calendar = null;
+        let tooltip = null;
+
+        // Initialize calendar and listeners
+        function initializePage() {
             // Menu mobile
             const menuBtn = document.getElementById('mobile-menu-btn');
             const sidebar = document.getElementById('sidebar');
             menuBtn?.addEventListener('click', () => sidebar?.classList.toggle('hidden'));
 
-            var calendarEl = document.getElementById('calendar');
-            var calendar;
-            var tooltip = document.getElementById('customTooltip');
+            const calendarEl = document.getElementById('calendar');
+            tooltip = document.getElementById('customTooltip');
 
-            // Initialisation du calendrier
-            function initCalendar(events) {
-                if (calendar) {
-                    calendar.destroy();
+            if (!calendarEl) return;
+
+            // Load initial events
+            const initialEvents = {{ events|raw }};
+            initCalendar(initialEvents);
+        }
+
+        // Initialisation du calendrier
+        function initCalendar(events) {
+            const calendarEl = document.getElementById('calendar');
+            if (!calendarEl) return;
+
+            if (calendar) {
+                calendar.destroy();
+            }
+
+            calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'fr',
+                firstDay: 1,
+                events: events,
+                eventDisplay: 'block',
+                eventTextColor: 'white',
+                height: 'auto',
+                eventMouseEnter: function(info) {
+                    // Create tooltip content
+                    const tooltipContent = `
+                        <strong>${info.event.extendedProps.userName}</strong><br>
+                        <strong>Statut:</strong> ${info.event.extendedProps.statusLabel}<br>
+                        <strong>Type:</strong> ${info.event.extendedProps.typeConge}<br>
+                        <strong>Début:</strong> ${info.event.start.toLocaleDateString('fr-FR')}<br>
+                        <strong>Fin:</strong> ${new Date(info.event.end - 86400000).toLocaleDateString('fr-FR')}<br>
+                        ${info.event.extendedProps.motif ? '<strong>Motif:</strong> ' + info.event.extendedProps.motif : ''}
+                    `;
+
+                    tooltip.innerHTML = tooltipContent;
+                    tooltip.style.display = 'block';
+
+                    // Position the tooltip
+                    document.addEventListener('mousemove', positionTooltip);
+                },
+                eventMouseLeave: function(info) {
+                    tooltip.style.display = 'none';
+                    document.removeEventListener('mousemove', positionTooltip);
                 }
-
-                calendar = new FullCalendar.Calendar(calendarEl, {
-                    initialView: 'dayGridMonth',
-                    locale: 'fr',
-                    firstDay: 1,
-                    events: events,
-                    eventDisplay: 'block',
-                    eventTextColor: 'white',
-                    height: 'auto',
-                    eventMouseEnter: function(info) {
-                        // Create tooltip content
-                        const tooltipContent = `
-                            <strong>${info.event.extendedProps.userName}</strong><br>
-                            <strong>Statut:</strong> ${info.event.extendedProps.statusLabel}<br>
-                            <strong>Type:</strong> ${info.event.extendedProps.typeConge}<br>
-                            <strong>Début:</strong> ${info.event.start.toLocaleDateString('fr-FR')}<br>
-                            <strong>Fin:</strong> ${new Date(info.event.end - 86400000).toLocaleDateString('fr-FR')}<br>
-                            ${info.event.extendedProps.motif ? '<strong>Motif:</strong> ' + info.event.extendedProps.motif : ''}
-                        `;
-
-                        tooltip.innerHTML = tooltipContent;
-                        tooltip.style.display = 'block';
-
-                        // Position the tooltip
-                        document.addEventListener('mousemove', positionTooltip);
-                    },
-                    eventMouseLeave: function(info) {
-                        tooltip.style.display = 'none';
-                        document.removeEventListener('mousemove', positionTooltip);
-                    }
-                });
-
-                calendar.render();
-                updateEventCount(events.length);
-            }
-
-            // Position tooltip function
-            function positionTooltip(e) {
-                const tooltipRect = tooltip.getBoundingClientRect();
-                const viewportWidth = window.innerWidth;
-                const viewportHeight = window.innerHeight;
-
-                let left = e.pageX + 10;
-                let top = e.pageY + 10;
-
-                // Prevent tooltip from going off-screen
-                if (left + tooltipRect.width > viewportWidth) {
-                    left = e.pageX - tooltipRect.width - 10;
-                }
-                if (top + tooltipRect.height > viewportHeight) {
-                    top = e.pageY - tooltipRect.height - 10;
-                }
-
-                tooltip.style.left = left + 'px';
-                tooltip.style.top = top + 'px';
-            }
-
-            // Mettre à jour le compteur d'événements
-            function updateEventCount(count) {
-                document.getElementById('eventCount').textContent = `(${count} congé${count > 1 ? 's' : ''})`;
-            }
-
-            // Charger les événements avec les filtres
-            function loadEvents() {
-                const selectedStatuses = Array.from(document.querySelectorAll('.status-filter:checked'))
-                    .map(checkbox => checkbox.value);
-
-                const params = new URLSearchParams();
-                selectedStatuses.forEach(status => {
-                    params.append('statuses[]', status);
-                });
-
-                fetch(`{{ path('app_calendar_events') }}?${params.toString()}`)
-                    .then(response => response.json())
-                    .then(events => {
-                        initCalendar(events);
-                    })
-                    .catch(error => {
-                        console.error('Erreur lors du chargement des événements:', error);
-                    });
-            }
-
-            // Gestionnaire de changement de filtre
-            document.querySelectorAll('.status-filter').forEach(checkbox => {
-                checkbox.addEventListener('change', function() {
-                    const label = this.closest('.status-badge');
-                    if (this.checked) {
-                        label.classList.add('selected');
-                    } else {
-                        label.classList.remove('selected');
-                    }
-                });
             });
 
-            // Bouton "Tout sélectionner"
-            document.getElementById('selectAll').addEventListener('click', function() {
+            calendar.render();
+            updateEventCount(events.length);
+        }
+
+        // Position tooltip function
+        function positionTooltip(e) {
+            const tooltipRect = tooltip.getBoundingClientRect();
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+
+            let left = e.pageX + 10;
+            let top = e.pageY + 10;
+
+            // Prevent tooltip from going off-screen
+            if (left + tooltipRect.width > viewportWidth) {
+                left = e.pageX - tooltipRect.width - 10;
+            }
+            if (top + tooltipRect.height > viewportHeight) {
+                top = e.pageY - tooltipRect.height - 10;
+            }
+
+            tooltip.style.left = left + 'px';
+            tooltip.style.top = top + 'px';
+        }
+
+        // Mettre à jour le compteur d'événements
+        function updateEventCount(count) {
+            const eventCountEl = document.getElementById('eventCount');
+            if (eventCountEl) {
+                eventCountEl.textContent = `(${count} congé${count > 1 ? 's' : ''})`;
+            }
+        }
+
+        // Charger les événements avec les filtres
+        function loadEvents() {
+            const selectedStatuses = Array.from(document.querySelectorAll('.status-filter:checked'))
+                .map(checkbox => checkbox.value);
+
+            const params = new URLSearchParams();
+            selectedStatuses.forEach(status => {
+                params.append('statuses[]', status);
+            });
+
+            fetch(`{{ path('app_calendar_events') }}?${params.toString()}`)
+                .then(response => response.json())
+                .then(events => {
+                    initCalendar(events);
+                })
+                .catch(error => {
+                    console.error('Erreur lors du chargement des événements:', error);
+                });
+        }
+
+        // Event delegation for status filter changes
+        document.addEventListener('change', (e) => {
+            if (e.target.matches('.status-filter')) {
+                const label = e.target.closest('.status-badge');
+                if (e.target.checked) {
+                    label.classList.add('selected');
+                } else {
+                    label.classList.remove('selected');
+                }
+            }
+        });
+
+        // Event delegation for buttons
+        document.addEventListener('click', (e) => {
+            if (e.target.id === 'selectAll' || e.target.closest('#selectAll')) {
                 document.querySelectorAll('.status-filter').forEach(checkbox => {
                     checkbox.checked = true;
                     checkbox.closest('.status-badge').classList.add('selected');
                 });
-            });
-
-            // Bouton "Tout désélectionner"
-            document.getElementById('deselectAll').addEventListener('click', function() {
+            }
+            
+            if (e.target.id === 'deselectAll' || e.target.closest('#deselectAll')) {
                 document.querySelectorAll('.status-filter').forEach(checkbox => {
                     checkbox.checked = false;
                     checkbox.closest('.status-badge').classList.remove('selected');
                 });
-            });
-
-            // Bouton "Appliquer les filtres"
-            document.getElementById('applyFilter').addEventListener('click', function() {
+            }
+            
+            if (e.target.id === 'applyFilter' || e.target.closest('#applyFilter')) {
                 loadEvents();
-            });
-
-            // Charger les événements initiaux
-            initCalendar({{ events|raw }});
+            }
         });
+
+        // Initialize on page load and Turbo navigation
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializePage);
+        } else {
+            initializePage();
+        }
+
+        // Re-initialize on Turbo navigation
+        document.addEventListener('turbo:load', initializePage);
     </script>
 {% endblock %}

@@ -9,7 +9,9 @@
     color: white;
     padding: 0.75rem;
     border-radius: 0.5rem;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    box-shadow:
+        0 4px 6px -1px rgba(0, 0, 0, 0.1),
+        0 2px 4px -1px rgba(0, 0, 0, 0.06);
     border: none;
     cursor: pointer;
 }
@@ -38,6 +40,18 @@
     .sidebar {
         display: block;
         transform: translateX(0);
+    }
+}
+
+/* Main Content with Sidebar */
+.main-content.with-sidebar {
+    margin-left: 0;
+    transition: margin-left 0.3s;
+}
+
+@media (min-width: 768px) {
+    .main-content.with-sidebar {
+        margin-left: 18rem;
     }
 }
 

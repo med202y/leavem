@@ -1,5 +1,7 @@
 /* Notification History Page Styles */
-
+* {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
 /* Main Content Layout */
 .history-main-content {
     min-height: 100vh;

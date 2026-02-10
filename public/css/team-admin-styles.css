@@ -1,5 +1,7 @@
 /* Team Admin Page Styles */
-
+* {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
 /* Card Base */
 .card {
     background-color: white;

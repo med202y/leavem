@@ -1,4 +1,7 @@
 /* Main Layout */
+* {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
 .dashboard-main {
     min-height: 100vh;
     background-color: #f3f4f6;

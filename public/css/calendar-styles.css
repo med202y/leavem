@@ -1,5 +1,7 @@
 /* Calendar Page Styles */
-
+* {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
 /* Header Section */
 .calendar-header {
     display: flex;
